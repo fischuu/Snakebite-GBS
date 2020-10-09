@@ -1,5 +1,5 @@
 ---
-title: "GBS report"
+title: "GBS-Pipeline report"
 subtitle: "QC and basic stats"
 author: "Daniel Fischer"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
@@ -45,8 +45,9 @@ mockClusters.file <- "GSC.MR.Clusters.fa"
 mockReference.file <- "GSC.MR.Genome.fa"
 refGenome.file <- ""
 if(!is.element("snakemake",ls())){
-  projFolder <- "/hdd/data1/Projects/GBS/Example/"
+  projFolder <- "/media/fischuu/backup/LUKE/Example"
   pipelineFolder <- "/home/fischuu/git/Pipeline-GBS/"
+  pipelineConfig <- "/home/fischuu/git/Pipeline-GBS/GBS-pipeline_config-example.yaml"
   refGenome.file <- ""
 }
 ifelse(refGenome.file == "", refAvail <- FALSE, refAvail <- TRUE)
@@ -162,7 +163,7 @@ getFastQCJSON <- function(path){
 The DAG of the used pipeline with rule dependencies.
 
 ```{r import workflow, echo=FALSE, fig.cap="Overview of the applied workflow", out.width = '100%'}
-knitr::include_graphics(file.path(pipelineFolder,"workflow.png"))
+if(file.exists(file.path(pipelineFolder,"workflow.png"))) knitr::include_graphics(file.path(pipelineFolder,"workflow.png"))
 ```
 
 
@@ -974,7 +975,7 @@ for(i in 2:ncol(sampleInfo)){
 ```
 
 ```{r}
-cols <- min(ncol(vcf.PCA$x,10))
+cols <- min(ncol(vcf.PCA$x),10)
 pairs(vcf.PCA$x[,1:cols])
 
 if(ncol(sampleInfo)>1){
@@ -988,7 +989,7 @@ for(i in 2:ncol(sampleInfo)){
 
 ### ICS
 ```{r, eval=FALSE}
-cols <- min(ncol(vcf.PCA$x,10))
+cols <- min(ncol(vcf.PCA$x),10)
 FOBI <- ics(vcf.PCA$x[,1:cols])
 if(ncol(sampleInfo)>1){
 for(i in 2:ncol(sampleInfo)){
@@ -1002,7 +1003,7 @@ for(i in 2:ncol(sampleInfo)){
 
 ### t-SNE
 ```{r}
-cols <- min(ncol(vcf.PCA$x,10))
+cols <- min(ncol(vcf.PCA$x),10)
 TSNEout <- tsne(vcf.PCA$x[,1:cols], k=5)
 
 if(ncol(sampleInfo)>1){
@@ -1017,9 +1018,9 @@ for(i in 2:ncol(sampleInfo)){
 ### Kernel PCA
 ```{r}
 # Kernel PCA
-cols <- min(ncol(vcf.PCA$x,10))
+cols <- min(min(dim(vcf.PCA$x)),10)-1
 
-  KPCAres <- kpca(vcf.PCA$x[,1:cols])
+KPCAres <- kpca(vcf.PCA$x[,1:cols])
 
 if(ncol(sampleInfo)>1){
   for(i in 2:ncol(sampleInfo)){
@@ -1045,7 +1046,7 @@ if(ncol(sampleInfo)>1){
 ### Locally linear embedding (LLE)
 ```{r}
 # LLE
-cols <- min(ncol(vcf.PCA$x,10))
+cols <- min(ncol(vcf.PCA$x),10)
 
   lleres <- lle(vcf.PCA$x[,1:cols], m=7, k=17, v=0.99)
  
@@ -1185,7 +1186,7 @@ knitr::kable(barcodesID)
 This is the configuration file that is used for the project:
 
 ```{r import config file}
-configFile <- readLines(file.path(pipelineFolder, "Genotype-pipeline_config-racoon.yaml"))
+configFile <- readLines(pipelineConfig)
 ```
 
 ```{r print configuration}
@@ -1196,7 +1197,7 @@ knitr::kable(configFile)
 And this is the conda environment configuration
  
 ```{r import conda file}
-condaFile <- readLines(file.path(pipelineFolder, "Genotype.yaml"))
+condaFile <- readLines(file.path(pipelineFolder, "GBS.yaml"))
 ```
 
 ```{r print conda}
