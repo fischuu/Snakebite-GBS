@@ -21,12 +21,14 @@ rule R_finalReport:
     params:
        projFolder=config["project-folder"],
        pipeFolder=config["pipeline-folder"],
+       pipeConfig=config["pipeline-config"],
        refGenome=config["genome"]
     shell:"""
        module load r-env
        R -e "projFolder <- '{params.projFolder}'; \
              pipelineFolder <- '{params.pipeFolder}'; \
-             refGenome.file <- '{params.refGenome}';\
+             refGenome.file <- '{params.refGenome}'; \
+             pipelineConfig <- '{params.pipeConfig}'; \
              snakemake <- TRUE;\
              rmarkdown::render('{input.script}',output_file='{output}')" &> {log}
     """

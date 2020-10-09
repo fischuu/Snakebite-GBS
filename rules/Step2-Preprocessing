@@ -9,8 +9,8 @@ rule cutadapt_trim_reads:
         first="%s/FASTQ/CUTADAPT/{samples}_R1_001.cutadapt.fastq.gz" % (config["project-folder"]),
         second="%s/FASTQ/CUTADAPT/{samples}_R2_001.cutadapt.fastq.gz" % (config["project-folder"])
     params:
-        adapter_file_R1=config["params"]["cutadapt"]["adapter_R1"],
-        adapter_file_R2=config["params"]["cutadapt"]["adapter_R2"],
+        adapter_file_R1=config["enz1"],
+        adapter_file_R2=config["enz2"],
     log:
         "%s/logs/cutadapt.{samples}.log" % (config["project-folder"])
     benchmark:
@@ -55,7 +55,7 @@ rule Step2_TrimBasedOnQuality:
     params:
         tm=config["params"]["step2"]["tm"],
         threads=config["params"]["step2"]["threads"],
-        ad=config["params"]["step2"]["adapter"],
+        ad=config["adapter"],
         minlen=config["params"]["step2"]["minlen"],
         iclip=config["params"]["step2"]["iclip"],
         leading=config["params"]["step2"]["leading"],
