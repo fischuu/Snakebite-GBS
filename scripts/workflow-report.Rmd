@@ -974,11 +974,12 @@ for(i in 2:ncol(sampleInfo)){
 ```
 
 ```{r}
-pairs(vcf.PCA$x[,1:10])
+cols <- min(ncol(vcf.PCA$x,10))
+pairs(vcf.PCA$x[,1:cols])
 
 if(ncol(sampleInfo)>1){
 for(i in 2:ncol(sampleInfo)){
-  pairs(vcf.PCA$x[,1:10], col=as.numeric(as.factor(sampleInfo[,i])), pch=20)
+  pairs(vcf.PCA$x[,1:cols], col=as.numeric(as.factor(sampleInfo[,i])), pch=20)
 }
 }
 ```
@@ -987,7 +988,8 @@ for(i in 2:ncol(sampleInfo)){
 
 ### ICS
 ```{r, eval=FALSE}
-FOBI <- ics(vcf.PCA$x[,1:10])
+cols <- min(ncol(vcf.PCA$x,10))
+FOBI <- ics(vcf.PCA$x[,1:cols])
 if(ncol(sampleInfo)>1){
 for(i in 2:ncol(sampleInfo)){
   plot(FOBI, col=as.numeric(as.factor(sampleInfo[,i])), pch=20)
@@ -1000,7 +1002,8 @@ for(i in 2:ncol(sampleInfo)){
 
 ### t-SNE
 ```{r}
-TSNEout <- tsne(vcf.PCA$x[,1:10], k=5)
+cols <- min(ncol(vcf.PCA$x,10))
+TSNEout <- tsne(vcf.PCA$x[,1:cols], k=5)
 
 if(ncol(sampleInfo)>1){
 for(i in 2:ncol(sampleInfo)){
@@ -1014,11 +1017,13 @@ for(i in 2:ncol(sampleInfo)){
 ### Kernel PCA
 ```{r}
 # Kernel PCA
-  KPCAres <- kpca(vcf.PCA$x[,1:10])
+cols <- min(ncol(vcf.PCA$x,10))
+
+  KPCAres <- kpca(vcf.PCA$x[,1:cols])
 
 if(ncol(sampleInfo)>1){
   for(i in 2:ncol(sampleInfo)){
-     pairs(rotated(KPCAres)[,1:10], col=as.numeric(as.factor(sampleInfo[,i])), pch=20)
+     pairs(rotated(KPCAres)[,1:cols], col=as.numeric(as.factor(sampleInfo[,i])), pch=20)
   }
 
 } else {
@@ -1040,7 +1045,9 @@ if(ncol(sampleInfo)>1){
 ### Locally linear embedding (LLE)
 ```{r}
 # LLE
-  lleres <- lle(vcf.PCA$x[,1:10], m=7, k=17, v=0.99)
+cols <- min(ncol(vcf.PCA$x,10))
+
+  lleres <- lle(vcf.PCA$x[,1:cols], m=7, k=17, v=0.99)
  
 if(ncol(sampleInfo)>1){
  for(i in 2:ncol(sampleInfo)){
