@@ -1,2 +1,2 @@
 # Pipeline-GBS
-Snakemake GBS-pipeline
+The snakemake pipeline based on GBS-SNP-Crop and further extended.

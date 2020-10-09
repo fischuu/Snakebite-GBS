@@ -1,0 +1,209 @@
+rule Step4_0_ClusterAndMockReference:
+    """
+    Cluster reads and assemble the Mock Reference.
+    """
+    input:
+        expand("%s/FASTQ/TRIMMED/{samples}.R1.fq.gz" % (config["project-folder"]), samples=samples)
+    output:
+        Genome="%s/FASTQ/TRIMMED/GSC.MR.Genome.fa" % (config["project-folder"]),
+        Clusters="%s/FASTQ/TRIMMED/GSC.MR.Clusters.fa" % (config["project-folder"])
+    params:
+        libtype=config["libtype"],
+        libname=config["libname"],
+        barcodes=config["barcodes"],
+        pear=config["params"]["step4"]["pear"],
+        vsearch=config["params"]["step4"]["vsearch"],
+        cl=config["params"]["step4"]["cl"],
+        rl=config["params"]["step4"]["rl"],
+        pl=config["params"]["step4"]["pl"],
+        p=config["params"]["step4"]["p"],
+        id=config["params"]["step4"]["id"],
+        db=config["params"]["step4"]["db"],
+        min=config["params"]["step4"]["min"],
+        MR=config["params"]["step4"]["MR"],
+        wd="%s/FASTQ/TRIMMED" % config["project-folder"],
+        pipefolder=config["pipeline-folder"],
+        threads=config["params"]["step4"]["threads"]
+    log:
+        "%s/logs/step4.log" % (config["project-folder"])
+    benchmark:
+        "%s/benchmark/step4.benchmark.tsv" % (config["project-folder"])
+    shell:"""
+        echo "Number of threads used:" {params.threads}
+
+        #******PARAMETERS*****
+	      # -rl: Raw GBS read length. Numeric. Default: 150
+	      # pl: Minimum length required after merging to retain read. Numeric. Default: 32
+	      # p: p-value for PEAR. Numeric. Default: 0.01
+	      # id: Nucleotide identity value required for Vsearch read clustering. Numeric. Default: 0.93
+	      # db: Activate the Vsearch derreplication process in blocks. Numeric. Default: Population size
+	      # min: Minimum length (bp) for a Mock Reference cluster. Numeric. Default: 32
+	      # MR: Mock Reference name. String. Default: GSC.MockRef
+        
+        cd {params.wd}
+        perl {params.pipefolder}/scripts/GBS-SNP-CROP-4.pl -pr {params.pear} -vs {params.vsearch} -d {params.libtype} -b {params.barcodes} -t {params.threads} -cl {params.cl} -rl {params.rl} -pl {params.pl} -p {params.p} -id {params.id}  -min {params.min} -MR {params.MR} &> {log}
+  	"""
+
+if config["genome"] == "":
+    print(f"No reference genome provided, skipping the star indexing step for reference genome")
+else:
+    rule Step4_1_minimap2_map_mockref:
+        """
+        Map the mock reference clusters to the genome (minimap2).
+        """
+        input:
+            refgenome=config["genome"],
+            mockgenome="%s/FASTQ/TRIMMED/GSC.MR.Clusters.fa" % (config["project-folder"])
+        output:
+            "%s/SAM/mockTeRef.sam" % (config["project-folder"])
+        log:
+            "%s/logs/MINIMAP2/mm2_map_mockVSref.log" % (config["project-folder"])
+        benchmark:
+            "%s/benchmark/MINIMAP2/mm2_mockVSref.benchmark.tsv" % (config["project-folder"])
+        threads: 20
+        conda: "envs/minimap2.yaml"
+        shell:"""
+           minimap2 -ax sr {input.refgenome} {input.mockgenome} > {output}
+        """
+
+if config["genome"] == "":
+    print(f"No reference genome provided, skipping the star indexing step for reference genome")
+else:
+    rule Step4_2_samtools_SamToSortedBamMockref:
+        """
+        Index the Mock Reference Genome.
+        """
+        input:
+            ref=config["genome"],
+            sam="%s/SAM/mockTeRef.sam" % (config["project-folder"])
+        output:
+            bam="%s/BAM/Mockref/mockToRef.bam" % (config["project-folder"]),
+            sorted="%s/BAM/Mockref/mockToRef.sorted.bam" % (config["project-folder"]),
+            samflags="%s/SAM/mockToRef.samflags" % (config["project-folder"]),
+            bed="%s/SAM/mockToRef.bed" % (config["project-folder"]),
+            leftBed="%s/SAM/mockToRef.left.bed" % (config["project-folder"]),
+            rightBed="%s/SAM/mockToRef.right.bed" % (config["project-folder"]),
+            leftFA="%s/SAM/mockToRef.left.fa" % (config["project-folder"]),
+            rightFA="%s/SAM/mockToRef.right.fa" % (config["project-folder"]),
+            leftFACounts="%s/SAM/mockToRef.left.fa.counts" % (config["project-folder"]),
+            rightFACounts="%s/SAM/mockToRef.right.fa.counts" % (config["project-folder"]),
+            FA="%s/SAM/mockToRef.combined.fa" % (config["project-folder"]),
+            FACounts="%s/SAM/mockToRef.combined.fa.counts" % (config["project-folder"])
+        log:
+            "%s/logs/SamToSortedBamMockref.log" % (config["project-folder"])
+        benchmark:
+            "%s/benchmark/SamToSortedBamMockref.benchmark.tsv" % (config["project-folder"])
+        shell:"""
+            samtools view -b {input.sam} > {output.bam}
+            samtools sort {output.bam} -o {output.sorted}
+            samtools index {output.sorted}
+            
+            sed '/^@/d' {input.sam} | cut -f2 | sort | uniq -c > {output.samflags}
+            samtools view -bF 2048 {input.sam} | bedtools bamtobed > {output.bed}
+            
+            awk '{{print $1 "\\t" (($2 - 6)<0?0:($2 - 6)) "\\t" $2}}' {output.bed} > {output.leftBed}
+            awk '{{print $1 "\\t" $3 "\\t" $3 + 6}}' {output.bed} > {output.rightBed}
+            bedtools getfasta -fi {input.ref} -bed {output.leftBed} > {output.leftFA}
+            bedtools getfasta -fi {input.ref} -bed {output.rightBed} > {output.rightFA}
+            
+            sed '/^>/d' {output.leftFA} | sort | awk '{{ print toupper($0) }}' | uniq -c > {output.leftFACounts}
+            sed '/^>/d' {output.rightFA} | sort | awk '{{ print toupper($0) }}' | uniq -c > {output.rightFACounts}
+            
+            paste -d '+' {output.leftFA} {output.rightFA} > {output.FA}
+            sed '/^>/d' {output.FA} | sort | awk '{{ print toupper($0) }}' | uniq -c > {output.FACounts}
+            
+      	"""
+
+
+if config["genome"] == "":
+    print(f"No reference genome provided, skipping the star indexing step for reference genome")
+else:  	
+    rule MockVsRef_AlignmentStats:
+        """
+        Get the mapping stats for the mock vs. reference.
+        """
+        input:
+            ref=config["genome"],
+            sam="%s/SAM/mockTeRef.sam" % (config["project-folder"]),
+            sbam="%s/BAM/Mockref/mockToRef.sorted.bam" % (config["project-folder"])
+        output:
+            fs="%s/BAM/Mockref/mockToRef.sam.flagstat" % (config["project-folder"]),
+            stats="%s/BAM/Mockref/mockToRef.sam.stats" % (config["project-folder"]),
+            c="%s/BAM/Mockref/mockToRef.coverage" % (config["project-folder"]),
+            bed="%s/BAM/Mockref/mockToRef.bed" % (config["project-folder"]),
+            bedMerged="%s/BAM/Mockref/mockToRef.merged.bed" % (config["project-folder"]),
+            leftBed="%s/BAM/Mockref/mockToRef.merged.left.bed" % (config["project-folder"]),
+            rightBed="%s/BAM/Mockref/mockToRef.merged.right.bed" % (config["project-folder"]),
+            leftFA="%s/BAM/Mockref/mockToRef.merged.left.fa" % (config["project-folder"]),
+            rightFA="%s/BAM/Mockref/mockToRef.merged.right.fa" % (config["project-folder"]),
+            FA="%s/BAM/Mockref/mockToRef.merged.combined.fa" % (config["project-folder"]),
+            FACounts="%s/BAM/Mockref/mockToRef.merged.combined.fa.counts" % (config["project-folder"])
+        log:
+            "%s/logs/Step4_3/step4_3.log" % (config["project-folder"])
+        benchmark:
+            "%s/benchmark/Step4_3/step4_3.benchmark.tsv" % (config["project-folder"])
+        threads: lambda cores: cpu_count()
+        shell:"""
+            echo "Number of threads used:" {threads}
+            samtools flagstat {input.sam} > {output.fs}
+            samtools stats {input.sam} > {output.stats}
+            samtools idxstats {input.sbam} | awk '{{print $1\" \"$3}}' > {output.c}
+            bedtools genomecov -ibam {input.sbam} -bg > {output.bed}
+            bedtools merge -i {output.bed} > {output.bedMerged}
+            awk '{{print $1 "\\t" (($2 - 6)<0?0:($2 - 6)) "\\t" $2}}' {output.bedMerged} > {output.leftBed}
+            awk '{{print $1 "\\t" $3 "\\t" $3 + 6}}' {output.bedMerged} > {output.rightBed}
+            bedtools getfasta -fi {input.ref} -bed {output.leftBed} > {output.leftFA}
+            bedtools getfasta -fi {input.ref} -bed {output.rightBed} > {output.rightFA}
+            
+            paste -d '+' {output.leftFA} {output.rightFA} > {output.FA}
+            sed '/^>/d' {output.FA} | sort | awk '{{ print toupper($0) }}' | uniq -c > {output.FACounts}
+      	"""
+
+if config["genome"] == "":
+    print(f"No reference genome provided, skipping the star indexing step for reference genome")
+else:
+    rule Step4_4_SortedBamToMpileupMockVsReference:
+        """
+        Get Mpileup for Mock Reference Genome against Reference.
+        """
+        input:
+            bam="%s/BAM/Mockref/mockToRef.sorted.bam" % (config["project-folder"]),
+            reference="%s" % (config["genome"])
+        output:
+            mp="%s/MPILEUP/mpileup_mockToRef/mockToRef.mpileup" % (config["project-folder"])
+        log:
+            "%s/logs/Step4_4-SortedBamToMpileupReference.log" % (config["project-folder"])
+        benchmark:
+            "%s/benchmark/Step4_4-SortedBamToMpileupReference.benchmark.tsv" % (config["project-folder"])
+        threads: lambda cores: cpu_count()
+        params:
+            Q=config["params"]["step5d"]["Q"],
+            q=config["params"]["step5d"]["q"]
+        shell:"""
+            echo "Number of threads used:" {threads}
+            samtools mpileup -Q {params.Q} -q {params.q} -B -C 50 -f {input.reference} {input.bam} > {output.mp}
+      	"""
+
+if config["genome"] == "":
+    print(f"No reference genome provided, skipping the star indexing step for reference genome")
+else:
+    rule minimap2_SortedBamToMpileup:
+        """
+        Get Mpileup for mockref against Reference Genome.
+        """
+        input:
+            bam="%s/BAM/Mockref/mockToRef.sorted.bam" % (config["project-folder"]),
+            refgenome=config["genome"]
+        output:
+            "%s/BAM/Mockref/mockToRef.mpileup" % (config["project-folder"])
+        log:
+            "%s/logs/minimap2-SortedBamToMpileup.log" % (config["project-folder"])
+        benchmark:
+            "%s/benchmark/minimap2-SortedBamToMpileup.benchmark.tsv" % (config["project-folder"])
+        params:
+            threads=config["params"]["step5d"]["threads"],
+            Q=config["params"]["step5d"]["Q"],
+            q=config["params"]["step5d"]["q"]
+        shell:"""
+            samtools mpileup -Q {params.Q} -q {params.q} -B -C 50 -f {input.refgenome} {input.bam} > {output}
+      	"""

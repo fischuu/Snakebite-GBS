@@ -1,0 +1,5 @@
+name: Rreport
+channels:
+  - bioconda
+dependencies:
+  - pandoc=2.9.2

@@ -1,0 +1,112 @@
+# Configuration file for the GBS-pipeline
+# First, basic configuration and paths:
+# project-folder    : Absolute path to the project root folder
+# pipeline-folder   : Absolute path to the pipeline folder
+# report-script     : Absolute path to the script (REMOVE THAT LATER)
+# barcodes          : Absolute path to the barcodes files
+# rawsamples        : Absolute path to the rawsamples file (REMOVE THIS LATER)
+# genome            : Absolute path to the reference genome (if available)
+# genome-bwa-index  : Absolute path and filename of the bwa index (REMOVE THIS LATER)
+# genome-star-index : Absolute path and filename of the star index (REMOVE THIS LATER)
+# refsample         : ID of the sample used to build the mock reference
+# local-scratch     : local scratch storage space on the used server
+
+project-folder: "/scratch/project_2001746/Example"
+pipeline-folder: "/scratch/project_2001746/Pipeline-GBS"
+report-script: "/scratch/project_2001746/Pipeline-GBS/scripts/workflow-report.Rmd"
+barcodes: "/scratch/project_2001746/Example/barcodesID.txt"
+rawsamples: "/scratch/project_2001746/Example/rawsamples"
+genome: "/scratch/project_2001746/Example/references/Vulpes_vulpes.VulVul2.2.dna.toplevel.fa"
+genome-bwa-index: "/scratch/project_2001746/Example/references/Vulpes_vulpes.VulVul2.2.dna.toplevel.fa.bwt"
+genome-star-index:  "/scratch/project_2001746/Example/references/STAR2.7.3a"
+refsample: ""
+local-scratch: $LOCAL_SCRATCH
+
+# Parameters for the GBS-SNP-CROP tools
+enz1: "AATTC"
+enz2: "GCATG"
+libname: "AllReads"
+libtype: "PE"
+
+params:
+  cutadapt:
+    adapter_R1: "CAATTC"
+    adapter_R2: "GCATG"
+  step1:
+    start: 1
+    end: 1
+    threads: 10
+  step2:
+    tm: "trimmomatic"
+    adapter: "/scratch/project_2001746/Pipeline-GBS/adapter.fa"
+    threads: 20
+    minlen: 32
+    iclip: "2:30:12"
+    leading: 30                        # Hard quality cut-off 
+    slwin: "8:30"                      # Sliding window trimming (windowSize:quality). Default is 4:30.
+    trail: 30                          # Hard quality cut-off
+  step2b:
+    q: 20                              # Quality threshold - nucleotides with lower quality will be masked. Default is 10.
+  step4:
+    pear: "pear"
+    vsearch: "vsearch"
+    threads: 20
+    cl: "consout"
+    rl: 125   # THIS IS USED FOR STITCHING!!! READS ARE ONLY STITCHED IF length(R1)-19 > rl and length(R2)-5 > rl, rather aggressive and almost impossible AFTER trimming!!! 
+    pl: 32   
+    p: 0.01
+    id: 0.90   # Default: 0.93
+    db: 1   # WARNING!!!!! ADD HERE THE LENGTH OF THE SAMPLES VECTOR, THIS MUST NOT BE HARDCODED IN PRODUCTION!!!!
+    min: 80   # This 
+    MR: "GSC.MR"
+  step5:
+    bwa: "bwa"
+    samtools: "samtools"
+    threads: 20
+    Q: 30
+    q: 0    # WARNING!!! RETURN THIS BACK TO DEFAULT FOR PRODUCTION!!! ALSO, CHECK ALL OTHER SETTINGS!!!!
+    f: 0
+    F: 2308
+  step5b:
+    threads: 20
+  step5c:
+    threads: 20
+  step5d:
+    threads: 20
+    q: 0
+    Q: 30
+    f: 0
+    F: 2308
+  step5e:
+    threads: 20
+    q: 0
+    Q: 30
+    f: 0
+    F: 2308
+  step5f:
+    threads: 20
+    q: 0
+    Q: 30
+  step6:
+    masterMatrix: "GSC.MasterMatrix.txt"
+    p: "snp"
+  step7:
+    input: "GSC.MasterMatrix.txt"
+    out: "GSC.GenoMatrix.txt"
+    unfiltered: "GSC.GenoMatrix.unfiltered.txt"
+    p: "snp"
+    mnHoDepth0: 3
+    mnHoDepth1: 10
+    mnHetDepth: 3
+    altStrength: 0.8
+    mnAlleleRatio: 0.25
+    mnCall: 0.75
+    mnAvgDepth: 3
+    mxAvgDepth: 200
+  step8:
+    genoMatrix: "GSC.GenoMatrix.txt"
+    unfiltered: "GSC.unfiltered"
+    out: "GSC"
+    format: "V"
+  step9:
+    flanking: 25

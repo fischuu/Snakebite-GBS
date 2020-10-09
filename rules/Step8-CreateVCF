@@ -1,0 +1,72 @@
+# vim: set filetype=sh :
+
+rule Step8_CreateVCF:
+    """
+    Create the VCF output of the pipeline.
+    """
+    input:
+        filtered="%s/FASTQ/TRIMMED/variants/GSC.GenoMatrix.txt" % (config["project-folder"]),
+        unfiltered="%s/FASTQ/TRIMMED/variants/GSC.GenoMatrix.unfiltered.txt" % (config["project-folder"])
+    output:
+        "%s/FASTQ/TRIMMED/GSC.vcf" % (config["project-folder"])
+    params:
+        barcodes=config["barcodes"],
+        genoMatrix=config["params"]["step8"]["genoMatrix"],
+        out=config["params"]["step8"]["out"],
+        unfilteredOut=config["params"]["step8"]["unfiltered"],
+        format=config["params"]["step8"]["format"],
+        wd="%s/FASTQ/TRIMMED" % config["project-folder"],
+        pipefolder=config["pipeline-folder"]
+    log:
+        "%s/logs/step8.log" % (config["project-folder"])
+    benchmark:
+        "%s/benchmark/step8.benchmark.tsv" % (config["project-folder"])
+    shell:"""
+        #******PARAMETERS*****
+        # -in 	Final genotyping matrix input file 	File 	GSC.GenoMatrix.txt
+        # -out 	Output label name without extension 	String 	GSC
+        # -b 	BarcodeID file name See Appendix A 	File 	--
+        # -formats 	The name(s) (R, Tassel, Plink, vcf, H) for which the GBS-SNP-CROP final genotyping matrix should be converted. If more than one format is desired, the names should be separated by commas without any space, as in the examples shown below 	String 	R,T,P,V,H
+
+        cd {params.wd}
+        perl {params.pipefolder}/scripts/GBS-SNP-CROP-8.pl -in {input.filtered} -out {params.out} -b {params.barcodes} -formats {params.format} &> {log}
+        perl {params.pipefolder}/scripts/GBS-SNP-CROP-8.pl -in {input.unfiltered} -out {params.unfilteredOut} -b {params.barcodes} -formats {params.format} &> {log}
+        cd ../..
+  	"""
+
+if config["genome"] == "":
+    print(f"No reference genome provided, skipping the star indexing step for reference genome")
+else:
+    rule Step8_0_CreateVCF_reference:
+        """
+        Create the VCF output of the pipeline for the reference genome.
+        """
+        input:
+            filtered="%s/MPILEUP/mpileup_reference/variants/GSC.GenoMatrix.txt" % (config["project-folder"]),
+            unfiltered="%s/MPILEUP/mpileup_reference/variants/GSC.GenoMatrix.unfiltered.txt" % (config["project-folder"])
+        output:
+            "%s/MPILEUP/mpileup_reference/GSC.vcf" % (config["project-folder"])
+        params:
+            barcodes=config["barcodes"],
+            genoMatrix=config["params"]["step8"]["genoMatrix"],
+            out=config["params"]["step8"]["out"],
+            unfilteredOut=config["params"]["step8"]["unfiltered"],
+            format=config["params"]["step8"]["format"],
+            wd="%s/MPILEUP/mpileup_reference" % config["project-folder"],
+            pipefolder=config["pipeline-folder"]
+        log:
+            "%s/logs/step8.log" % (config["project-folder"])
+        benchmark:
+            "%s/benchmark/step8.benchmark.tsv" % (config["project-folder"])
+        shell:"""
+            #******PARAMETERS*****
+            # -in 	Final genotyping matrix input file 	File 	GSC.GenoMatrix.txt
+            # -out 	Output label name without extension 	String 	GSC
+            # -b 	BarcodeID file name See Appendix A 	File 	--
+            # -formats 	The name(s) (R, Tassel, Plink, vcf, H) for which the GBS-SNP-CROP final genotyping matrix should be converted. If more than one format is desired, the names should be separated by commas without any space, as in the examples shown below 	String 	R,T,P,V,H
+    
+            cd {params.wd}
+            perl {params.pipefolder}/scripts/GBS-SNP-CROP-8.pl -in {input.filtered} -out {params.out} -b {params.barcodes} -formats {params.format} &> {log}
+            perl {params.pipefolder}/scripts/GBS-SNP-CROP-8.pl -in {input.unfiltered} -out {params.unfilteredOut} -b {params.barcodes} -formats {params.format} &> {log}
+            cd ../..
+      	"""

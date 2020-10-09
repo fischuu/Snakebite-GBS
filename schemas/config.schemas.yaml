@@ -1,0 +1,128 @@
+$schema: "http://json-schema.org/draft-04/schema#"
+
+description: GBS-pipeline configuration file
+
+type: object
+
+properties:
+  project-folder:
+    type: string
+  barcodes:
+    type: string
+  enz1:
+    type: string
+  enz2:
+    type: string
+  libname:
+    type: string
+  libtype:
+    type: string
+
+
+params:
+  type: object
+  properties:
+    step1:
+      start:
+        type: integer
+      end: 
+        type: integer
+      threads:
+        type: integer
+    step2:
+      tm:
+        type: string
+      threads:
+        type: integer
+    step3:
+    step4:
+      pear:
+        type: string
+      vsearch:
+        type: string
+      threads:
+        type: integer
+      cl:
+        type: string
+      rl:
+        type: integer
+      pl:
+        type: integer
+      p:
+        type: float
+      id:
+        type: float
+      db:
+        type: integer
+      min:
+        type: integer
+      MR:
+        type: string
+    step5:
+      bw:
+        type: string
+      st:
+        type: string
+      threads:
+        type: integer
+      Q:
+        type: integer
+      q:
+        type: integer
+      f:
+        type: integer
+      F:
+        type: integer
+    step6:
+      masterMatrix:
+        type: string
+      threads: 
+        type: integer
+      p:
+        type: string
+    step7:
+      input:
+        type: string
+      out:
+        type: string
+      p:
+        type: string
+      mnHoDepth0:
+        type: integer
+      mnHoDepth1:
+        type: integer
+      mnHetDepth:
+        type: integer
+      altStrength:
+        type: float
+      mnAlleleRatio:
+        type: float
+      mnCall:
+        type: float
+      mnAvgDepth:
+        type: integer
+      mxAvgDepth:
+        type: integer
+    step8:
+        genoMatrix:
+          type: string
+        out:
+          type: string
+        format:
+          type: string
+  required:
+    - step1
+    - step2
+    - step3
+    - step4
+    - step5
+    - step6
+    - step7
+    - step8
+required:
+  - project-folder
+  - barcodes
+  - enz1
+  - enz2
+  - libname
+  - libtype
