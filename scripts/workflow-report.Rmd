@@ -1040,6 +1040,10 @@ names(readsPerCoverageGroup) <- 1:max(coveredClusters)
 barplot(readsPerCoverageGroup, xlab="Coverage group", ylab="Reads on cluster group", col=viridis(20)[8])
 ```
 
+```{r reads per coverage group in percent}
+barplot(readsPerCoverageGroup/sum(readsPerCoverageGroup)*100, xlab="Coverage group", ylab="Reads on cluster group (in %)", ylim=c(0,100), col=viridis(20)[8])
+```
+
 Then still the number of clusters without coverage per sample
 
 ```{r clusters without coverage}
