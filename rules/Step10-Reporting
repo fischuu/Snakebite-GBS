@@ -7,7 +7,7 @@ rule R_finalReport:
     input:
         script=config["report-script"],
         fa="%s/FASTQ/TRIMMED/GSC.vcf.fa" % (config["project-folder"]),
-        mockToRef="LPg%s/BAM/Mockref/mockToRef.sorted.bam" % (config["project-folder"]),
+        mockToRef="%s/BAM/Mockref/mockToRef.sorted.bam" % (config["project-folder"]),
         mqcraw="%s/QC/RAW/multiqc_R1/" % (config["project-folder"]),
         mqcconcatenated="%s/QC/CONCATENATED/multiqc_R1/" % (config["project-folder"]),
         mqctrimmed="%s/QC/TRIMMED/multiqc_R1/" % (config["project-folder"]),
