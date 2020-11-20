@@ -1255,7 +1255,7 @@ accepted mistakes).
 
 ```{r}
 
-if(ncol(sampleInfo)>1){
+if(sum(is.element(colnames(sampleInfo), "casecontrol"))>1){
   mmCase <- 2
   mmControl <- 5
   vcf.cases <- vcf$genotypes[sampleInfo$casecontrol=="case",]
@@ -1307,7 +1307,7 @@ if(ncol(sampleInfo)>1){
 Then we identify the following potentially causative mutations:
 
 ```{r}
-if(ncol(sampleInfo)>1){
+if(sum(is.element(colnames(sampleInfo), "casecontrol"))>1){
   if(length(causativeRef)>0){
     datatable(as.data.frame(causativeRef))
   } else {
