@@ -1027,6 +1027,7 @@ barplot(table(coveredClusters), xlab="Samples with reads on cluster", col=viridi
 
 Now we have here the number of reads per coverage class. That means, instead of having it binary as in the previous plot, wenow count all the reads per coverage group.
 
+
 ```{r reads per coverage group}
 readsPerCoverageGroup <- c()
 
