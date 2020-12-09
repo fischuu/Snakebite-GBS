@@ -1025,6 +1025,25 @@ coveredClusters <- apply(clusterCoverage[,-1]>0,1,sum)
 barplot(table(coveredClusters), xlab="Samples with reads on cluster", col=viridis(20)[8])
 ```
 
+Now we have here the number of reads per coverage class. That means, instead of having it binary as in the previous plot, wenow count all the reads per coverage group.
+
+
+```{r reads per coverage group}
+readsPerCoverageGroup <- c()
+
+for(i in 1:max(coveredClusters)){
+ readsPerCoverageGroup[i] <-  sum(clusterCoverage[coveredClusters==i,-1])
+}
+
+names(readsPerCoverageGroup) <- 1:max(coveredClusters)
+
+barplot(readsPerCoverageGroup, xlab="Coverage group", ylab="Reads on cluster group", col=viridis(20)[8])
+```
+
+```{r reads per coverage group in percent}
+barplot(readsPerCoverageGroup/sum(readsPerCoverageGroup)*100, xlab="Coverage group", ylab="Reads on cluster group (in %)", ylim=c(0,100), col=viridis(20)[8])
+```
+
 Then still the number of clusters without coverage per sample
 
 ```{r clusters without coverage}
