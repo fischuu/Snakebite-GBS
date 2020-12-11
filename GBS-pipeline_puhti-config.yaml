@@ -104,10 +104,9 @@ Step4_3_AlignmentStatsMockVsReference:
     job-name:  S43_sort
 
 Step4_4_SortedBamToMpileupMockVsReference:
-    time: 05:00:00
-    cpus-per-task: 20
+    time: 2-00:00:00
     job-name:  S44_sort
-    mem-per-cpu: 15000
+    mem-per-cpu: 80000
 
 # Step4-Indexing
 ################################################################################

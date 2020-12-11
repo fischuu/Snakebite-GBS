@@ -175,12 +175,10 @@ else:
             "%s/logs/Step4_4-SortedBamToMpileupReference.log" % (config["project-folder"])
         benchmark:
             "%s/benchmark/Step4_4-SortedBamToMpileupReference.benchmark.tsv" % (config["project-folder"])
-        threads: lambda cores: cpu_count()
         params:
             Q=config["params"]["step5d"]["Q"],
             q=config["params"]["step5d"]["q"]
         shell:"""
-            echo "Number of threads used:" {threads}
             samtools mpileup -Q {params.Q} -q {params.q} -B -C 50 -f {input.reference} {input.bam} > {output.mp}
       	"""
 
