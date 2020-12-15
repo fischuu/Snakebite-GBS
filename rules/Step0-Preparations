@@ -62,7 +62,7 @@ else:
         output:
             "%s" % (config["genome-bwa-index"])
         log:
-            "%s/logs/Step0_2/bwa-IndexReferenceGenome.log" % (config["project-folder"])
+            "%s/logs/Step0_2/bwa-fai-IndexReferenceGenome.log" % (config["project-folder"])
         benchmark:
             "%s/benchmark/Step0_2/bwaIndexReferenceGenome.benchmark.tsv" % (config["project-folder"])
         threads: lambda cores: cpu_count()

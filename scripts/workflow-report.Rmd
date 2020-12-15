@@ -16,7 +16,6 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-.libPaths(c("/projappl/project_2001746/R/libraries", .libPaths()))
 #library("knitr")
 library("GenomicTools")
 library("Luke")

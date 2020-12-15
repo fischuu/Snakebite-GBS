@@ -162,29 +162,6 @@ else:
 if config["genome"] == "":
     print(f"No reference genome provided, skipping the star indexing step for reference genome")
 else:
-    rule Step4_4_SortedBamToMpileupMockVsReference:
-        """
-        Get Mpileup for Mock Reference Genome against Reference.
-        """
-        input:
-            bam="%s/BAM/Mockref/mockToRef.sorted.bam" % (config["project-folder"]),
-            reference="%s" % (config["genome"])
-        output:
-            mp="%s/MPILEUP/mpileup_mockToRef/mockToRef.mpileup" % (config["project-folder"])
-        log:
-            "%s/logs/Step4_4-SortedBamToMpileupReference.log" % (config["project-folder"])
-        benchmark:
-            "%s/benchmark/Step4_4-SortedBamToMpileupReference.benchmark.tsv" % (config["project-folder"])
-        params:
-            Q=config["params"]["step5d"]["Q"],
-            q=config["params"]["step5d"]["q"]
-        shell:"""
-            samtools mpileup -Q {params.Q} -q {params.q} -B -C 50 -f {input.reference} {input.bam} > {output.mp}
-      	"""
-
-if config["genome"] == "":
-    print(f"No reference genome provided, skipping the star indexing step for reference genome")
-else:
     rule minimap2_SortedBamToMpileup:
         """
         Get Mpileup for mockref against Reference Genome.
@@ -193,7 +170,7 @@ else:
             bam="%s/BAM/Mockref/mockToRef.sorted.bam" % (config["project-folder"]),
             refgenome=config["genome"]
         output:
-            "%s/BAM/Mockref/mockToRef.mpileup" % (config["project-folder"])
+            "%s/MPILEUP/mpileup_mockToRef/mockToRef.mpileup" % (config["project-folder"])
         log:
             "%s/logs/minimap2-SortedBamToMpileup.log" % (config["project-folder"])
         benchmark:

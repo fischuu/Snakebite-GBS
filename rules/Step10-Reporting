@@ -18,14 +18,14 @@ rule R_finalReport:
         "%s/logs/R/finalReport.log" % (config["project-folder"])
     benchmark:
         "%s/benchmark/R/finalReport.benchmark.tsv" % (config["project-folder"])
-    conda: "envs/Rreport.yaml"
+    container:
+        "docker://fischuu/r:3.6.3"
     params:
        projFolder=config["project-folder"],
        pipeFolder=config["pipeline-folder"],
        pipeConfig=config["pipeline-config"],
        refGenome=config["genome"]
     shell:"""
-       module load r-env
        R -e "projFolder <- '{params.projFolder}'; \
              pipelineFolder <- '{params.pipeFolder}'; \
              refGenome.file <- '{params.refGenome}'; \
