@@ -42,7 +42,6 @@ knitr::opts_chunk$set(echo = FALSE,
                       fig.align = 'center', fig.height = 5, fig.width = 8.5)
 mockClusters.file <- "GSC.MR.Clusters.fa"
 mockReference.file <- "GSC.MR.Genome.fa"
-refGenome.file <- ""
 if(!is.element("snakemake",ls())){
   projFolder <- "~/projectsTmp/Example"
   pipelineFolder <- "~/git/Pipeline-GBS/"
@@ -162,7 +161,7 @@ getFastQCJSON <- function(path){
 The DAG of the used pipeline with rule dependencies.
 
 ```{r import workflow, echo=FALSE, fig.cap="Overview of the applied workflow", out.width = '100%'}
-if(file.exists(file.path(pipelineFolder,"workflow.png"))) knitr::include_graphics(file.path(pipelineFolder,"workflow.png"))
+if(file.exists(file.path(projFolder,"workflow.png"))) knitr::include_graphics(file.path(projFolder,"workflow.png"))
 ```
 
 

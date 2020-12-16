@@ -19,7 +19,7 @@ rule R_finalReport:
     benchmark:
         "%s/benchmark/R/finalReport.benchmark.tsv" % (config["project-folder"])
     container:
-        "docker://fischuu/r:3.6.3"
+        "docker://fischuu/r-gbs:3.6.3-0.1"
     params:
        projFolder=config["project-folder"],
        pipeFolder=config["pipeline-folder"],
