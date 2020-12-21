@@ -6,8 +6,8 @@ rule cutadapt_trim_reads:
         ["%s/FASTQ/CONCATENATED/{samples}_R1_001.merged.fastq.gz" % (config["project-folder"]),
          "%s/FASTQ/CONCATENATED/{samples}_R2_001.merged.fastq.gz" % (config["project-folder"])]
     output:
-        first="%s/FASTQ/CUTADAPT/{samples}_R1_001.cutadapt.fastq.gz" % (config["project-folder"]),
-        second="%s/FASTQ/CUTADAPT/{samples}_R2_001.cutadapt.fastq.gz" % (config["project-folder"])
+        first=temp("%s/FASTQ/CUTADAPT/{samples}_R1_001.cutadapt.fastq.gz" % (config["project-folder"])),
+        second=temp("%s/FASTQ/CUTADAPT/{samples}_R2_001.cutadapt.fastq.gz" % (config["project-folder"]))
     params:
         adapter_file_R1=config["enz1"],
         adapter_file_R2=config["enz2"],
@@ -47,11 +47,11 @@ rule Step2_TrimBasedOnQuality:
       R1="%s/FASTQ/CUTADAPT/{samples}_R1_001.cutadapt.fastq.gz" % (config["project-folder"]),
       R2="%s/FASTQ/CUTADAPT/{samples}_R2_001.cutadapt.fastq.gz" % (config["project-folder"])
     output:
-      R1="%s/FASTQ/TRIMMED/{samples}.R1.fq.gz" % (config["project-folder"]),
-      R1SE="%s/FASTQ/TRIMMED/{samples}.R1_SE.fq.gz" % (config["project-folder"]),
-      R2="%s/FASTQ/TRIMMED/{samples}.R2.fq.gz" % (config["project-folder"]),
-      R2SE="%s/FASTQ/TRIMMED/{samples}.R2_SE.fq.gz" % (config["project-folder"]),
-      trimlog="%s/FASTQ/TRIMMED/{samples}.trimlog" % (config["project-folder"])
+      R1=temp("%s/FASTQ/TRIMMED/{samples}.R1.fq.gz" % (config["project-folder"])),
+      R1SE=temp("%s/FASTQ/TRIMMED/{samples}.R1_SE.fq.gz" % (config["project-folder"])),
+      R2=temp("%s/FASTQ/TRIMMED/{samples}.R2.fq.gz" % (config["project-folder"])),
+      R2SE=temp("%s/FASTQ/TRIMMED/{samples}.R2_SE.fq.gz" % (config["project-folder"])),
+      trimlog=temp("%s/FASTQ/TRIMMED/{samples}.trimlog" % (config["project-folder"]))
     params:
         tm=config["params"]["step2"]["tm"],
         threads=config["params"]["step2"]["threads"],
@@ -77,8 +77,8 @@ rule Step2b_SubstituteLowQualityBases:
       R1="%s/FASTQ/CONCATENATED/{samples}_R1_001.merged.fastq.gz" % (config["project-folder"]),
       R2="%s/FASTQ/CONCATENATED/{samples}_R2_001.merged.fastq.gz" % (config["project-folder"])
     output:
-      R1="%s/FASTQ/SUBSTITUTED/{samples}.R1.fq.gz" % (config["project-folder"]),
-      R2="%s/FASTQ/SUBSTITUTED/{samples}.R2.fq.gz" % (config["project-folder"]),
+      R1=temp("%s/FASTQ/SUBSTITUTED/{samples}.R1.fq.gz" % (config["project-folder"])),
+      R2=temp("%s/FASTQ/SUBSTITUTED/{samples}.R2.fq.gz" % (config["project-folder"])),
     params:
         q=config["params"]["step2b"]["q"],
         outfolder="%s/FASTQ/SUBSTITUTED" % (config["project-folder"])
