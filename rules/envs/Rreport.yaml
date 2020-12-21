@@ -2,4 +2,5 @@ name: Rreport
 channels:
   - bioconda
 dependencies:
+  - r-base=3.6.1
   - pandoc=2.9.2

@@ -8,7 +8,7 @@ rule ParseMpileup_createCountFiles:
     input:
         "%s/FASTQ/TRIMMED/{samples}.mpileup" % (config["project-folder"])
     output:
-        count="%s/FASTQ/TRIMMED/{samples}.count.txt" % (config["project-folder"]),
+        counts="%s/FASTQ/TRIMMED/{samples}.count.txt" % (config["project-folder"]),
         ref="%s/FASTQ/TRIMMED/{samples}.ref.txt" % (config["project-folder"])
     params:
         p=config["params"]["step6"]["p"],
@@ -34,7 +34,7 @@ else:
         input:
             "%s/MPILEUP/mpileup_reference/{samples}.mpileup" % (config["project-folder"])
         output:
-            count="%s/MPILEUP/mpileup_reference/{samples}.count.txt" % (config["project-folder"]),
+            counts="%s/MPILEUP/mpileup_reference/{samples}.count.txt" % (config["project-folder"]),
             ref="%s/MPILEUP/mpileup_reference/{samples}.ref.txt" % (config["project-folder"])
         params:
             p=config["params"]["step6"]["p"],
@@ -61,7 +61,7 @@ rule create_verticalRef:
         expand("%s/FASTQ/TRIMMED/{samples}.ref.txt" % (config["project-folder"]), samples=samples),
     output:
        vref="%s/FASTQ/TRIMMED/VerticalRefPos.txt" % (config["project-folder"]),
-       count="%s/FASTQ/TRIMMED/CountFileList.txt" % (config["project-folder"]),
+       counts="%s/FASTQ/TRIMMED/CountFileList.txt" % (config["project-folder"]),
     log:
        "%s/logs/step6_createVerticalRef.log" % (config["project-folder"])
     benchmark:
@@ -72,8 +72,8 @@ rule create_verticalRef:
     shell:"""
         sort -u -m -k2n {input} -o {params.wd}/VerticalRefPos.tmp;
         sort -k2n {params.wd}/VerticalRefPos.tmp | uniq >{output.vref};
-        #ls {params.wd}/*count.txt | xargs -n1 basename > {output.count}
-        ls {params.wd}/*count.txt > {output.count}
+        #ls {params.wd}/*count.txt | xargs -n1 basename > {output.counts}
+        ls {params.wd}/*count.txt > {output.counts}
     """
 if config["genome"] == "":
     print(f"No reference genome provided, skipping the star indexing step for reference genome")
@@ -86,7 +86,7 @@ else:
             expand("%s/MPILEUP/mpileup_reference/{samples}.ref.txt" % (config["project-folder"]), samples=samples),
         output:
            vref="%s/MPILEUP/mpileup_reference/VerticalRefPos.txt" % (config["project-folder"]),
-           count="%s/MPILEUP/mpileup_reference/CountFileList.txt" % (config["project-folder"]),
+           counts="%s/MPILEUP/mpileup_reference/CountFileList.txt" % (config["project-folder"]),
         log:
            "%s/logs/step6_createVerticalRef_reference.log" % (config["project-folder"])
         benchmark:
@@ -97,8 +97,8 @@ else:
         shell:"""
             sort -u -m -k2n {input} -o {params.wd}/VerticalRefPos.tmp;
             sort -k2n {params.wd}/VerticalRefPos.tmp | uniq > {output.vref};
-           # ls {params.wd}/*count.txt | xargs -n1 basename > {output.count}
-            ls {params.wd}/*count.txt > {output.count}
+           # ls {params.wd}/*count.txt | xargs -n1 basename > {output.counts}
+            ls {params.wd}/*count.txt > {output.counts}
         """
     
 # Create the checkpoints to break out into parallel job
@@ -148,7 +148,7 @@ rule create_MasterMatrix_parallel:
     """
     input:
         verRef="%s/FASTQ/TRIMMED/VerticalRefPos/VerticalRefPos.{i}" % (config["project-folder"]),
-        count="%s/FASTQ/TRIMMED/CountFileList.txt" % (config["project-folder"])
+        counts="%s/FASTQ/TRIMMED/CountFileList.txt" % (config["project-folder"])
     output:
         "%s/FASTQ/TRIMMED/VerticalRefPos/GSC.MasterMatrix_{i}.tsv" % (config["project-folder"])
     params:
@@ -157,7 +157,7 @@ rule create_MasterMatrix_parallel:
         pipefolder=config["pipeline-folder"]
     shell:"""
         cd {params.wd}
-        perl {params.pipefolder}/scripts/GBS-SNP-CROP-6_2.pl -in {input.verRef} -count {input.count} -out {output} -p {params.p}
+        perl {params.pipefolder}/scripts/GBS-SNP-CROP-6_2.pl -in {input.verRef} -count {input.counts} -out {output} -p {params.p}
      """
 
 if config["genome"] == "":
@@ -169,7 +169,7 @@ else:
         """
         input:
             verRef="%s/MPILEUP/mpileup_reference/VerticalRefPos/VerticalRefPos.{i}" % (config["project-folder"]),
-            count="%s/MPILEUP/mpileup_reference/CountFileList.txt" % (config["project-folder"])
+            counts="%s/MPILEUP/mpileup_reference/CountFileList.txt" % (config["project-folder"])
         output:
             "%s/MPILEUP/mpileup_reference/VerticalRefPos/GSC.MasterMatrix_{i}.tsv" % (config["project-folder"])
         params:
@@ -178,7 +178,7 @@ else:
             pipefolder=config["pipeline-folder"]
         shell:"""
             cd {params.wd}
-            perl {params.pipefolder}/scripts/GBS-SNP-CROP-6_2.pl -in {input.verRef} -count {input.count} -out {output} -p {params.p}
+            perl {params.pipefolder}/scripts/GBS-SNP-CROP-6_2.pl -in {input.verRef} -count {input.counts} -out {output} -p {params.p}
          """
 # Aggregate the parallel output
 ################################################################################
