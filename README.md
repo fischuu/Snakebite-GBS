@@ -25,3 +25,6 @@ To start the pipeline, just type
 You can initiate a dry-run by running
 
 `bash runGBSPipeline-example.sh -np`
+
+# Current state
+The pipeline is currently under active development and may not be stable for production.
