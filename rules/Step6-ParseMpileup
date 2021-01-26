@@ -168,8 +168,8 @@ else:
         Process verticalRef parallel to create MAsterMatrix
         """
         input:
-            verRef=temp("%s/MPILEUP/mpileup_reference/VerticalRefPos/VerticalRefPos.{i}" % (config["project-folder"])),
-            counts=temp("%s/MPILEUP/mpileup_reference/CountFileList.txt" % (config["project-folder"]))
+            verRef="%s/MPILEUP/mpileup_reference/VerticalRefPos/VerticalRefPos.{i}" % (config["project-folder"]),
+            counts="%s/MPILEUP/mpileup_reference/CountFileList.txt" % (config["project-folder"])
         output:
             "%s/MPILEUP/mpileup_reference/VerticalRefPos/GSC.MasterMatrix_{i}.tsv" % (config["project-folder"])
         params:
