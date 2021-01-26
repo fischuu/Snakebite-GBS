@@ -30,9 +30,9 @@ rule Step0_Concatenate_lanes:
       R2=expand("%s/FASTQ/RAW/{rawsamples}_R2_001.fastq.gz" % (config["project-folder"]), rawsamples=rawsamples)
     output:
       R1=temp("%s/FASTQ/CONCATENATED/{samples}_R1_001.merged.fastq.gz" % (config["project-folder"])),
-      R1Report=temp("%s/FASTQ/CONCATENATED/{samples}_R1_001.merged.fastq.gz.report" % (config["project-folder"])),
+      R1Report="%s/FASTQ/CONCATENATED/{samples}_R1_001.merged.fastq.gz.report" % (config["project-folder"]),
       R2=temp("%s/FASTQ/CONCATENATED/{samples}_R2_001.merged.fastq.gz" % (config["project-folder"])),
-      R2Report=temp("%s/FASTQ/CONCATENATED/{samples}_R2_001.merged.fastq.gz.report" % (config["project-folder"]))
+      R2Report="%s/FASTQ/CONCATENATED/{samples}_R2_001.merged.fastq.gz.report" % (config["project-folder"])
     log:
         "%s/logs/Step0_1/catFastq_{samples}.log" % (config["project-folder"])
     benchmark:
