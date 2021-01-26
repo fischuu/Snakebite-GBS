@@ -58,7 +58,8 @@ rule create_verticalRef:
     Merge the separate ref files
     """
     input:
-        expand("%s/FASTQ/TRIMMED/{samples}.ref.txt" % (config["project-folder"]), samples=samples),
+        counts=expand("%s/FASTQ/TRIMMED/{samples}.count.txt" % (config["project-folder"]), samples=samples),
+        ref=expand("%s/FASTQ/TRIMMED/{samples}.ref.txt" % (config["project-folder"]), samples=samples)
     output:
        vref=temp("%s/FASTQ/TRIMMED/VerticalRefPos.txt" % (config["project-folder"])),
        counts=temp("%s/FASTQ/TRIMMED/CountFileList.txt" % (config["project-folder"]))
@@ -70,11 +71,12 @@ rule create_verticalRef:
         wd="%s/FASTQ/TRIMMED" % config["project-folder"],
     threads: 1
     shell:"""
-        sort -u -m -k2n {input} -o {params.wd}/VerticalRefPos.tmp;
+        sort -u -m -k2n {input.ref} -o {params.wd}/VerticalRefPos.tmp;
         sort -k2n {params.wd}/VerticalRefPos.tmp | uniq >{output.vref};
         #ls {params.wd}/*count.txt | xargs -n1 basename > {output.counts}
         ls {params.wd}/*count.txt > {output.counts}
     """
+    
 if config["genome"] == "":
     print(f"No reference genome provided, skipping the star indexing step for reference genome")
 else:
@@ -83,7 +85,8 @@ else:
         Merge the separate ref files for reference genome
         """
         input:
-            expand("%s/MPILEUP/mpileup_reference/{samples}.ref.txt" % (config["project-folder"]), samples=samples),
+            counts=expand("%s/MPILEUP/mpileup_reference/{samples}.ref.txt" % (config["project-folder"]), samples=samples),
+            ref=expand("%s/MPILEUP/mpileup_reference/{samples}.ref.txt" % (config["project-folder"]), samples=samples),
         output:
            vref=temp("%s/MPILEUP/mpileup_reference/VerticalRefPos.txt" % (config["project-folder"])),
            counts=temp("%s/MPILEUP/mpileup_reference/CountFileList.txt" % (config["project-folder"]))
@@ -95,7 +98,7 @@ else:
             wd="%s/MPILEUP/mpileup_reference" % config["project-folder"],
         threads: 1
         shell:"""
-            sort -u -m -k2n {input} -o {params.wd}/VerticalRefPos.tmp;
+            sort -u -m -k2n {input.ref} -o {params.wd}/VerticalRefPos.tmp;
             sort -k2n {params.wd}/VerticalRefPos.tmp | uniq > {output.vref};
            # ls {params.wd}/*count.txt | xargs -n1 basename > {output.counts}
             ls {params.wd}/*count.txt > {output.counts}
