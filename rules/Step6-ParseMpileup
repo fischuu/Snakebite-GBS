@@ -73,7 +73,7 @@ rule create_verticalRef:
     shell:"""
         sort -u -m -k2n {input.ref} -o {params.wd}/VerticalRefPos.tmp;
         sort -k2n {params.wd}/VerticalRefPos.tmp | uniq >{output.vref};
-        #ls {params.wd}/*count.txt | xargs -n1 basename > {output.counts}
+        #ls {params.wd}/*count.txt | xargs -n1 basename > {output.co}
         ls {params.wd}/*count.txt > {output.co}
     """
     
@@ -100,7 +100,7 @@ else:
         shell:"""
             sort -u -m -k2n {input.ref} -o {params.wd}/VerticalRefPos.tmp;
             sort -k2n {params.wd}/VerticalRefPos.tmp | uniq > {output.vref};
-           # ls {params.wd}/*count.txt | xargs -n1 basename > {output.counts}
+           # ls {params.wd}/*count.txt | xargs -n1 basename > {output.co}
             ls {params.wd}/*count.txt > {output.co}
         """
     

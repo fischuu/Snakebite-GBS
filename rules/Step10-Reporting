@@ -18,7 +18,7 @@ rule R_finalReport:
         "%s/logs/R/finalReport.log" % (config["project-folder"])
     benchmark:
         "%s/benchmark/R/finalReport.benchmark.tsv" % (config["project-folder"])
-    container:
+    singularity:
         "docker://fischuu/r-gbs:3.6.3-0.2"
     params:
        projFolder=config["project-folder"],
