@@ -8,7 +8,7 @@ rule ParseMpileup_createCountFiles:
     input:
         "%s/FASTQ/TRIMMED/{samples}.mpileup" % (config["project-folder"])
     output:
-        counts=temp("%s/FASTQ/TRIMMED/{samples}.count.txt" % (config["project-folder"])),
+        co=temp("%s/FASTQ/TRIMMED/{samples}.count.txt" % (config["project-folder"])),
         ref=temp("%s/FASTQ/TRIMMED/{samples}.ref.txt" % (config["project-folder"]))
     params:
         p=config["params"]["step6"]["p"],
@@ -34,7 +34,7 @@ else:
         input:
             "%s/MPILEUP/mpileup_reference/{samples}.mpileup" % (config["project-folder"])
         output:
-            counts=temp("%s/MPILEUP/mpileup_reference/{samples}.count.txt" % (config["project-folder"])),
+            co=temp("%s/MPILEUP/mpileup_reference/{samples}.count.txt" % (config["project-folder"])),
             ref=temp("%s/MPILEUP/mpileup_reference/{samples}.ref.txt" % (config["project-folder"]))
         params:
             p=config["params"]["step6"]["p"],
@@ -58,11 +58,11 @@ rule create_verticalRef:
     Merge the separate ref files
     """
     input:
-        counts=expand("%s/FASTQ/TRIMMED/{samples}.count.txt" % (config["project-folder"]), samples=samples),
+        co=expand("%s/FASTQ/TRIMMED/{samples}.count.txt" % (config["project-folder"]), samples=samples),
         ref=expand("%s/FASTQ/TRIMMED/{samples}.ref.txt" % (config["project-folder"]), samples=samples)
     output:
        vref=temp("%s/FASTQ/TRIMMED/VerticalRefPos.txt" % (config["project-folder"])),
-       counts=temp("%s/FASTQ/TRIMMED/CountFileList.txt" % (config["project-folder"]))
+       co=temp("%s/FASTQ/TRIMMED/CountFileList.txt" % (config["project-folder"]))
     log:
        "%s/logs/step6_createVerticalRef.log" % (config["project-folder"])
     benchmark:
@@ -74,7 +74,7 @@ rule create_verticalRef:
         sort -u -m -k2n {input.ref} -o {params.wd}/VerticalRefPos.tmp;
         sort -k2n {params.wd}/VerticalRefPos.tmp | uniq >{output.vref};
         #ls {params.wd}/*count.txt | xargs -n1 basename > {output.counts}
-        ls {params.wd}/*count.txt > {output.counts}
+        ls {params.wd}/*count.txt > {output.co}
     """
     
 if config["genome"] == "":
@@ -85,11 +85,11 @@ else:
         Merge the separate ref files for reference genome
         """
         input:
-            counts=expand("%s/MPILEUP/mpileup_reference/{samples}.ref.txt" % (config["project-folder"]), samples=samples),
+            co=expand("%s/MPILEUP/mpileup_reference/{samples}.count.txt" % (config["project-folder"]), samples=samples),
             ref=expand("%s/MPILEUP/mpileup_reference/{samples}.ref.txt" % (config["project-folder"]), samples=samples),
         output:
            vref=temp("%s/MPILEUP/mpileup_reference/VerticalRefPos.txt" % (config["project-folder"])),
-           counts=temp("%s/MPILEUP/mpileup_reference/CountFileList.txt" % (config["project-folder"]))
+           co=temp("%s/MPILEUP/mpileup_reference/CountFileList.txt" % (config["project-folder"]))
         log:
            "%s/logs/step6_createVerticalRef_reference.log" % (config["project-folder"])
         benchmark:
@@ -101,7 +101,7 @@ else:
             sort -u -m -k2n {input.ref} -o {params.wd}/VerticalRefPos.tmp;
             sort -k2n {params.wd}/VerticalRefPos.tmp | uniq > {output.vref};
            # ls {params.wd}/*count.txt | xargs -n1 basename > {output.counts}
-            ls {params.wd}/*count.txt > {output.counts}
+            ls {params.wd}/*count.txt > {output.co}
         """
     
 # Create the checkpoints to break out into parallel job
