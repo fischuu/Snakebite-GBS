@@ -6,7 +6,7 @@ rule Step4_0_ClusterAndMockReference:
         expand("%s/FASTQ/TRIMMED/{samples}.R1.fq.gz" % (config["project-folder"]), samples=samples)
     output:
         Genome="%s/FASTQ/TRIMMED/GSC.MR.Genome.fa" % (config["project-folder"]),
-        Clusters=temp("%s/FASTQ/TRIMMED/GSC.MR.Clusters.fa" % (config["project-folder"]))
+        Clusters="%s/FASTQ/TRIMMED/GSC.MR.Clusters.fa" % (config["project-folder"])
     params:
         libtype=config["libtype"],
         libname=config["libname"],
