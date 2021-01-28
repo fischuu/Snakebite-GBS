@@ -146,7 +146,7 @@ rule Step5c_AlignReadsToClusters:
         R1="%s/FASTQ/TRIMMED/{samples}.R1.fq.gz" % (config["project-folder"]),
         R2="%s/FASTQ/TRIMMED/{samples}.R2.fq.gz" % (config["project-folder"]),
     output:
-        temp("%s/FASTQ/TRIMMED/alignments_clusters/{samples}.sam" % (config["project-folder"]))
+        "%s/FASTQ/TRIMMED/alignments_clusters/{samples}.sam" % (config["project-folder"])
     log:
         "%s/logs/Step5c-AlignClusters-{samples}.log" % (config["project-folder"])
     benchmark:

@@ -43,6 +43,8 @@ source activate /projappl/project_2001746/conda_envs/Genotype
 snakemake -s /scratch/project_2001746/Pipeline-GBS/GBS-pipeline.smk \
           -j 150 \
           --use-conda \
+          --use-singularity \
+          --singularity-args "-B /scratch:/scratch,/projappl:/projappl" \
           --configfile /scratch/project_2001746/Pipeline-GBS/GBS-pipeline_config-example.yaml \
           --latency-wait 60 \
           --cluster-config /scratch/project_2001746/Pipeline-GBS/GBS-pipeline_puhti-config.yaml \

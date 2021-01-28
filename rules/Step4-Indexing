@@ -23,7 +23,7 @@ rule IndexClustersBWA:
     input:
         "%s/FASTQ/TRIMMED/GSC.MR.Clusters.fa" % (config["project-folder"]),
     output:
-        "%s/FASTQ/TRIMMED/GSC.MR.Clusters.fa.bwt" % (config["project-folder"]),
+        "%s/FASTQ/TRIMMED/GSC.MR.Clusters.fa.bwt" % (config["project-folder"])
     log:
         "%s/logs/Step4c-IndexClusters.log" % (config["project-folder"])
     benchmark:
@@ -55,7 +55,7 @@ rule IndexClustersSamtools:
     input:
         "%s/FASTQ/TRIMMED/GSC.MR.Clusters.fa" % (config["project-folder"]),
     output:
-        "%s/FASTQ/TRIMMED/GSC.MR.Clusters.fa.fai" % (config["project-folder"]),
+        "%s/FASTQ/TRIMMED/GSC.MR.Clusters.fa.fai" % (config["project-folder"])
     log:
         "%s/logs/Step4c-IndexClustersSam.log" % (config["project-folder"])
     benchmark:
