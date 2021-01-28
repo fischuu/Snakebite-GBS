@@ -5,8 +5,8 @@ rule Step7_FilterVariants:
     input:
         "%s/FASTQ/TRIMMED/GSC.MasterMatrix.txt" % (config["project-folder"])
     output:
-        filtered=temp("%s/FASTQ/TRIMMED/variants/GSC.GenoMatrix.txt" % (config["project-folder"])),
-        unfiltered=temp("%s/FASTQ/TRIMMED/variants/GSC.GenoMatrix.unfiltered.txt" % (config["project-folder"]))
+        filtered="%s/FASTQ/TRIMMED/variants/GSC.GenoMatrix.txt" % (config["project-folder"]),
+        unfiltered="%s/FASTQ/TRIMMED/variants/GSC.GenoMatrix.unfiltered.txt" % (config["project-folder"])
     params:
         input=config["params"]["step7"]["input"],
         out=config["params"]["step7"]["out"],
@@ -55,8 +55,8 @@ else:
         input:
             "%s/MPILEUP/mpileup_reference/GSC.MasterMatrix.txt" % (config["project-folder"])
         output:
-            filtered=temp("%s/MPILEUP/mpileup_reference/variants/GSC.GenoMatrix.txt" % (config["project-folder"])),
-            unfiltered=temp("%s/MPILEUP/mpileup_reference/variants/GSC.GenoMatrix.unfiltered.txt" % (config["project-folder"]))
+            filtered="%s/MPILEUP/mpileup_reference/variants/GSC.GenoMatrix.txt" % (config["project-folder"]),
+            unfiltered="%s/MPILEUP/mpileup_reference/variants/GSC.GenoMatrix.unfiltered.txt" % (config["project-folder"])
         params:
             input=config["params"]["step7"]["input"],
             out=config["params"]["step7"]["out"],

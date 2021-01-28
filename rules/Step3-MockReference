@@ -55,7 +55,7 @@ else:
             refgenome=config["genome"],
             mockgenome="%s/FASTQ/TRIMMED/GSC.MR.Clusters.fa" % (config["project-folder"])
         output:
-            temp("%s/SAM/mockTeRef.sam" % (config["project-folder"]))
+            "%s/SAM/mockTeRef.sam" % (config["project-folder"])
         log:
             "%s/logs/MINIMAP2/mm2_map_mockVSref.log" % (config["project-folder"])
         benchmark:
@@ -77,18 +77,18 @@ else:
             ref=config["genome"],
             sam="%s/SAM/mockTeRef.sam" % (config["project-folder"])
         output:
-            bam=temp("%s/BAM/Mockref/mockToRef.bam" % (config["project-folder"])),
-            sorted=temp("%s/BAM/Mockref/mockToRef.sorted.bam" % (config["project-folder"])),
-            samflags=temp("%s/SAM/mockToRef.samflags" % (config["project-folder"])),
-            bed=temp("%s/SAM/mockToRef.bed" % (config["project-folder"])),
-            leftBed=temp("%s/SAM/mockToRef.left.bed" % (config["project-folder"])),
-            rightBed=temp("%s/SAM/mockToRef.right.bed" % (config["project-folder"])),
-            leftFA=temp("%s/SAM/mockToRef.left.fa" % (config["project-folder"])),
-            rightFA=temp("%s/SAM/mockToRef.right.fa" % (config["project-folder"])),
-            leftFACounts=temp("%s/SAM/mockToRef.left.fa.counts" % (config["project-folder"])),
-            rightFACounts=temp("%s/SAM/mockToRef.right.fa.counts" % (config["project-folder"])),
-            FA=temp("%s/SAM/mockToRef.combined.fa" % (config["project-folder"])),
-            FACounts=temp("%s/SAM/mockToRef.combined.fa.counts" % (config["project-folder"]))
+            bam="%s/BAM/Mockref/mockToRef.bam" % (config["project-folder"]),
+            sorted="%s/BAM/Mockref/mockToRef.sorted.bam" % (config["project-folder"]),
+            samflags="%s/SAM/mockToRef.samflags" % (config["project-folder"]),
+            bed="%s/SAM/mockToRef.bed" % (config["project-folder"]),
+            leftBed="%s/SAM/mockToRef.left.bed" % (config["project-folder"]),
+            rightBed="%s/SAM/mockToRef.right.bed" % (config["project-folder"]),
+            leftFA="%s/SAM/mockToRef.left.fa" % (config["project-folder"]),
+            rightFA="%s/SAM/mockToRef.right.fa" % (config["project-folder"]),
+            leftFACounts="%s/SAM/mockToRef.left.fa.counts" % (config["project-folder"]),
+            rightFACounts="%s/SAM/mockToRef.right.fa.counts" % (config["project-folder"]),
+            FA="%s/SAM/mockToRef.combined.fa" % (config["project-folder"]),
+            FACounts="%s/SAM/mockToRef.combined.fa.counts" % (config["project-folder"])
         log:
             "%s/logs/SamToSortedBamMockref.log" % (config["project-folder"])
         benchmark:
@@ -127,17 +127,17 @@ else:
             sam="%s/SAM/mockTeRef.sam" % (config["project-folder"]),
             sbam="%s/BAM/Mockref/mockToRef.sorted.bam" % (config["project-folder"])
         output:
-            fs=temp("%s/BAM/Mockref/mockToRef.sam.flagstat" % (config["project-folder"])),
-            stats=temp("%s/BAM/Mockref/mockToRef.sam.stats" % (config["project-folder"])),
-            c=temp("%s/BAM/Mockref/mockToRef.coverage" % (config["project-folder"])),
-            bed=temp("%s/BAM/Mockref/mockToRef.bed" % (config["project-folder"])),
-            bedMerged=temp("%s/BAM/Mockref/mockToRef.merged.bed" % (config["project-folder"])),
-            leftBed=temp("%s/BAM/Mockref/mockToRef.merged.left.bed" % (config["project-folder"])),
-            rightBed=temp("%s/BAM/Mockref/mockToRef.merged.right.bed" % (config["project-folder"])),
-            leftFA=temp("%s/BAM/Mockref/mockToRef.merged.left.fa" % (config["project-folder"])),
-            rightFA=temp("%s/BAM/Mockref/mockToRef.merged.right.fa" % (config["project-folder"])),
-            FA=temp("%s/BAM/Mockref/mockToRef.merged.combined.fa" % (config["project-folder"])),
-            FACounts=temp("%s/BAM/Mockref/mockToRef.merged.combined.fa.counts" % (config["project-folder"]))
+            fs="%s/BAM/Mockref/mockToRef.sam.flagstat" % (config["project-folder"]),
+            stats="%s/BAM/Mockref/mockToRef.sam.stats" % (config["project-folder"]),
+            c="%s/BAM/Mockref/mockToRef.coverage" % (config["project-folder"]),
+            bed="%s/BAM/Mockref/mockToRef.bed" % (config["project-folder"]),
+            bedMerged="%s/BAM/Mockref/mockToRef.merged.bed" % (config["project-folder"]),
+            leftBed="%s/BAM/Mockref/mockToRef.merged.left.bed" % (config["project-folder"]),
+            rightBed="%s/BAM/Mockref/mockToRef.merged.right.bed" % (config["project-folder"]),
+            leftFA="%s/BAM/Mockref/mockToRef.merged.left.fa" % (config["project-folder"]),
+            rightFA="%s/BAM/Mockref/mockToRef.merged.right.fa" % (config["project-folder"]),
+            FA="%s/BAM/Mockref/mockToRef.merged.combined.fa" % (config["project-folder"]),
+            FACounts="%s/BAM/Mockref/mockToRef.merged.combined.fa.counts" % (config["project-folder"])
         log:
             "%s/logs/Step4_3/step4_3.log" % (config["project-folder"])
         benchmark:
@@ -170,7 +170,7 @@ else:
             bam="%s/BAM/Mockref/mockToRef.sorted.bam" % (config["project-folder"]),
             refgenome=config["genome"]
         output:
-            temp("%s/MPILEUP/mpileup_mockToRef/mockToRef.mpileup" % (config["project-folder"]))
+            "%s/MPILEUP/mpileup_mockToRef/mockToRef.mpileup" % (config["project-folder"])
         log:
             "%s/logs/minimap2-SortedBamToMpileup.log" % (config["project-folder"])
         benchmark:

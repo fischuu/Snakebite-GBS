@@ -6,8 +6,8 @@ rule Step9_getVariantFlanking:
         vcf="%s/FASTQ/TRIMMED/GSC.vcf" % (config["project-folder"]),
         genome="%s/FASTQ/TRIMMED/GSC.MR.Genome.fa" % (config["project-folder"])
     output:
-        fl=temp("%s/FASTQ/TRIMMED/GSC.vcf.flanking" % (config["project-folder"])),
-        fa=temp("%s/FASTQ/TRIMMED/GSC.vcf.fa" % (config["project-folder"]))
+        fl="%s/FASTQ/TRIMMED/GSC.vcf.flanking" % (config["project-folder"]),
+        fa="%s/FASTQ/TRIMMED/GSC.vcf.fa" % (config["project-folder"])
     params:
         wd="%s/FASTQ/TRIMMED" % config["project-folder"],
         pipefolder=config["pipeline-folder"],
@@ -34,8 +34,8 @@ else:
             vcf="%s/MPILEUP/mpileup_reference/GSC.vcf" % (config["project-folder"]),
             genome=config["genome"]
         output:
-            fl=temp("%s/MPILEUP/mpileup_reference/GSC.vcf.flanking" % (config["project-folder"])),
-            fa=temp("%s/MPILEUP/mpileup_reference/GSC.vcf.fa" % (config["project-folder"]))
+            fl="%s/MPILEUP/mpileup_reference/GSC.vcf.flanking" % (config["project-folder"]),
+            fa="%s/MPILEUP/mpileup_reference/GSC.vcf.fa" % (config["project-folder"])
         params:
             wd="%s/MPILEUP/mpileup_reference" % config["project-folder"],
             pipefolder=config["pipeline-folder"],
@@ -63,7 +63,7 @@ else:
             reference="%s" % (config["genome"]),
             refFiles="%s" % (config["genome-bwa-index"]),
         output:
-            temp("%s/SAM/mockVariantsToReference/mockVariantsToReference.sam" % (config["project-folder"]))
+            "%s/SAM/mockVariantsToReference/mockVariantsToReference.sam" % (config["project-folder"])
         log:
             "%s/logs/Step9_alignMockFlankingToReference.log" % (config["project-folder"])
         benchmark:
@@ -84,8 +84,8 @@ else:
         input:
             "%s/SAM/mockVariantsToReference/mockVariantsToReference.sam" % (config["project-folder"])
         output:
-            bam=temp("%s/BAM/mockVariantsToReference/mockVariantsToReference.bam" % (config["project-folder"])),
-            sorted=temp("%s/BAM/mockVariantsToReference/mockVariantsToReference.sorted.bam" % (config["project-folder"]))
+            bam="%s/BAM/mockVariantsToReference/mockVariantsToReference.bam" % (config["project-folder"]),
+            sorted="%s/BAM/mockVariantsToReference/mockVariantsToReference.sorted.bam" % (config["project-folder"])
         log:
             "%s/logs/Step9_SamToSortedBam_MockFlankingToReference.log" % (config["project-folder"])
         benchmark:

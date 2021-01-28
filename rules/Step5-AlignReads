@@ -11,7 +11,7 @@ else:
             R1="%s/FASTQ/TRIMMED/{samples}.R1.fq.gz" % (config["project-folder"]),
             R2="%s/FASTQ/TRIMMED/{samples}.R2.fq.gz" % (config["project-folder"]),
         output:
-            temp("%s/FASTQ/TRIMMED/alignments_reference/{samples}.sam" % (config["project-folder"]))
+            "%s/FASTQ/TRIMMED/alignments_reference/{samples}.sam" % (config["project-folder"])
         log:
             "%s/logs/Step5_0-AlignRefGenome-{samples}.log" % (config["project-folder"])
         benchmark:
@@ -32,8 +32,8 @@ else:
         input:
             "%s/FASTQ/TRIMMED/alignments_reference/{samples}.sam" % (config["project-folder"])
         output:
-            bam=temp("%s/FASTQ/TRIMMED/alignments_reference/{samples}.bam" % (config["project-folder"])),
-            sorted=temp("%s/FASTQ/TRIMMED/alignments_reference/{samples}.sorted.bam" % (config["project-folder"]))
+            bam="%s/FASTQ/TRIMMED/alignments_reference/{samples}.bam" % (config["project-folder"]),
+            sorted="%s/FASTQ/TRIMMED/alignments_reference/{samples}.sorted.bam" % (config["project-folder"])
         log:
             "%s/logs/Step5_1-SamToSortedBamRefGenome-{samples}.log" % (config["project-folder"])
         benchmark:
@@ -61,7 +61,7 @@ else:
             bam="%s/FASTQ/TRIMMED/alignments_reference/{samples}.sorted.bam" % (config["project-folder"]),
             reference="%s" % (config["genome"])
         output:
-            temp("%s/MPILEUP/mpileup_reference/{samples}.mpileup" % (config["project-folder"]))
+            "%s/MPILEUP/mpileup_reference/{samples}.mpileup" % (config["project-folder"])
         log:
             "%s/logs/Step5_2-SortedBamToMpileupReference-{samples}.log" % (config["project-folder"])
         benchmark:
@@ -86,8 +86,8 @@ else:
             sam="%s/FASTQ/TRIMMED/alignments_reference/{samples}.sam" % (config["project-folder"]),
             sbam="%s/FASTQ/TRIMMED/alignments_reference/{samples}.sorted.bam" % (config["project-folder"])
         output:
-            fs=temp("%s/FASTQ/TRIMMED/alignments_reference/{samples}.sam.flagstat" % (config["project-folder"])),
-            c=temp("%s/FASTQ/TRIMMED/alignments_reference/{samples}.coverage" % (config["project-folder"]))
+            fs="%s/FASTQ/TRIMMED/alignments_reference/{samples}.sam.flagstat" % (config["project-folder"]),
+            c="%s/FASTQ/TRIMMED/alignments_reference/{samples}.coverage" % (config["project-folder"])
         log:
             "%s/logs/step5_3_{samples}.log" % (config["project-folder"])
         benchmark:
@@ -106,7 +106,7 @@ rule Step5_AlignmentStats:
     input:
         "%s/FASTQ/TRIMMED/alignments/{samples}.sam" % (config["project-folder"])
     output:
-        temp("%s/FASTQ/TRIMMED/alignments/{samples}.sam.flagstat" % (config["project-folder"]))
+        "%s/FASTQ/TRIMMED/alignments/{samples}.sam.flagstat" % (config["project-folder"])
     log:
         "%s/logs/step5_{samples}.log" % (config["project-folder"])
     benchmark:
@@ -125,7 +125,7 @@ rule Step5b_AlignReadsToGenome:
         R1="%s/FASTQ/TRIMMED/{samples}.R1.fq.gz" % (config["project-folder"]),
         R2="%s/FASTQ/TRIMMED/{samples}.R2.fq.gz" % (config["project-folder"]),
     output:
-        temp("%s/FASTQ/TRIMMED/alignments/{samples}.sam" % (config["project-folder"]))
+        "%s/FASTQ/TRIMMED/alignments/{samples}.sam" % (config["project-folder"])
     log:
         "%s/logs/Step5b-AlignGenome-{samples}.log" % (config["project-folder"])
     benchmark:
@@ -146,7 +146,7 @@ rule Step5c_AlignReadsToClusters:
         R1="%s/FASTQ/TRIMMED/{samples}.R1.fq.gz" % (config["project-folder"]),
         R2="%s/FASTQ/TRIMMED/{samples}.R2.fq.gz" % (config["project-folder"]),
     output:
-        temp("%s/FASTQ/TRIMMED/alignments_clusters/{samples}.sam" % (config["project-folder"]))
+        "%s/FASTQ/TRIMMED/alignments_clusters/{samples}.sam" % (config["project-folder"])
     log:
         "%s/logs/Step5c-AlignClusters-{samples}.log" % (config["project-folder"])
     benchmark:
@@ -164,8 +164,8 @@ rule Step5d_SamToSortedBamGenome:
     input:
         "%s/FASTQ/TRIMMED/alignments/{samples}.sam" % (config["project-folder"])
     output:
-        bam=temp("%s/FASTQ/TRIMMED/alignments/{samples}.bam" % (config["project-folder"])),
-        sorted=temp("%s/FASTQ/TRIMMED/alignments/{samples}.sorted.bam" % (config["project-folder"]))
+        bam="%s/FASTQ/TRIMMED/alignments/{samples}.bam" % (config["project-folder"]),
+        sorted="%s/FASTQ/TRIMMED/alignments/{samples}.sorted.bam" % (config["project-folder"])
     log:
         "%s/logs/Step5d-SamToSortedBamGenome-{samples}.log" % (config["project-folder"])
     benchmark:
@@ -188,8 +188,8 @@ rule Step5e_SamToSortedBamClusters:
     input:
         "%s/FASTQ/TRIMMED/alignments_clusters/{samples}.sam" % (config["project-folder"])
     output:
-        bam=temp("%s/FASTQ/TRIMMED/alignments_clusters/{samples}.bam" % (config["project-folder"])),
-        sorted=temp("%s/FASTQ/TRIMMED/alignments_clusters/{samples}.sorted.bam" % (config["project-folder"]))
+        bam="%s/FASTQ/TRIMMED/alignments_clusters/{samples}.bam" % (config["project-folder"]),
+        sorted="%s/FASTQ/TRIMMED/alignments_clusters/{samples}.sorted.bam" % (config["project-folder"])
     log:
         "%s/logs/Step5e-SamToSortedBamClusters-{samples}.log" % (config["project-folder"])
     benchmark:
@@ -213,7 +213,7 @@ rule Step5f_SortedBamToMpileup:
         bam="%s/FASTQ/TRIMMED/alignments/{samples}.sorted.bam" % (config["project-folder"]),
         reference="%s/FASTQ/TRIMMED/GSC.MR.Genome.fa" % (config["project-folder"])
     output:
-        bam=temp("%s/FASTQ/TRIMMED/{samples}.mpileup" % (config["project-folder"]))
+        bam="%s/FASTQ/TRIMMED/{samples}.mpileup" % (config["project-folder"])
     log:
         "%s/logs/Step5f-SortedBamToMpileup-{samples}.log" % (config["project-folder"])
     benchmark:
@@ -234,8 +234,8 @@ rule Step5g_AlignmentStatsClusters:
         sam="%s/FASTQ/TRIMMED/alignments_clusters/{samples}.sam" % (config["project-folder"]),
         sbam="%s/FASTQ/TRIMMED/alignments_clusters/{samples}.sorted.bam" % (config["project-folder"])
     output:
-        fs=temp("%s/FASTQ/TRIMMED/alignments_clusters/{samples}.sam.flagstat" % (config["project-folder"])),
-        c=temp("%s/FASTQ/TRIMMED/alignments_clusters/{samples}.coverage" % (config["project-folder"]))
+        fs="%s/FASTQ/TRIMMED/alignments_clusters/{samples}.sam.flagstat" % (config["project-folder"]),
+        c="%s/FASTQ/TRIMMED/alignments_clusters/{samples}.coverage" % (config["project-folder"])
     log:
         "%s/logs/step5h_{samples}.log" % (config["project-folder"])
     benchmark:

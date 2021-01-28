@@ -8,8 +8,8 @@ rule ParseMpileup_createCountFiles:
     input:
         "%s/FASTQ/TRIMMED/{samples}.mpileup" % (config["project-folder"])
     output:
-        co=temp("%s/FASTQ/TRIMMED/{samples}.count.txt" % (config["project-folder"])),
-        ref=temp("%s/FASTQ/TRIMMED/{samples}.ref.txt" % (config["project-folder"]))
+        co="%s/FASTQ/TRIMMED/{samples}.count.txt" % (config["project-folder"]),
+        ref="%s/FASTQ/TRIMMED/{samples}.ref.txt" % (config["project-folder"])
     params:
         p=config["params"]["step6"]["p"],
         wd="%s/FASTQ/TRIMMED" % config["project-folder"],
@@ -34,8 +34,8 @@ else:
         input:
             "%s/MPILEUP/mpileup_reference/{samples}.mpileup" % (config["project-folder"])
         output:
-            co=temp("%s/MPILEUP/mpileup_reference/{samples}.count.txt" % (config["project-folder"])),
-            ref=temp("%s/MPILEUP/mpileup_reference/{samples}.ref.txt" % (config["project-folder"]))
+            co="%s/MPILEUP/mpileup_reference/{samples}.count.txt" % (config["project-folder"]),
+            ref="%s/MPILEUP/mpileup_reference/{samples}.ref.txt" % (config["project-folder"])
         params:
             p=config["params"]["step6"]["p"],
             wd="%s/MPILEUP/mpileup_reference" % config["project-folder"],
@@ -61,8 +61,8 @@ rule create_verticalRef:
         co=expand("%s/FASTQ/TRIMMED/{samples}.count.txt" % (config["project-folder"]), samples=samples),
         ref=expand("%s/FASTQ/TRIMMED/{samples}.ref.txt" % (config["project-folder"]), samples=samples)
     output:
-       vref=temp("%s/FASTQ/TRIMMED/VerticalRefPos.txt" % (config["project-folder"])),
-       co=temp("%s/FASTQ/TRIMMED/CountFileList.txt" % (config["project-folder"]))
+       vref="%s/FASTQ/TRIMMED/VerticalRefPos.txt" % (config["project-folder"]),
+       co="%s/FASTQ/TRIMMED/CountFileList.txt" % (config["project-folder"])
     log:
        "%s/logs/step6_createVerticalRef.log" % (config["project-folder"])
     benchmark:
@@ -88,8 +88,8 @@ else:
             co=expand("%s/MPILEUP/mpileup_reference/{samples}.count.txt" % (config["project-folder"]), samples=samples),
             ref=expand("%s/MPILEUP/mpileup_reference/{samples}.ref.txt" % (config["project-folder"]), samples=samples),
         output:
-           vref=temp("%s/MPILEUP/mpileup_reference/VerticalRefPos.txt" % (config["project-folder"])),
-           co=temp("%s/MPILEUP/mpileup_reference/CountFileList.txt" % (config["project-folder"]))
+           vref="%s/MPILEUP/mpileup_reference/VerticalRefPos.txt" % (config["project-folder"]),
+           co="%s/MPILEUP/mpileup_reference/CountFileList.txt" % (config["project-folder"])
         log:
            "%s/logs/step6_createVerticalRef_reference.log" % (config["project-folder"])
         benchmark:
@@ -114,7 +114,7 @@ checkpoint cut_verticalRef:
     input:
        "%s/FASTQ/TRIMMED/VerticalRefPos.txt" % (config["project-folder"])
     output:
-        temp(directory("%s/FASTQ/TRIMMED/VerticalRefPos/" % (config["project-folder"])))
+        directory("%s/FASTQ/TRIMMED/VerticalRefPos/" % (config["project-folder"]))
     params:
         out="%s/FASTQ/TRIMMED/VerticalRefPos/VerticalRefPos." % (config["project-folder"]),
         split=1000000
@@ -133,7 +133,7 @@ else:
         input:
            "%s/MPILEUP/mpileup_reference/VerticalRefPos.txt" % (config["project-folder"])
         output:
-            temp(directory("%s/MPILEUP/mpileup_reference/VerticalRefPos/" % (config["project-folder"])))
+            directory("%s/MPILEUP/mpileup_reference/VerticalRefPos/" % (config["project-folder"]))
         params:
             out="%s/MPILEUP/mpileup_reference/VerticalRefPos/VerticalRefPos." % (config["project-folder"]),
             split=1000000
@@ -175,13 +175,15 @@ else:
             counts="%s/MPILEUP/mpileup_reference/CountFileList.txt" % (config["project-folder"])
         output:
             "%s/MPILEUP/mpileup_reference/VerticalRefPos/GSC.MasterMatrix_{i}.tsv" % (config["project-folder"])
+        log:
+            "%s/logs/create_MasterMatrix_parallel_reference_{i}.log" % (config["project-folder"])
         params:
             p=config["params"]["step6"]["p"],
             wd="%s/MPILEUP/mpileup_reference/VerticalRefPos" % config["project-folder"],
             pipefolder=config["pipeline-folder"]
         shell:"""
             cd {params.wd}
-            perl {params.pipefolder}/scripts/GBS-SNP-CROP-6_2.pl -in {input.verRef} -count {input.counts} -out {output} -p {params.p}
+            perl {params.pipefolder}/scripts/GBS-SNP-CROP-6_2.pl -in {input.verRef} -count {input.counts} -out {output} -p {params.p} &> {log}
          """
 # Aggregate the parallel output
 ################################################################################
@@ -209,7 +211,7 @@ rule aggregate_MasterMatrix:
     input:
         aggregate_inputMasterMatrix
     output:
-        temp("%s/FASTQ/TRIMMED/GSC.MasterMatrix.txt" % (config["project-folder"]))
+        "%s/FASTQ/TRIMMED/GSC.MasterMatrix.txt" % (config["project-folder"])
     shell:"""
         cat {input} > {output}
     """    
@@ -221,7 +223,7 @@ else:
         input:
             aggregate_inputMasterMatrix_reference
         output:
-            temp("%s/MPILEUP/mpileup_reference/GSC.MasterMatrix.txt" % (config["project-folder"]))
+            "%s/MPILEUP/mpileup_reference/GSC.MasterMatrix.txt" % (config["project-folder"])
         shell:"""
             cat {input} > {output}
         """    
