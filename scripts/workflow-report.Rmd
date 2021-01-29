@@ -16,6 +16,7 @@ output:
 ---
 
 ```{r setup, include=FALSE}
+#.libPaths(c("/projappl/project_2001746/R/libraries", .libPaths()))
 #library("knitr")
 library("GenomicTools")
 library("Luke")
@@ -42,11 +43,12 @@ knitr::opts_chunk$set(echo = FALSE,
                       fig.align = 'center', fig.height = 5, fig.width = 8.5)
 mockClusters.file <- "GSC.MR.Clusters.fa"
 mockReference.file <- "GSC.MR.Genome.fa"
+refGenome.file <- ""
 if(!is.element("snakemake",ls())){
-  projFolder <- "~/projectsTmp/Example"
+  projFolder <- "/hdd/data1/tmp/BSF"
   pipelineFolder <- "~/git/Pipeline-GBS/"
   pipelineConfig <- "~/git/Pipeline-GBS/GBS-pipeline_config-example.yaml"
-  refGenome.file <- "/scratch/project_2001746/Example/references/Vulpes_vulpes.VulVul2.2.dna.toplevel.fa"
+  refGenome.file <- "GCA_009835165.1_ASM983516v1_genomic.fna"
 }
 ifelse(refGenome.file == "", refAvail <- FALSE, refAvail <- TRUE)
 ```
@@ -161,7 +163,7 @@ getFastQCJSON <- function(path){
 The DAG of the used pipeline with rule dependencies.
 
 ```{r import workflow, echo=FALSE, fig.cap="Overview of the applied workflow", out.width = '100%'}
-if(file.exists(file.path(projFolder,"workflow.png"))) knitr::include_graphics(file.path(projFolder,"workflow.png"))
+if(file.exists(file.path(pipelineFolder,"workflow.png"))) knitr::include_graphics(file.path(pipelineFolder,"workflow.png"))
 ```
 
 
@@ -791,9 +793,22 @@ kable_styling(out_html, "striped", position = "left")
 ```
 
 ### Discarded reads
-WARNING!!! THIS CURRENTLY WORKS ONLY, IF ONLY ONE SAMPLE WAS USED TO BUILD THE MOCK!!!
+
+In case we used several samples for the mock, the discarded reads are considered together. As a reminder, we
+have here `r length(mockSamples)` samples used to build the mock reference.
+
 ```{r import discard fasta}
-discardedReads <- importFQ(file.path(projFolder,"FASTQ", "TRIMMED", paste(mockSamples,".discarded.fastq",sep="") ))
+if(length(mockSamples)==1){
+  discardedReads <- importFQ(file.path(projFolder,"FASTQ", "TRIMMED", paste(mockSamples,".discarded.fastq",sep="") ))
+} else {
+  discardedReads <- importFQ(file.path(projFolder,"FASTQ", "TRIMMED", paste(mockSamples[1],".discarded.fastq",sep="")))
+  for(i in 2:length(mockSamples)){
+    tmp <- importFQ(file.path(projFolder,"FASTQ", "TRIMMED", paste(mockSamples[i],".discarded.fastq",sep="")))
+    discardedReads$seq <- c(discardedReads$seq, tmp$seq)    
+    discardedReads$qual <- c(discardedReads$qual, tmp$qual)    
+  }
+}
+
 ```
 
 Summary on the read length distribution of the discarded reads
@@ -1025,7 +1040,6 @@ barplot(table(coveredClusters), xlab="Samples with reads on cluster", col=viridi
 
 Now we have here the number of reads per coverage class. That means, instead of having it binary as in the previous plot, wenow count all the reads per coverage group.
 
-
 ```{r reads per coverage group}
 readsPerCoverageGroup <- c()
 
@@ -1037,6 +1051,7 @@ names(readsPerCoverageGroup) <- 1:max(coveredClusters)
 
 barplot(readsPerCoverageGroup, xlab="Coverage group", ylab="Reads on cluster group", col=viridis(20)[8])
 ```
+
 
 ```{r reads per coverage group in percent}
 barplot(readsPerCoverageGroup/sum(readsPerCoverageGroup)*100, xlab="Coverage group", ylab="Reads on cluster group (in %)", ylim=c(0,100), col=viridis(20)[8])
@@ -1272,7 +1287,7 @@ accepted mistakes).
 
 ```{r}
 
-if(sum(is.element(colnames(sampleInfo), "casecontrol"))>1){
+if(ncol(sampleInfo)>1){
   mmCase <- 2
   mmControl <- 5
   vcf.cases <- vcf$genotypes[sampleInfo$casecontrol=="case",]
@@ -1324,7 +1339,7 @@ if(sum(is.element(colnames(sampleInfo), "casecontrol"))>1){
 Then we identify the following potentially causative mutations:
 
 ```{r}
-if(sum(is.element(colnames(sampleInfo), "casecontrol"))>1){
+if(ncol(sampleInfo)>1){
   if(length(causativeRef)>0){
     datatable(as.data.frame(causativeRef))
   } else {
