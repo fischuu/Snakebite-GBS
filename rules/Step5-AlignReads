@@ -11,7 +11,7 @@ else:
             R1="%s/FASTQ/TRIMMED/{samples}.R1.fq.gz" % (config["project-folder"]),
             R2="%s/FASTQ/TRIMMED/{samples}.R2.fq.gz" % (config["project-folder"]),
         output:
-            "%s/FASTQ/TRIMMED/alignments_reference/{samples}.sam" % (config["project-folder"])
+            temp("%s/FASTQ/TRIMMED/alignments_reference/{samples}.sam" % (config["project-folder"]))
         log:
             "%s/logs/Step5_0-AlignRefGenome-{samples}.log" % (config["project-folder"])
         benchmark:
@@ -125,7 +125,7 @@ rule Step5b_AlignReadsToGenome:
         R1="%s/FASTQ/TRIMMED/{samples}.R1.fq.gz" % (config["project-folder"]),
         R2="%s/FASTQ/TRIMMED/{samples}.R2.fq.gz" % (config["project-folder"]),
     output:
-        "%s/FASTQ/TRIMMED/alignments/{samples}.sam" % (config["project-folder"])
+        temp("%s/FASTQ/TRIMMED/alignments/{samples}.sam" % (config["project-folder"]))
     log:
         "%s/logs/Step5b-AlignGenome-{samples}.log" % (config["project-folder"])
     benchmark:
