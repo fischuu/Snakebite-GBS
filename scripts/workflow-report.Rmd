@@ -45,10 +45,10 @@ mockClusters.file <- "GSC.MR.Clusters.fa"
 mockReference.file <- "GSC.MR.Genome.fa"
 refGenome.file <- ""
 if(!is.element("snakemake",ls())){
-  projFolder <- "/hdd/data1/tmp/BSF"
-  pipelineFolder <- "~/git/Pipeline-GBS/"
-  pipelineConfig <- "~/git/Pipeline-GBS/GBS-pipeline_config-example.yaml"
-  refGenome.file <- "GCA_009835165.1_ASM983516v1_genomic.fna"
+  projFolder <- "/scratch/project_2001746/BSF"
+  pipelineFolder <- "/scratch/project_2001746/Pipeline-GBS/"
+  pipelineConfig <- "/scratch/project_2001746/BSF/Pipeline-GBS/GBS-pipeline_config-BSF.yaml"
+  refGenome.file <- "hermetiaRef_112020.fasta"
 }
 ifelse(refGenome.file == "", refAvail <- FALSE, refAvail <- TRUE)
 ```
@@ -197,6 +197,10 @@ out <- data.frame(c("Number of raw-samples",
 out_html <- knitr::kable(out, col.names = NULL, "html")
 kable_styling(out_html, "striped", position = "left")
 ```
+
+## Concatenating stats
+As the concatenating is a crucial step in this pipeline, it is important to make this right. As a double check that things went right, we check how
+many raw samples were concatenated per sample. We do this visually.
 
 # FastQC quality checks
 
