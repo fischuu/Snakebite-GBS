@@ -200,7 +200,25 @@ kable_styling(out_html, "striped", position = "left")
 
 ## Concatenating stats
 As the concatenating is a crucial step in this pipeline, it is important to make this right. As a double check that things went right, we check how
-many raw samples were concatenated per sample. We do this visually.
+many raw samples were concatenated per sample. We do this visually. Basically, the height of the bars should correspond to your number of used lanes,
+normally 1,2 or 4. Sometimes, you might want to concatenate also more files together (e.g. technical replicates), in this case the bar can be also higher.
+
+```{r import the conc report files}
+conc.reports.files <- list.files(file.path(projFolder, "FASTQ", "CONCATENATED"), pattern="*.report")
+
+conc.reports <- list()
+conc.reports[[1]] <- read.table(file.path(projFolder, "FASTQ", "CONCATENATED", conc.reports.files[1]))
+
+for(i in 2:length(conc.reports.files)){
+  conc.reports[[i]]<- read.table(file.path(projFolder, "FASTQ", "CONCATENATED", conc.reports.files[i]))
+}
+```
+
+```{r visualize concatenation reports}
+par(oma=c(6,5,0,0))
+labels <- gsub(".merged.fastq.gz.report","",conc.reports.files)
+barplot(sapply(conc.reports,nrow), ylab="Concatenated files", names=labels, las=2)
+```
 
 # FastQC quality checks
 
