@@ -342,12 +342,12 @@ names(out) <- c("Tot. number sequences",
                 "Avg. deplication percent",
                 "Avg. sequence length")
 
-out_html <- knitr::kable(out, col.names = NULL, "html")
+out_html <- knitr::kable(formatC(out,  format="d", big.mark=","), col.names = NULL, "html")
 kable_styling(out_html, "striped", position = "left")
 
 out <- t(as.data.frame(as.matrix((summary(tmp[,1])))))
 rownames(out) <- "5-point summary of total sequences"
-out_html <- knitr::kable(out, "html")
+out_html <- knitr::kable(formatC(out,  format="d", big.mark=","), "html")
 kable_styling(out_html, "striped", position = "left")
 ```
 
@@ -466,12 +466,12 @@ names(out) <- c("Tot. number sequences",
                 "Avg. deplication percent",
                 "Avg. sequence length")
 
-out_html <- knitr::kable(out, col.names = NULL, "html")
+out_html <- knitr::kable(formatC(out,  format="d", big.mark=","), col.names = NULL, "html")
 kable_styling(out_html, "striped", position = "left")
 
 out <- t(as.data.frame(as.matrix((summary(tmp[,1])))))
 rownames(out) <- "5-point summary of total sequences"
-out_html <- knitr::kable(out, "html")
+out_html <- knitr::kable(formatC(out,  format="d", big.mark=","), "html")
 kable_styling(out_html, "striped", position = "left")
 ```
 
@@ -596,12 +596,12 @@ names(out) <- c("Tot. number sequences",
                 "Avg. deplication percent",
                 "Avg. sequence length")
 
-out_html <- knitr::kable(out, col.names = NULL, "html")
+out_html <- knitr::kable(formatC(out,  format="d", big.mark=","), col.names = NULL, "html")
 kable_styling(out_html, "striped", position = "left")
 
 out <- t(as.data.frame(as.matrix((summary(tmp[,1])))))
 rownames(out) <- "5-point summary of total sequences"
-out_html <- knitr::kable(out, "html")
+out_html <- knitr::kable(formatC(out,  format="d", big.mark=","), "html")
 kable_styling(out_html, "striped", position = "left")
 
 ```
@@ -670,30 +670,6 @@ plotMQCFeature(x=file.path(projFolder,"QC","CONCATENATED","multiqc_R1"),
                y=file.path(projFolder,"QC","TRIMMED","multiqc_R1"),
                feature="fastqc_per_base_sequence_quality_plot")
 ```
-
-
-
-# Existing Reference
-In case a reference genome was provided, here are a few statistics regarding it
-
-## Basic stats
-
-```{r importRefGenome, warning=FALSE, results="asis"}
-if(refAvail){
-  refGenome <- importFA(file.path(projFolder, "references", basename(refGenome.file) ))
-}
-```
-
-```{r show ref stats}
-if(refAvail){
-  out <- summary(refGenome)
-  out_html <- knitr::kable(out, col.names = NULL, "html")
-  
-  kable_styling(out_html, "striped", position = "left")
-}
-```
-
-
 # Mock Reference
 
 ## Basic stats
@@ -707,6 +683,7 @@ vsearchIN <- importFA(file.path(projFolder,"FASTQ", "TRIMMED", "VsearchIN.fa"))
 Basic information on the sequences used to build the mock reference:
 ```{r mock build stats}
   out <- summary(vsearchIN)
+  out[,2] <- formatC(out[,2],  format="d", big.mark=",")
   out_html <- knitr::kable(out, col.names = NULL, "html")
   kable_styling(out_html, "striped", position = "left")
 ```
@@ -715,6 +692,8 @@ Basic information on the identified clusters, used as mock reference
 
 ```{r summarise mock reference clusters}
   out <- summary(mockClusters)
+  out[1,1] <- c("No. of Clusters")
+  out[,2] <- formatC(out[,2],  format="d", big.mark=",")
   out_html <- knitr::kable(out, col.names = NULL, "html")
   kable_styling(out_html, "striped", position = "left")
 ```
@@ -726,7 +705,7 @@ Total length of the Mock Reference Clusters: `r format(sum(nchar(mockClusters)),
 Total length of the Mock Reference (Used as reference): `r format(sum(nchar(mockReference)), big.mark=",")` bp.
 
 ## Theoretical coverage of Mock per sample
-Given the length of the mock reference assembly and the total number of sequenced bases per sample, we can estimate the theoretical coverage of the mok for each sample
+Given the length of the mock reference assembly and the total number of sequenced bases per sample, we can estimate the theoretical coverage of the mock for each sample
 
 Currently I hard-code here the paired-end reads and assume equal lengths and reads in both pairs. Adjust this later 'to reality'...
 
@@ -841,14 +820,42 @@ out_html <- knitr::kable(out, col.names = NULL, "html")
 kable_styling(out_html, "striped", position = "left")
 ```
 
-Quality values for the first 100.000 sequences
+Quality values for the first 100.000 sequences. As a rule of thumb, capital letters are good, special characters are bad quality.
 ```{r quality measues}
-out_html <- knitr::kable(table(unlist(strsplit(discardedReads$qual[1:100000],""))), "html")
+outQual <- table(unlist(strsplit(discardedReads$qual[1:100000],"")))
+out_html <- knitr::kable(formatC(outQual,  format="d", big.mark=","), "html")
 kable_styling(out_html, "striped", position = "left")
+```
+
+```{r visualize Quality scores}
+barplot(outQual, ylab="Frequency", main="Quality-score distribution")
 ```
 
 ## Ratio samles used to length Mock reference
 How much were the reads merged down? Length of Mock reference vs the length of all used reads together.
+
+# Existing Reference
+In case a reference genome was provided, here are a few statistics regarding it
+
+## Basic stats
+
+```{r importRefGenome, warning=FALSE, results="asis"}
+if(refAvail){
+  refGenome <- importFA(file.path(projFolder, "references", basename(refGenome.file) ))
+}
+```
+
+```{r show ref stats}
+if(refAvail){
+  out <- summary(refGenome)
+  out[1,1] <- c("No. of Chromosomes/Contigs")
+  out[,2] <- formatC(out[,2],  format="d", big.mark=",")
+  out_html <- knitr::kable(out, col.names = NULL, "html")
+  
+  kable_styling(out_html, "striped", position = "left")
+}
+```
+
 
 ## Mock vs reference
 
@@ -888,7 +895,7 @@ totalBases <- sum(abs(mergedLoci$V3 - mergedLoci$V2))
 However, in total we have `r nrow(unmergedLoci)` mapping loci that can be merged down (by intersection of the bed) to `r nrow(mergedLoci)` if their chromosomal location is intersected.
 Please note, if the difference between these two numbers is too large, it indicates that the mock reference needs to be stricted merged.
 
-In total `r totalBases` bases are covered in the reference genome from mock cluster sequences.
+In total `r formatC(totalBases, big.mark=",")` bases are covered in the reference genome from mock cluster sequences.
 
 
 
@@ -896,8 +903,9 @@ A visualisation of the alignments of the mock clusters to the reference genome
 
 ```{r}
 if(refAvail){
+  par(oma=c(8,1,1,0))
 mappedLoci <- read.table(file.path(projFolder,"BAM","Mockref","mockToRef.coverage"))
-barplot(mappedLoci[,2], main="Alignments per Chromosome in Reference", col=viridis(20)[8])
+barplot(mappedLoci[,2], main="Alignments per Chromosome in Reference", col=viridis(20)[8], names=mappedLoci[,1],las=2)
 }
 ```
 
@@ -933,7 +941,7 @@ for(i in 1:length(chrNames)){
 
 ```{r}
 if(refAvail){
-barplot(avgDist, main="Avg cluster mapping distance per Chromosome", col=viridis(20)[8])
+barplot(avgDist, main="Avg cluster mapping distance per Chromosome", col=viridis(20)[8], names=chrNames, las=2)
 }
 ```
 
@@ -981,6 +989,9 @@ WE COULD COUNT HERE STILL HOW MANY SEQUENCES MATCH THE GIVEN ONE WITH ONE SUBSTI
 
 
 # Alignment
+
+## Mock Reference
+ 
 Import the mapping statistics to the Mock reference
 
 ```{r import flagstats}
@@ -994,6 +1005,7 @@ for(i in 1:length(flagstatFiles)){
 Visualization of the alignments, red stars indicate the mock reference samples
 
 ```{r vis mapping stats}
+par(oma=c(6,3,0,0))
 mapStats <- matrix(0,ncol=length(flagstatFiles), nrow=2)
 
 sampleNames <- gsub(".sam.flagstat", "", flagstatFiles)
@@ -1013,14 +1025,13 @@ mockFiles <- paste(mockSamples, ".sam.flagstat", sep="")
 mockPos <- which(is.element(flagstatFiles, mockFiles))
 
 points(p[mockPos], rep(200000, length(mockPos)), pch="*", col="red", cex=4)
-
 ```
 
 ```{r mapping percentage}
 barplot(mapStats[1,] / (apply(mapStats,2,sum)), ylim=c(0,1), ylab="Mapping in Percent", col=viridis(20)[8], las=2)
 ```
 
-## Mock Reference coverage
+### Coverage
 
 Data mapped against the clusters and then the reads per cluster visualized
 ```{r importClusterCoverage, warning=FALSE}
@@ -1057,10 +1068,10 @@ These are the amounts of clusters with different samples.
 
 ```{r cluster coverage stats}
 coveredClusters <- apply(clusterCoverage[,-1]>0,1,sum)
-barplot(table(coveredClusters), xlab="Samples with reads on cluster", col=viridis(20)[8])
+barplot(table(coveredClusters), xlab="No. of different samples aligned to cluster", col=viridis(20)[8])
 ```
 
-Now we have here the number of reads per coverage class. That means, instead of having it binary as in the previous plot, wenow count all the reads per coverage group.
+Now we have here the number of reads per coverage class. That means, instead of having it binary as in the previous plot, we now count all the reads per coverage group.
 
 ```{r reads per coverage group}
 readsPerCoverageGroup <- c()
@@ -1122,24 +1133,125 @@ for(i in 3:ncol(clusterCoverage)){
   lines(smooth.spline(clusterCoverage[,1], log(clusterCoverage.std[,i]+1), all.knots=FALSE))  
 }
 ```
-
 ### Cluster coverage Mock samples vs others
 ADD HERE STILL A COMPARISON, HOW THE READS FROM THE MOCK DISTRIBUTE ACROSS THE REFERENCE VS ALL OTHER SAMPLES
+
+## Reference genome
+
+Import the mapping statistics to the reference genome
+
+```{r import ref flagstats}
+if(refAvail){
+  flagstatFiles <- list.files(file.path(projFolder,"FASTQ", "TRIMMED", "alignments_reference"), pattern="*.flagstat")
+  flagstats <- list()
+  for(i in 1:length(flagstatFiles)){
+    flagstats[[i]] <- readLines(file.path(projFolder,"FASTQ", "TRIMMED", "alignments_reference",flagstatFiles[i]))
+  }
+}
+```
+
+### Coverage
+```{r reference mapping stat grpah}
+par(oma=c(6,3,0,0))
+mapStats <- matrix(0,ncol=length(flagstatFiles), nrow=2)
+
+sampleNames <- gsub(".sam.flagstat", "", flagstatFiles)
+
+colnames(mapStats) <- sampleNames
+
+tmp <- as.numeric(sapply(strsplit(sapply(flagstats,"[",1), " +"),"[",1))
+mapStats[1,] <- as.numeric(sapply(strsplit(sapply(flagstats,"[",5), " +"),"[",1))
+mapStats[2,] <- tmp - mapStats[1,]
+
+p <- barplot(mapStats, col=c(viridis(20)[8], viridis(20)[16]), las=2)
+
+legend("topleft", pch=c(20,20), col=c(viridis(20)[16], viridis(20)[8]), legend=c("Unmapped", "Mapped"), fill="white")
+
+# highlight the mock reference samples
+mockFiles <- paste(mockSamples, ".sam.flagstat", sep="")
+mockPos <- which(is.element(flagstatFiles, mockFiles))
+
+points(p[mockPos], rep(200000, length(mockPos)), pch="*", col="red", cex=4)
+```
+
+```{r ref mapping percentage}
+barplot(mapStats[1,] / (apply(mapStats,2,sum)), ylim=c(0,1), ylab="Mapping in Percent", col=viridis(20)[8], las=2)
+```
 
 # Variants
 Import the Result vcf
 
 ```{r import vcf, echo=FALSE, message=FALSE, warning=FALSE}
-vcf.fn<-file.path(projFolder, "FASTQ", "TRIMMED", "GSC.vcf")
-vcf <- read.vcfR(vcf.fn)
-aa.genlight <- vcfR2genlight(vcf, n.cores=1)
+#vcf.fn<-file.path(projFolder, "FASTQ", "TRIMMED", "GSC.vcf")
+#vcf <- read.vcfR(vcf.fn)
+#aa.genlight <- vcfR2genlight(vcf, n.cores=1)
+vcf <- importVCF(file.path(projFolder, "FASTQ", "TRIMMED", "GSC.vcf"))
+if(refAvail){
+  vcfRef <- importVCF(file.path(projFolder, "MPILEUP", "mpileup_reference", "GSC.vcf"))
+}
+```
+
+## Mock reference
+We give some basic stats on the vcf file
+
+```{r}
+  out <- c()
+  out[1] <- dim(vcf$map)[1]
+  noVariants <- dim(vcf$map)[1]
+  names(out)[1] <- "Total number of variants"
+  out[2] <- sum(sapply(apply(vcf$genotypes,2,table),length)==1)
+  names(out)[2] <- "Monomorphic sites"
+  out_html <- knitr::kable(out, col.names = NULL, "html")
+  kable_styling(out_html, "striped", position = "left")
+```
+
+Plot the snp position
+```{r}
+plot(as.vector(as.matrix(vcf$map[,4])), ylab="Pos. on mock", xlab="SNP index")
+```
+Missing variant calls per sample
+
+```{r}
+barplot(apply(vcf$genotypesInfo==".,.",2,sum), las=2, main="Missing variants per sample")
+```
+```{r}
+barplot(apply(vcf$genotypesInfo==".,.",2,sum)/noVariants, las=2, main="Missing variants per sample (in %)")
+```
+
+## Reference genome
+We give some basic stats on the vcf file
+
+```{r}
+if(refAvail){
+  out <- c()
+  out[1] <- dim(vcfRef$map)[1]
+  noVariants.ref <- dim(vcfRef$map)[1]
+  names(out)[1] <- "Total number of variants"
+  out[2] <- sum(sapply(apply(vcfRef$genotypes,2,table),length)==1)
+  names(out)[2] <- "Monomorphic sites"
+  out_html <- knitr::kable(out, col.names = NULL, "html")
+  kable_styling(out_html, "striped", position = "left")
+}
+```
+
+Plot the snp position
+```{r}
+plot(as.vector(as.matrix(vcfRef$map[,4])), ylab="Pos. on mock", xlab="SNP index")
+```
+Missing variant calls per sample
+
+```{r}
+barplot(apply(vcfRef$genotypesInfo==".,.",2,sum), las=2, main="Missing variants per sample")
+```
+```{r}
+barplot(apply(vcfRef$genotypesInfo==".,.",2,sum)/noVariants.ref, las=2, main="Missing variants per sample (in %)")
 ```
 
 
 # Homology comparison
 ```{r homology search}
 # Import the VCF
-  vcf <- importVCF(file.path(projFolder, "FASTQ", "TRIMMED", "GSC.vcf"))
+#  vcf <- importVCF(file.path(projFolder, "FASTQ", "TRIMMED", "GSC.vcf"))
   #vcf <- importVCF(file.path(projFolder, "MPILEUP", "mpileup_reference", "GSC.vcf"))
 
 # Get the group vectors
