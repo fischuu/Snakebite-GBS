@@ -32,8 +32,8 @@ wildcard_constraints:
 rule all:
     input:
       # OUTPUT: PREPARATION MODULE
-        expand("%s/FASTQ/CONCATENATED/{samples}_R1_001.merged.fastq.gz" % (config["project-folder"]), samples=samples),
-        expand("%s/FASTQ/CONCATENATED/{samples}_R2_001.merged.fastq.gz" % (config["project-folder"]), samples=samples),
+#        expand("%s/FASTQ/CONCATENATED/{samples}_R1_001.merged.fastq.gz" % (config["project-folder"]), samples=samples),
+#        expand("%s/FASTQ/CONCATENATED/{samples}_R2_001.merged.fastq.gz" % (config["project-folder"]), samples=samples),
       # QC OF RAW AND CONCATENATED FILES
         "%s/QC/RAW/multiqc_R1/" % (config["project-folder"]),
         "%s/QC/CONCATENATED/multiqc_R1/" % (config["project-folder"]),
