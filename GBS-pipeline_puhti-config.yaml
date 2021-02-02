@@ -15,7 +15,7 @@ Step0_0_star_create_index:
     cpus-per-task: 20
     mem-per-cpu: 4000
 
-Step0_1_Concatenate_lanes:
+Step0_Concatenate_lanes:
     time: 01:00:00
     job-name:  Step0_1-Concatenate
     cpus-per-task: 1
