@@ -31,8 +31,9 @@
 #
 
 module load bioconda/3
+source activate Snakemake
 # Uncomment this, once the environemnt is created
-source activate /projappl/project_2001746/conda_envs/Genotype
+#source activate /projappl/project_2001746/conda_envs/Genotype
 #source activate /projappl/project_2001289/FAANGlncRNA
 
 # Create the rulegraph
@@ -42,7 +43,6 @@ source activate /projappl/project_2001746/conda_envs/Genotype
 
 snakemake -s /scratch/project_2001746/Pipeline-GBS/GBS-pipeline.smk \
           -j 150 \
-          --use-conda \
           --use-singularity \
           --singularity-args "-B /scratch:/scratch,/projappl:/projappl" \
           --configfile /scratch/project_2001746/Pipeline-GBS/GBS-pipeline_config-example.yaml \

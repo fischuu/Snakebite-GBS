@@ -16,7 +16,7 @@ rule fastqc_quality_control_raw_data:
     threads: 20
     params:
         outfolder="%s/QC/RAW/" % (config["project-folder"])
-    singularity: "docker://singlecellpipeline/fastqc:v0.0.2"
+    singularity: config["singularity"]["gbs"]
     shell:"""
         mkdir -p {params.outfolder};
         fastqc -t {threads} -o {params.outfolder} --extract {input.R1} &> {log.R1};
@@ -42,7 +42,7 @@ rule multiqc_quality_control_raw_data:
        R1="%s/QC/RAW/*_R1_001_fastqc.zip" % (config["project-folder"]),
        R2="%s/QC/RAW/*_R2_001_fastqc.zip" % (config["project-folder"])
     threads: 1
-    singularity: "docker://ewels/multiqc:1.9"
+    singularity: config["singularity"]["gbs"]
     shell:"""
         multiqc -f --interactive -o {output.R1} {params.R1} &> {log.R1};
         multiqc -f --interactive -o {output.R2} {params.R2} &> {log.R2};
@@ -66,7 +66,7 @@ rule fastqc_quality_control_concatenated_data:
     threads: 20
     params:
         outfolder="%s/QC/CONCATENATED/" % (config["project-folder"])
-    singularity: "docker://singlecellpipeline/fastqc:v0.0.2"
+    singularity: config["singularity"]["gbs"]
     shell:"""
         mkdir -p {params.outfolder};
         fastqc -t {threads} -o {params.outfolder} --extract {input.R1} &> {log.R1};
@@ -91,7 +91,7 @@ rule multiqc_quality_control_concatenated_data:
     params:
        R1="%s/QC/CONCATENATED/*_R1_001.merged_fastqc.zip" % (config["project-folder"]),
        R2="%s/QC/CONCATENATED/*_R2_001.merged_fastqc.zip" % (config["project-folder"])
-    singularity: "docker://ewels/multiqc:1.9"
+    singularity: config["singularity"]["gbs"]
     shell:"""
         multiqc -f --interactive -o {output.R1} {params.R1} &> {log.R1};
         multiqc -f --interactive -o {output.R2} {params.R2} &> {log.R2};
@@ -175,7 +175,7 @@ rule fastqc_quality_control_trimmed_data:
     threads: 20
     params:
         outfolder="%s/QC/TRIMMED/" % (config["project-folder"])
-    singularity: "docker://singlecellpipeline/fastqc:v0.0.2"
+    singularity: config["singularity"]["gbs"]
     shell:"""
         mkdir -p {params.outfolder};
         fastqc -t {threads} -o {params.outfolder} --extract {input.R1} &> {log.R1};
@@ -202,7 +202,7 @@ rule multiqc_quality_control_trimmed_data:
     params:
        R1="%s/QC/TRIMMED/*.R1_fastqc.zip" % (config["project-folder"]),
        R2="%s/QC/TRIMMED/*.R2_fastqc.zip" % (config["project-folder"])
-    singularity: "docker://ewels/multiqc:1.9"
+    singularity: config["singularity"]["gbs"]
     shell:"""
         multiqc -f --interactive -o {output.R1} {params.R1} &> {log.R1};
         multiqc -f --interactive -o {output.R2} {params.R2} &> {log.R2};
