@@ -16,6 +16,7 @@ rule Step9_getVariantFlanking:
         "%s/logs/step9.log" % (config["project-folder"])
     benchmark:
         "%s/benchmark/step9.benchmark.tsv" % (config["project-folder"])
+    singularity: config["singularity"]["gbs"]
     shell:"""
         cd {params.wd}
         # Prepare the loci file
@@ -44,6 +45,7 @@ else:
             "%s/logs/step9_0.log" % (config["project-folder"])
         benchmark:
             "%s/benchmark/step9_0.benchmark.tsv" % (config["project-folder"])
+        singularity: config["singularity"]["gbs"]
         shell:"""
             cd {params.wd}
             # Prepare the loci file
@@ -69,6 +71,7 @@ else:
         benchmark:
             "%s/benchmark/Step9_alignMockFlankingToReference.benchmark.tsv" % (config["project-folder"])
         threads: 20
+        singularity: config["singularity"]["gbs"]
         shell:"""
             echo "Number of threads used:" {threads}
             bwa mem -t {threads} -M {input.reference} {input.flanking}> {output} 2> {log}
@@ -95,6 +98,7 @@ else:
             q=config["params"]["step5d"]["q"],
             f=config["params"]["step5d"]["f"],
             F=config["params"]["step5d"]["F"]
+        singularity: config["singularity"]["gbs"]
         shell:"""
             echo "Number of threads used:" {threads}
             samtools view -b -q {params.q} -f {params.f} -F {params.F} {input} > {output.bam}

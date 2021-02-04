@@ -17,6 +17,7 @@ else:
         benchmark:
             "%s/benchmark/Step5_0-AlignRefGenome-{samples}.benchmark.tsv" % (config["project-folder"])
         threads: lambda cores: cpu_count()
+        singularity: config["singularity"]["gbs"]
         shell:"""
             echo "Number of threads used:" {threads}
             bwa mem -t {threads} -M {input.reference} {input.R1} {input.R2} > {output} 2> {log}
@@ -43,6 +44,7 @@ else:
             q=config["params"]["step5d"]["q"],
             f=config["params"]["step5d"]["f"],
             F=config["params"]["step5d"]["F"]
+        singularity: config["singularity"]["gbs"]
         shell:"""
             echo "Number of threads used:" {threads}
             samtools view -b -q {params.q} -f {params.f} -F {params.F} {input} > {output.bam}
@@ -70,6 +72,7 @@ else:
         params:
             Q=config["params"]["step5d"]["Q"],
             q=config["params"]["step5d"]["q"]
+        singularity: config["singularity"]["gbs"]
         shell:"""
             echo "Number of threads used:" {threads}
             samtools mpileup -Q {params.Q} -q {params.q} -B -C 50 -f {input.reference} {input.bam} > {output}
@@ -93,6 +96,7 @@ else:
         benchmark:
             "%s/benchmark/step5_3.benchmark_{samples}.tsv" % (config["project-folder"])
         threads: lambda cores: cpu_count()
+        singularity: config["singularity"]["gbs"]
         shell:"""
             echo "Number of threads used:" {threads}
             samtools flagstat {input.sam} > {output.fs}
@@ -111,6 +115,7 @@ rule Step5_AlignmentStats:
         "%s/logs/step5_{samples}.log" % (config["project-folder"])
     benchmark:
         "%s/benchmark/step5.benchmark_{samples}.tsv" % (config["project-folder"])
+    singularity: config["singularity"]["gbs"]
     shell:"""
         samtools flagstat {input} > {output}
   	"""
@@ -132,6 +137,7 @@ rule Step5b_AlignReadsToGenome:
         "%s/benchmark/Step5b-AlignGenome-{samples}.benchmark.tsv" % (config["project-folder"])
     params:
         threads=config["params"]["step5b"]["threads"],
+    singularity: config["singularity"]["gbs"]
     shell:"""
         bwa mem -t {params.threads} -M {input.reference} {input.R1} {input.R2} > {output} 2> {log}
   	"""
@@ -153,6 +159,7 @@ rule Step5c_AlignReadsToClusters:
         "%s/benchmark/Step5c-AlignClusters-{samples}.benchmark.tsv" % (config["project-folder"])
     params:
         threads=config["params"]["step5c"]["threads"],
+    singularity: config["singularity"]["gbs"]
     shell:"""
         bwa mem -t {params.threads} -M {input.reference} {input.R1} {input.R2} > {output} 2> {log}
   	"""
@@ -175,6 +182,7 @@ rule Step5d_SamToSortedBamGenome:
         q=config["params"]["step5d"]["q"],
         f=config["params"]["step5d"]["f"],
         F=config["params"]["step5d"]["F"]
+    singularity: config["singularity"]["gbs"]
     shell:"""
         samtools view -b -q {params.q} -f {params.f} -F {params.F} {input} > {output.bam}
         samtools sort {output.bam} -o {output.sorted}
@@ -199,6 +207,7 @@ rule Step5e_SamToSortedBamClusters:
         q=config["params"]["step5e"]["q"],
         f=config["params"]["step5e"]["f"],
         F=config["params"]["step5e"]["F"]
+    singularity: config["singularity"]["gbs"]
     shell:"""
         samtools view -b -q {params.q} -f {params.f} -F {params.F} {input} > {output.bam}
         samtools sort {output.bam} -o {output.sorted}
@@ -222,6 +231,7 @@ rule Step5f_SortedBamToMpileup:
         threads=config["params"]["step5d"]["threads"],
         Q=config["params"]["step5d"]["Q"],
         q=config["params"]["step5d"]["q"]
+    singularity: config["singularity"]["gbs"]
     shell:"""
         samtools mpileup -Q {params.Q} -q {params.q} -B -C 50 -f {input.reference} {input.bam} > {output}
   	"""
@@ -240,6 +250,7 @@ rule Step5g_AlignmentStatsClusters:
         "%s/logs/step5h_{samples}.log" % (config["project-folder"])
     benchmark:
         "%s/benchmark/step5h.benchmark_{samples}.tsv" % (config["project-folder"])
+    singularity: config["singularity"]["gbs"]
     shell:"""
         samtools flagstat {input.sam} > {output.fs}
         samtools idxstats {input.sbam} | awk '{{print $1\" \"$3}}' > {output.c}

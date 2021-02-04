@@ -19,6 +19,7 @@ rule ParseMpileup_createCountFiles:
     benchmark:
         "%s/benchmark/step6_0.{samples}.benchmark.tsv" % (config["project-folder"])
     threads: 1
+    singularity: config["singularity"]["gbs"]
     shell:"""
         cd {params.wd}
         perl {params.pipefolder}/scripts/GBS-SNP-CROP-6_1.pl -b {input} -p {params.p} &> {log}
@@ -45,6 +46,7 @@ else:
         benchmark:
             "%s/benchmark/step6_0_reference.{samples}.benchmark.tsv" % (config["project-folder"])
         threads: 1
+        singularity: config["singularity"]["gbs"]
         shell:"""
             cd {params.wd}
             perl {params.pipefolder}/scripts/GBS-SNP-CROP-6_1.pl -b {input} -p {params.p} &> {log}
@@ -158,6 +160,7 @@ rule create_MasterMatrix_parallel:
         p=config["params"]["step6"]["p"],
         wd="%s/FASTQ/TRIMMED/VerticalRefPos" % config["project-folder"],
         pipefolder=config["pipeline-folder"]
+    singularity: config["singularity"]["gbs"]
     shell:"""
         cd {params.wd}
         perl {params.pipefolder}/scripts/GBS-SNP-CROP-6_2.pl -in {input.verRef} -count {input.counts} -out {output} -p {params.p}
@@ -181,6 +184,7 @@ else:
             p=config["params"]["step6"]["p"],
             wd="%s/MPILEUP/mpileup_reference/VerticalRefPos" % config["project-folder"],
             pipefolder=config["pipeline-folder"]
+        singularity: config["singularity"]["gbs"]
         shell:"""
             cd {params.wd}
             perl {params.pipefolder}/scripts/GBS-SNP-CROP-6_2.pl -in {input.verRef} -count {input.counts} -out {output} -p {params.p} &> {log}
