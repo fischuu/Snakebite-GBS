@@ -64,6 +64,7 @@ else:
         threads: 20
         singularity: config["singularity"]["minimap2"]
         shell:"""
+           df -h &> {log}
            minimap2 -ax sr {input.refgenome} {input.mockgenome} > {output}
         """
 
@@ -96,6 +97,7 @@ else:
             "%s/benchmark/SamToSortedBamMockref.benchmark.tsv" % (config["project-folder"])
         singularity: config["singularity"]["gbs"]
         shell:"""
+            df -h &> {log}
             samtools view -b {input.sam} > {output.bam}
             samtools sort {output.bam} -o {output.sorted}
             samtools index {output.sorted}
@@ -147,6 +149,7 @@ else:
         threads: lambda cores: cpu_count()
         singularity: config["singularity"]["gbs"]
         shell:"""
+            df -h &> {log}
             echo "Number of threads used:" {threads}
             samtools flagstat {input.sam} > {output.fs}
             samtools stats {input.sam} > {output.stats}
@@ -184,5 +187,6 @@ else:
             Q=config["params"]["step5d"]["Q"],
             q=config["params"]["step5d"]["q"]
         shell:"""
+            df -h &> {log}
             samtools mpileup -Q {params.Q} -q {params.q} -B -C 50 -f {input.refgenome} {input.bam} > {output}
       	"""
