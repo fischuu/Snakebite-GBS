@@ -241,7 +241,7 @@ rule Step5g_AlignmentStatsClusters:
     Align with BWA-mem and process with SAMTools.
     """
     input:
-        sam=temp("%s/FASTQ/TRIMMED/alignments_clusters/{samples}.sam" % (config["project-folder"])),
+        sam="%s/FASTQ/TRIMMED/alignments_clusters/{samples}.sam" % (config["project-folder"]),
         sbam="%s/FASTQ/TRIMMED/alignments_clusters/{samples}.sorted.bam" % (config["project-folder"])
     output:
         fs="%s/FASTQ/TRIMMED/alignments_clusters/{samples}.sam.flagstat" % (config["project-folder"]),
