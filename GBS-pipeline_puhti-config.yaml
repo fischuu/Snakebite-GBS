@@ -7,7 +7,7 @@ __default__:
     mem-per-cpu: 4000
     partition: small
     working-directory: /scratch/project_2001746/logs/
-    nvme: 0
+    nvme: 50
     
 Step0_0_star_create_index:
     time: 05:00:00
