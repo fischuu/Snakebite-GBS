@@ -36,6 +36,8 @@ source activate Snakemake
 #source activate /projappl/project_2001746/conda_envs/Genotype
 #source activate /projappl/project_2001289/FAANGlncRNA
 
+export TMPDIR=$local_scratch
+
 # Create the rulegraph
 #snakemake -s GBS-pipeline.smk \
 #          --configfile /scratch/project_2001746/Pipeline-GBS/GBS-pipeline_config-example.yaml \
@@ -44,7 +46,7 @@ source activate Snakemake
 snakemake -s /scratch/project_2001746/Pipeline-GBS/GBS-pipeline.smk \
           -j 150 \
           --use-singularity \
-          --singularity-args "-B /scratch:/scratch,/projappl:/projappl,/tmp:/tmp" \
+          --singularity-args "-B /scratch:/scratch,/projappl:/projappl,/$TMPDIR:/tmp" \
           --configfile /scratch/project_2001746/Pipeline-GBS/GBS-pipeline_config-example.yaml \
           --latency-wait 60 \
           --cluster-config /scratch/project_2001746/Pipeline-GBS/GBS-pipeline_puhti-config.yaml \
