@@ -43,7 +43,7 @@ knitr::opts_chunk$set(echo = FALSE,
                       fig.align = 'center', fig.height = 5, fig.width = 8.5)
 mockClusters.file <- "GSC.MR.Clusters.fa"
 mockReference.file <- "GSC.MR.Genome.fa"
-refGenome.file <- ""
+refGenome.file <- basename(refGenome.file)
 if(!is.element("snakemake",ls())){
   projFolder <- "/scratch/project_2001746/BSF"
   pipelineFolder <- "/scratch/project_2001746/Pipeline-GBS/"
@@ -1236,15 +1236,21 @@ if(refAvail){
 
 Plot the snp position
 ```{r}
-plot(as.vector(as.matrix(vcfRef$map[,4])), ylab="Pos. on mock", xlab="SNP index")
+if(refAvail){
+  plot(as.vector(as.matrix(vcfRef$map[,4])), ylab="Pos. on mock", xlab="SNP index")
+}
 ```
 Missing variant calls per sample
 
 ```{r}
-barplot(apply(vcfRef$genotypesInfo==".,.",2,sum), las=2, main="Missing variants per sample")
+if(refAvail){
+  barplot(apply(vcfRef$genotypesInfo==".,.",2,sum), las=2, main="Missing variants per sample")
+}
 ```
 ```{r}
-barplot(apply(vcfRef$genotypesInfo==".,.",2,sum)/noVariants.ref, las=2, main="Missing variants per sample (in %)")
+if(refAvail){
+  barplot(apply(vcfRef$genotypesInfo==".,.",2,sum)/noVariants.ref, las=2, main="Missing variants per sample (in %)")
+}
 ```
 
 
