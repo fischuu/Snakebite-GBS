@@ -109,6 +109,6 @@ params:
 # Singularity containers
 singularity:
   star: "docker://fischuu/star:2.7.3a-0.1"
-  gbs: "docker://fischuu/gbs:0.1"
-  cutadapt: "docker://fischuu/cutadapt:2.8-0.1"
-  minimap2: "docker://fischuu/minimap2:2.17-0.1"
+  gbs: "docker://fischuu/gbs:0.2"
+  cutadapt: "docker://fischuu/cutadapt:2.8-0.2"
+  minimap2: "docker://fischuu/minimap2:2.17-0.2"
