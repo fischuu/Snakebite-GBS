@@ -13,7 +13,7 @@ rule IndexGenomeBWA:
     benchmark:
         "%s/benchmark/Step4b-IndexGenome.benchmark.tsv" % (config["project-folder"])
     conda:"envs/gbs.yaml"
-    #singularity: config["singularity"]["gbs"]
+    singularity: config["singularity"]["gbs"]
     shell:"""
         bwa index -a bwtsw {input}
   	"""
@@ -31,7 +31,7 @@ rule IndexClustersBWA:
     benchmark:
         "%s/benchmark/Step4c-IndexClusters.benchmark.tsv" % (config["project-folder"])
     conda:"envs/gbs.yaml"
-    #singularity: config["singularity"]["gbs"]
+    singularity: config["singularity"]["gbs"]
     shell:"""
         bwa index -a bwtsw {input}
   	"""

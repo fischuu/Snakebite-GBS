@@ -29,7 +29,7 @@ rule Step4_0_ClusterAndMockReference:
     benchmark:
         "%s/benchmark/step4.benchmark.tsv" % (config["project-folder"])
     conda:"envs/gbs.yaml"
-    #singularity: config["singularity"]["gbs"]
+    singularity: config["singularity"]["gbs"]
     shell:"""
         echo "Number of threads used:" {params.threads}
 
@@ -64,7 +64,7 @@ else:
             "%s/benchmark/MINIMAP2/mm2_mockVSref.benchmark.tsv" % (config["project-folder"])
         threads: 20
         conda:"envs/minimap2.yaml"
-        #singularity: config["singularity"]["minimap2"]
+        singularity: config["singularity"]["minimap2"]
         shell:"""
            minimap2 -ax sr {input.refgenome} {input.mockgenome} > {output} 2> {log}
         """
@@ -97,7 +97,7 @@ else:
         benchmark:
             "%s/benchmark/SamToSortedBamMockref.benchmark.tsv" % (config["project-folder"])
         conda:"envs/step3.yaml"
-        #singularity: config["singularity"]["gbs"]
+        singularity: config["singularity"]["gbs"]
         shell:"""
             df -h &> {log}
             samtools view -b {input.sam} > {output.bam}
@@ -150,7 +150,7 @@ else:
             "%s/benchmark/Step4_3/step4_3.benchmark.tsv" % (config["project-folder"])
         threads: lambda cores: cpu_count()
         conda:"envs/step3.yaml"
-        #singularity: config["singularity"]["gbs"]
+        singularity: config["singularity"]["gbs"]
         shell:"""
             df -h &> {log}
             echo "Number of threads used:" {threads}
@@ -185,7 +185,7 @@ else:
         benchmark:
             "%s/benchmark/minimap2-SortedBamToMpileup.benchmark.tsv" % (config["project-folder"])
         conda:"envs/samtools.yaml"
-        #singularity: config["singularity"]["gbs"]
+        singularity: config["singularity"]["gbs"]
         params:
             threads=config["params"]["step5d"]["threads"],
             Q=config["params"]["step5d"]["Q"],

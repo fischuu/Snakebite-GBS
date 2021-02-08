@@ -48,7 +48,7 @@ else:
             "%s/benchmark/step6_0_reference.{samples}.benchmark.tsv" % (config["project-folder"])
         threads: 1
         conda:"envs/gbs.yaml"
-        #singularity: config["singularity"]["gbs"]
+        singularity: config["singularity"]["gbs"]
         shell:"""
             cd {params.wd}
             perl {params.pipefolder}/scripts/GBS-SNP-CROP-6_1.pl -b {input} -p {params.p} &> {log}
@@ -163,7 +163,7 @@ rule create_MasterMatrix_parallel:
         wd="%s/FASTQ/TRIMMED/VerticalRefPos" % config["project-folder"],
         pipefolder=config["pipeline-folder"]
     conda:"envs/gbs.yaml"
-    #singularity: config["singularity"]["gbs"]
+    singularity: config["singularity"]["gbs"]
     shell:"""
         cd {params.wd}
         perl {params.pipefolder}/scripts/GBS-SNP-CROP-6_2.pl -in {input.verRef} -count {input.counts} -out {output} -p {params.p}
@@ -188,7 +188,7 @@ else:
             wd="%s/MPILEUP/mpileup_reference/VerticalRefPos" % config["project-folder"],
             pipefolder=config["pipeline-folder"]
         conda:"envs/gbs.yaml"
-        #singularity: config["singularity"]["gbs"]
+        singularity: config["singularity"]["gbs"]
         shell:"""
             cd {params.wd}
             perl {params.pipefolder}/scripts/GBS-SNP-CROP-6_2.pl -in {input.verRef} -count {input.counts} -out {output} -p {params.p} &> {log}

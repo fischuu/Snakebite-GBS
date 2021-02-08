@@ -17,7 +17,7 @@ rule Step9_getVariantFlanking:
     benchmark:
         "%s/benchmark/step9.benchmark.tsv" % (config["project-folder"])
     conda:"envs/gbs.yaml"
-    #singularity: config["singularity"]["gbs"]
+    singularity: config["singularity"]["gbs"]
     shell:"""
         cd {params.wd}
         # Prepare the loci file
@@ -47,7 +47,7 @@ else:
         benchmark:
             "%s/benchmark/step9_0.benchmark.tsv" % (config["project-folder"])
         conda:"envs/gbs.yaml"
-        #singularity: config["singularity"]["gbs"]
+        singularity: config["singularity"]["gbs"]
         shell:"""
             cd {params.wd}
             # Prepare the loci file
@@ -74,7 +74,7 @@ else:
             "%s/benchmark/Step9_alignMockFlankingToReference.benchmark.tsv" % (config["project-folder"])
         threads: 20
         conda:"envs/gbs.yaml"
-        #singularity: config["singularity"]["gbs"]
+        singularity: config["singularity"]["gbs"]
         shell:"""
             echo "Number of threads used:" {threads}
             bwa mem -t {threads} -M {input.reference} {input.flanking}> {output} 2> {log}
@@ -102,7 +102,7 @@ else:
             f=config["params"]["step5d"]["f"],
             F=config["params"]["step5d"]["F"]
         conda:"envs/gbs.yaml"
-        #singularity: config["singularity"]["gbs"]
+        singularity: config["singularity"]["gbs"]
         shell:"""
             echo "Number of threads used:" {threads}
             samtools view -b -q {params.q} -f {params.f} -F {params.F} {input} > {output.bam}

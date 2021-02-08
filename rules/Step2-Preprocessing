@@ -17,7 +17,7 @@ rule cutadapt_trim_reads:
         "%s/benchmark/cutadapt.{samples}.benchmark.tsv" % (config["project-folder"])
     threads: 1
     conda:"envs/cutadapt.yaml"
-    #singularity: config["singularity"]["cutadapt"]
+    singularity: config["singularity"]["cutadapt"]
     shell:"""
         output_dir=$(dirname {output.first})
         [ ! -d \"$output_dir\" ] && mkdir -p $output_dir
@@ -67,7 +67,7 @@ rule Step2_TrimBasedOnQuality:
     benchmark:
         "%s/benchmark/step2_{samples}.benchmark.tsv" % (config["project-folder"])
     conda:"envs/cutadapt.yaml"
-    #singularity: config["singularity"]["gbs"]
+    singularity: config["singularity"]["gbs"]
     shell:"""
        trimmomatic PE -phred33 -threads {params.threads} -trimlog {output.trimlog} {input.R1} {input.R2} {output.R1} {output.R1SE} {output.R2} {output.R2SE} MINLEN:{params.minlen} ILLUMINACLIP:{params.ad}:{params.iclip} LEADING:{params.leading} SLIDINGWINDOW:{params.slwin} TRAILING:{params.trail} &>{log}
   	"""
@@ -91,7 +91,7 @@ rule Step2b_SubstituteLowQualityBases:
     benchmark:
         "%s/benchmark/step2b_{samples}.benchmark.tsv" % (config["project-folder"])
     conda:"envs/gbs.yaml"
-    #singularity: config["singularity"]["gbs"]
+    singularity: config["singularity"]["gbs"]
     shell:"""
     
        mkdir -p {params.outfolder}

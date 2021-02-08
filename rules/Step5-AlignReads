@@ -18,7 +18,7 @@ else:
             "%s/benchmark/Step5_0-AlignRefGenome-{samples}.benchmark.tsv" % (config["project-folder"])
         threads: lambda cores: cpu_count()
         conda:"envs/gbs.yaml"
-        #singularity: config["singularity"]["gbs"]
+        singularity: config["singularity"]["gbs"]
         shell:"""
             echo "Number of threads used:" {threads}
             df -h &> {log}
@@ -47,7 +47,7 @@ else:
             f=config["params"]["step5d"]["f"],
             F=config["params"]["step5d"]["F"]
         conda:"envs/samtools.yaml"
-        #singularity: config["singularity"]["gbs"]
+        singularity: config["singularity"]["gbs"]
         shell:"""
             df -h &> {log}
             echo "Number of threads used:" {threads}
@@ -77,7 +77,7 @@ else:
             Q=config["params"]["step5d"]["Q"],
             q=config["params"]["step5d"]["q"]
         conda:"envs/samtools.yaml"
-        #singularity: config["singularity"]["gbs"]
+        singularity: config["singularity"]["gbs"]
         shell:"""
             df -h &> {log}
             echo "Number of threads used:" {threads}
@@ -103,7 +103,7 @@ else:
             "%s/benchmark/step5_3.benchmark_{samples}.tsv" % (config["project-folder"])
         threads: lambda cores: cpu_count()
         conda:"envs/samtools.yaml"
-        #singularity: config["singularity"]["gbs"]
+        singularity: config["singularity"]["gbs"]
         shell:"""
             df -h &> {log}
             echo "Number of threads used:" {threads}
@@ -124,7 +124,7 @@ rule Step5_AlignmentStats:
     benchmark:
         "%s/benchmark/step5.benchmark_{samples}.tsv" % (config["project-folder"])
     conda:"envs/samtools.yaml"
-    #singularity: config["singularity"]["gbs"]
+    singularity: config["singularity"]["gbs"]
     shell:"""
         samtools flagstat {input} > {output}
   	"""
@@ -147,7 +147,7 @@ rule Step5b_AlignReadsToGenome:
     params:
         threads=config["params"]["step5b"]["threads"],
     conda:"envs/gbs.yaml"
-    #singularity: config["singularity"]["gbs"]
+    singularity: config["singularity"]["gbs"]
     shell:"""
         df -h &> {log}
         bwa mem -t {params.threads} -M {input.reference} {input.R1} {input.R2} > {output} 2> {log}
@@ -171,7 +171,7 @@ rule Step5c_AlignReadsToClusters:
     params:
         threads=config["params"]["step5c"]["threads"],
     conda:"envs/gbs.yaml"
-    #singularity: config["singularity"]["gbs"]
+    singularity: config["singularity"]["gbs"]
     shell:"""
         df -h &> {log}
         bwa mem -t {params.threads} -M {input.reference} {input.R1} {input.R2} > {output} 2> {log}
@@ -196,7 +196,7 @@ rule Step5d_SamToSortedBamGenome:
         f=config["params"]["step5d"]["f"],
         F=config["params"]["step5d"]["F"]
     conda:"envs/samtools.yaml"
-    #singularity: config["singularity"]["gbs"]
+    singularity: config["singularity"]["gbs"]
     shell:"""
         df -h &> {log}
         samtools view -b -q {params.q} -f {params.f} -F {params.F} {input} > {output.bam}
@@ -223,7 +223,7 @@ rule Step5e_SamToSortedBamClusters:
         f=config["params"]["step5e"]["f"],
         F=config["params"]["step5e"]["F"]
     conda:"envs/samtools.yaml"
-    #singularity: config["singularity"]["gbs"]
+    singularity: config["singularity"]["gbs"]
     shell:"""
         df -h &> {log}
         samtools view -b -q {params.q} -f {params.f} -F {params.F} {input} > {output.bam}
@@ -249,7 +249,7 @@ rule Step5f_SortedBamToMpileup:
         Q=config["params"]["step5d"]["Q"],
         q=config["params"]["step5d"]["q"]
     conda:"envs/samtools.yaml"
-    #singularity: config["singularity"]["gbs"]
+    singularity: config["singularity"]["gbs"]
     shell:"""
         df -h &> {log}
         samtools mpileup -Q {params.Q} -q {params.q} -B -C 50 -f {input.reference} {input.bam} > {output}
@@ -270,7 +270,7 @@ rule Step5g_AlignmentStatsClusters:
     benchmark:
         "%s/benchmark/step5h.benchmark_{samples}.tsv" % (config["project-folder"])
     conda:"envs/samtools.yaml"
-    #singularity: config["singularity"]["gbs"]
+    singularity: config["singularity"]["gbs"]
     shell:"""
         df -h &> {log}
         samtools flagstat {input.sam} > {output.fs}

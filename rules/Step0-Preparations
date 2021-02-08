@@ -15,7 +15,7 @@ else:
             "%s/benchmark/Step0_0/star_reference_index.benchmark.tsv" % (config["project-folder"])
         threads: lambda cores: cpu_count()
         conda:"envs/star.yaml"
-        #singularity: config["singularity"]["star"]
+        singularity: config["singularity"]["star"]
         params: index="%s" % (config["genome-star-index"]),
         shell:"""
                 echo "Number of threads used:" {threads}
@@ -68,7 +68,7 @@ else:
             "%s/benchmark/Step0_2/bwaIndexReferenceGenome.benchmark.tsv" % (config["project-folder"])
         threads: lambda cores: cpu_count()
         conda:"envs/gbs.yaml"
-        #singularity: config["singularity"]["gbs"]
+        singularity: config["singularity"]["gbs"]
         shell:"""
                 echo "Number of threads used:" {threads}
                 bwa index -a bwtsw {input} 2> {log}
