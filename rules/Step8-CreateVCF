@@ -21,7 +21,8 @@ rule Step8_CreateVCF:
         "%s/logs/step8.log" % (config["project-folder"])
     benchmark:
         "%s/benchmark/step8.benchmark.tsv" % (config["project-folder"])
-    singularity: config["singularity"]["gbs"]
+    conda:"envs/gbs.yaml"
+    #singularity: config["singularity"]["gbs"]
     shell:"""
         #******PARAMETERS*****
         # -in 	Final genotyping matrix input file 	File 	GSC.GenoMatrix.txt
@@ -59,7 +60,8 @@ else:
             "%s/logs/step8.log" % (config["project-folder"])
         benchmark:
             "%s/benchmark/step8.benchmark.tsv" % (config["project-folder"])
-        singularity: config["singularity"]["gbs"]
+        conda:"envs/gbs.yaml"
+        #singularity: config["singularity"]["gbs"]
         shell:"""
             #******PARAMETERS*****
             # -in 	Final genotyping matrix input file 	File 	GSC.GenoMatrix.txt

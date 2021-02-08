@@ -28,7 +28,8 @@ rule Step4_0_ClusterAndMockReference:
         "%s/logs/step4.log" % (config["project-folder"])
     benchmark:
         "%s/benchmark/step4.benchmark.tsv" % (config["project-folder"])
-    singularity: config["singularity"]["gbs"]
+    conda:"envs/gbs.yaml"
+    #singularity: config["singularity"]["gbs"]
     shell:"""
         echo "Number of threads used:" {params.threads}
 
@@ -62,7 +63,8 @@ else:
         benchmark:
             "%s/benchmark/MINIMAP2/mm2_mockVSref.benchmark.tsv" % (config["project-folder"])
         threads: 20
-        singularity: config["singularity"]["minimap2"]
+        conda:"envs/minimap2.yaml"
+        #singularity: config["singularity"]["minimap2"]
         shell:"""
            minimap2 -ax sr {input.refgenome} {input.mockgenome} > {output} 2> {log}
         """
@@ -94,7 +96,8 @@ else:
             "%s/logs/SamToSortedBamMockref.log" % (config["project-folder"])
         benchmark:
             "%s/benchmark/SamToSortedBamMockref.benchmark.tsv" % (config["project-folder"])
-        singularity: config["singularity"]["gbs"]
+        conda:"envs/step3.yaml"
+        #singularity: config["singularity"]["gbs"]
         shell:"""
             df -h &> {log}
             samtools view -b {input.sam} > {output.bam}
@@ -146,7 +149,8 @@ else:
         benchmark:
             "%s/benchmark/Step4_3/step4_3.benchmark.tsv" % (config["project-folder"])
         threads: lambda cores: cpu_count()
-        singularity: config["singularity"]["gbs"]
+        conda:"envs/step3.yaml"
+        #singularity: config["singularity"]["gbs"]
         shell:"""
             df -h &> {log}
             echo "Number of threads used:" {threads}
@@ -180,7 +184,8 @@ else:
             "%s/logs/minimap2-SortedBamToMpileup.log" % (config["project-folder"])
         benchmark:
             "%s/benchmark/minimap2-SortedBamToMpileup.benchmark.tsv" % (config["project-folder"])
-        singularity: config["singularity"]["gbs"]
+        conda:"envs/samtools.yaml"
+        #singularity: config["singularity"]["gbs"]
         params:
             threads=config["params"]["step5d"]["threads"],
             Q=config["params"]["step5d"]["Q"],

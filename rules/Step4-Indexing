@@ -12,7 +12,8 @@ rule IndexGenomeBWA:
         "%s/logs/Step4b-IndexGenome.log" % (config["project-folder"])
     benchmark:
         "%s/benchmark/Step4b-IndexGenome.benchmark.tsv" % (config["project-folder"])
-    singularity: config["singularity"]["gbs"]
+    conda:"envs/gbs.yaml"
+    #singularity: config["singularity"]["gbs"]
     shell:"""
         bwa index -a bwtsw {input}
   	"""
@@ -29,7 +30,8 @@ rule IndexClustersBWA:
         "%s/logs/Step4c-IndexClusters.log" % (config["project-folder"])
     benchmark:
         "%s/benchmark/Step4c-IndexClusters.benchmark.tsv" % (config["project-folder"])
-    singularity: config["singularity"]["gbs"]
+    conda:"envs/gbs.yaml"
+    #singularity: config["singularity"]["gbs"]
     shell:"""
         bwa index -a bwtsw {input}
   	"""
@@ -46,6 +48,7 @@ rule IndexGenomeSamtools:
         "%s/logs/Step4b-IndexGenomeSam.log" % (config["project-folder"])
     benchmark:
         "%s/benchmark/Step4b-IndexGenomeSam.benchmark.tsv" % (config["project-folder"])
+    conda:"envs/samtools.yaml"
     singularity: config["singularity"]["gbs"]
     shell:"""
         samtools faidx {input}
@@ -63,6 +66,7 @@ rule IndexClustersSamtools:
         "%s/logs/Step4c-IndexClustersSam.log" % (config["project-folder"])
     benchmark:
         "%s/benchmark/Step4c-IndexClustersSam.benchmark.tsv" % (config["project-folder"])
+    conda:"envs/samtools.yaml"
     singularity: config["singularity"]["gbs"]
     shell:"""
         samtools faidx {input}

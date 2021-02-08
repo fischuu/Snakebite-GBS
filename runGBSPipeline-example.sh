@@ -45,6 +45,7 @@ export TMPDIR=$local_scratch
 
 snakemake -s /scratch/project_2001746/Pipeline-GBS/GBS-pipeline.smk \
           -j 150 \
+          --use-conda \
           --use-singularity \
           --singularity-args "-B /scratch:/scratch,/projappl:/projappl,/$TMPDIR:/tmp" \
           --configfile /scratch/project_2001746/Pipeline-GBS/GBS-pipeline_config-example.yaml \

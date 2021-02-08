@@ -26,7 +26,8 @@ rule Step7_FilterVariants:
         "%s/logs/step7.log" % (config["project-folder"])
     benchmark:
         "%s/benchmark/step7.benchmark.tsv" % (config["project-folder"])
-    singularity: config["singularity"]["gbs"]
+    conda:"envs/gbs.yaml"
+    #singularity: config["singularity"]["gbs"]
     shell:"""
         #******PARAMETERS*****
         # -in 	Discovery master matrix input file. The output from last step 	File 	GSC.MasterMatrix.txt
@@ -77,7 +78,8 @@ else:
             "%s/logs/step7_0.log" % (config["project-folder"])
         benchmark:
             "%s/benchmark/step7_0.benchmark.tsv" % (config["project-folder"])
-        singularity: config["singularity"]["gbs"]
+        conda:"envs/gbs.yaml"
+        #singularity: config["singularity"]["gbs"]
         shell:"""
             #******PARAMETERS*****
             # -in 	Discovery master matrix input file. The output from last step 	File 	GSC.MasterMatrix.txt
