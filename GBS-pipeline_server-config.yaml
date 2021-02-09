@@ -9,7 +9,7 @@ __default__:
     working-directory: /scratch/project_2001746/logs/
     nvme: 50
     
-# Module0 - Preparations:
+# Module0 - PreparationsAndIndexing:
 ################################################################################
 
 star_create_index:
@@ -21,15 +21,31 @@ star_create_index:
 Concatenate_lanes:
     time: 01:00:00
     job-name: Concatenate_lanes
-    cpus-per-task: 1
-    mem-per-cpu: 4000
-
+  
 bwa_create_index:
     time: 05:00:00
     job-name:  Create-bwaIndex
-    cpus-per-task: 1
     mem-per-cpu: 50000
 
+IndexMockReferenceBWA:
+    time: 02:00:00
+    job-name:  IndexMockRefGenome_BWA
+    mem-per-cpu: 25000
+    
+IndexMockReferenceSamtools:
+    time: 02:00:00
+    job-name:  IndexMockRefGenome_Samtools
+    mem-per-cpu: 25000
+
+IndexClustersBWA:
+    time: 02:00:00
+    job-name:  IndexMockRefClusters_BWA
+    mem-per-cpu: 25000
+
+IndexClustersSamtools:
+    time: 02:00:00
+    job-name:  IndexMockRefClusters_Samtools
+    mem-per-cpu: 25000
     
 # Module1 - QC:
 ################################################################################
@@ -127,33 +143,6 @@ Step4_4_SortedBamToMpileupMockVsReference:
     time: 2-00:00:00
     job-name:  S44_sort
     mem-per-cpu: 80000
-
-# Step4-Indexing
-################################################################################
-IndexGenome:
-    time: 01:00:00
-    job-name:  IndexMockRefGenome
-    cpus-per-task: 1
-    mem-per-cpu: 25000
-    
-IndexClusters:
-    time: 05:00:00
-    job-name:  IndexMockRefClusters
-    cpus-per-task: 1
-    mem-per-cpu: 25000
-
-IndexGenomeSam:
-    time: 01:00:00
-    job-name:  IndexMockRefGenomeSam
-    cpus-per-task: 1
-    mem-per-cpu: 25000
-    
-IndexClustersSam:
-    time: 05:00:00
-    job-name:  IndexMockRefClustersSam
-    cpus-per-task: 1
-    mem-per-cpu: 25000
-
 
 ################################################################################
 
