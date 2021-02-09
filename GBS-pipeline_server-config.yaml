@@ -9,6 +9,28 @@ __default__:
     working-directory: /scratch/project_2001746/logs/
     nvme: 50
     
+# Module0 - Preparations:
+################################################################################
+
+star_create_index:
+    time: 05:00:00
+    job-name:  Create-StarIndex
+    cpus-per-task: 20
+    mem-per-cpu: 4000
+
+Concatenate_lanes:
+    time: 01:00:00
+    job-name: Concatenate_lanes
+    cpus-per-task: 1
+    mem-per-cpu: 4000
+
+bwa_create_index:
+    time: 05:00:00
+    job-name:  Create-bwaIndex
+    cpus-per-task: 1
+    mem-per-cpu: 50000
+
+    
 # Module1 - QC:
 ################################################################################
 fastqc_quality_control_raw_data:
@@ -55,24 +77,6 @@ qualDist_trimmed_data:
    
 ################################################################################   
     
-Step0_0_star_create_index:
-    time: 05:00:00
-    job-name:  Step0_0-StarIndex
-    cpus-per-task: 20
-    mem-per-cpu: 4000
-
-Step0_1_Concatenate_lanes:
-    time: 01:00:00
-    job-name:  Step0_1-Concatenate
-    cpus-per-task: 1
-    mem-per-cpu: 4000
-
-Step0_2_bwa_create_index:
-    time: 05:00:00
-    job-name:  Step0_2-bwaIndex
-    cpus-per-task: 1
-    mem-per-cpu: 50000
-
 star_map_reads:
     time: 05:00:00
     job-name:  STAR_map
