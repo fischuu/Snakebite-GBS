@@ -1,6 +1,8 @@
+# QC - rules for lane-wise data
+################################################################################
 rule fastqc_quality_control_raw_data:
     """
-    Quality control of fastq files (FASTQC).
+    Quality control of lane-wise fastq files (FASTQC).
     """
     input:
         R1="%s/FASTQ/RAW/{rawsamples}_R1_001.fastq.gz" % (config["project-folder"]),
@@ -12,7 +14,7 @@ rule fastqc_quality_control_raw_data:
         R1="%s/logs/FASTQC/fastqc_raw_R1.{rawsamples}.log" % (config["project-folder"]),
         R2="%s/logs/FASTQC/fastqc_raw_R2.{rawsamples}.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/FASTQC/fastqc_raw_R1.{rawsamples}.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/FASTQC/fastqc_raw.{rawsamples}.benchmark.tsv" % (config["project-folder"])
     threads: 20
     params:
         outfolder="%s/QC/RAW/" % (config["project-folder"])
@@ -26,7 +28,7 @@ rule fastqc_quality_control_raw_data:
   
 rule multiqc_quality_control_raw_data:
     """
-    Quality control of fastq files in lr1(MULTIQC).
+    Quality control of lane-wise fastq files in lr1(MULTIQC).
     """
     input:
         R1=expand("%s/QC/RAW/{rawsamples}_R1_001_fastqc.zip" % (config["project-folder"]), rawsamples=rawsamples),
@@ -38,7 +40,7 @@ rule multiqc_quality_control_raw_data:
         R1="%s/logs/MULTIQC/multiqc_raw_R1.log" % (config["project-folder"]),
         R2="%s/logs/MULTIQC/multiqc_raw_R2.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/MULTIQC/multiqc_raw_R1.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/MULTIQC/multiqc_raw.benchmark.tsv" % (config["project-folder"])
     params:
        R1="%s/QC/RAW/*_R1_001_fastqc.zip" % (config["project-folder"]),
        R2="%s/QC/RAW/*_R2_001_fastqc.zip" % (config["project-folder"])
@@ -49,6 +51,27 @@ rule multiqc_quality_control_raw_data:
         multiqc -f --interactive -o {output.R1} {params.R1} &> {log.R1};
         multiqc -f --interactive -o {output.R2} {params.R2} &> {log.R2};
     """
+
+rule qualDist_raw_data:
+    """
+    Quality control of fastq files (FASTQC).
+    """
+    input:
+        R1="%s/FASTQ/RAW/{rawsamples}_R1_001.fastq.gz" % (config["project-folder"]),
+        R2="%s/FASTQ/RAW/{rawsamples}_R2_001.fastq.gz" % (config["project-folder"])
+    output:
+        R1="%s/QC/RAW/{rawsamples}_R1_qualdist.txt" % (config["project-folder"]),
+        R2="%s/QC/RAW/{rawsamples}_R2_qualdist.txt" % (config["project-folder"])
+    benchmark:
+        "%s/benchmark/SHELL/qualdist_raw.{rawsamples}.benchmark.tsv" % (config["project-folder"])
+    params:
+        outfolder="%s/QC/RAW/" % (config["project-folder"])
+    shell:"""
+        mkdir -p {params.outfolder};
+        ./scripts/getQualDist.sh {input.R1} > {output.R1}
+        ./scripts/getQualDist.sh {input.R2} > {output.R2}
+    """
+ 
     
 rule fastqc_quality_control_concatenated_data:
     """
@@ -64,7 +87,7 @@ rule fastqc_quality_control_concatenated_data:
         R1="%s/logs/FASTQC/fastqc_concatenated_R1.{samples}.log" % (config["project-folder"]),
         R2="%s/logs/FASTQC/fastqc_concatenated_R2.{samples}.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/FASTQC/fastqc_concatenated_R1.{samples}.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/FASTQC/fastqc_concatenated.{samples}.benchmark.tsv" % (config["project-folder"])
     threads: 20
     params:
         outfolder="%s/QC/CONCATENATED/" % (config["project-folder"])
@@ -90,7 +113,7 @@ rule multiqc_quality_control_concatenated_data:
         R1="%s/logs/MULTIQC/multiqc_concatenated_R1.log" % (config["project-folder"]),
         R2="%s/logs/MULTIQC/multiqc_concatenated_R2.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/MULTIQC/multiqc_concatenated_R1.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/MULTIQC/multiqc_concatenated.benchmark.tsv" % (config["project-folder"])
     params:
        R1="%s/QC/CONCATENATED/*_R1_001.merged_fastqc.zip" % (config["project-folder"]),
        R2="%s/QC/CONCATENATED/*_R2_001.merged_fastqc.zip" % (config["project-folder"])
@@ -99,26 +122,6 @@ rule multiqc_quality_control_concatenated_data:
     shell:"""
         multiqc -f --interactive -o {output.R1} {params.R1} &> {log.R1};
         multiqc -f --interactive -o {output.R2} {params.R2} &> {log.R2};
-    """
-    
-rule qualDist_raw_data:
-    """
-    Quality control of fastq files (FASTQC).
-    """
-    input:
-        R1="%s/FASTQ/RAW/{rawsamples}_R1_001.fastq.gz" % (config["project-folder"]),
-        R2="%s/FASTQ/RAW/{rawsamples}_R2_001.fastq.gz" % (config["project-folder"])
-    output:
-        R1="%s/QC/RAW/{rawsamples}_R1_qualdist.txt" % (config["project-folder"]),
-        R2="%s/QC/RAW/{rawsamples}_R2_qualdist.txt" % (config["project-folder"])
-    benchmark:
-        "%s/benchmark/FASTQC/qualdist_raw_R1.{rawsamples}.benchmark.tsv" % (config["project-folder"])
-    params:
-        outfolder="%s/QC/RAW/" % (config["project-folder"])
-    shell:"""
-        mkdir -p {params.outfolder};
-        ./scripts/getQualDist.sh {input.R1} &> {output.R1}
-        ./scripts/getQualDist.sh {input.R2} &> {output.R2}
     """
     
 rule qualDist_concateated_data:
@@ -132,35 +135,15 @@ rule qualDist_concateated_data:
         R1="%s/QC/CONCATENATED/{samples}_R1_qualdist.txt" % (config["project-folder"]),
         R2="%s/QC/CONCATENATED/{samples}_R2_qualdist.txt" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/FASTQC/qualdist_concatenated_R1.{samples}.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/SHELL/qualdist_concatenated.{samples}.benchmark.tsv" % (config["project-folder"])
     params:
         outfolder="%s/QC/CONCATENATED/" % (config["project-folder"])
     shell:"""
         mkdir -p {params.outfolder};
-        ./scripts/getQualDist.sh {input.R1} &> {output.R1}
-        ./scripts/getQualDist.sh {input.R2} &> {output.R2}
+        ./scripts/getQualDist.sh {input.R1} > {output.R1}
+        ./scripts/getQualDist.sh {input.R2} > {output.R2}
     """
-    
-rule qualDist_trimmed_data:
-    """
-    Quality control of fastq files (FASTQC).
-    """
-    input:
-        R1="%s/FASTQ/TRIMMED/{samples}.R1.fq.gz" % (config["project-folder"]),
-        R2="%s/FASTQ/TRIMMED/{samples}.R2.fq.gz" % (config["project-folder"])
-    output:
-        R1="%s/QC/TRIMMED/{samples}_R1_qualdist.txt" % (config["project-folder"]),
-        R2="%s/QC/TRIMMED/{samples}_R2_qualdist.txt" % (config["project-folder"])
-    benchmark:
-        "%s/benchmark/FASTQC/qualdist_trimmed_R1.{samples}.benchmark.tsv" % (config["project-folder"])
-    params:
-        outfolder="%s/QC/TRIMMED/" % (config["project-folder"])
-    shell:"""
-        mkdir -p {params.outfolder};
-        ./scripts/getQualDist.sh {input.R1} &> {output.R1}
-        ./scripts/getQualDist.sh {input.R2} &> {output.R2}
-    """
-    
+  
 rule fastqc_quality_control_trimmed_data:
     """
     Quality control of fastq files (FASTQC).
@@ -175,7 +158,7 @@ rule fastqc_quality_control_trimmed_data:
         R1="%s/logs/FASTQC/fastqc_trimmed_R1.{samples}.log" % (config["project-folder"]),
         R2="%s/logs/FASTQC/fastqc_trimmed_R2.{samples}.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/FASTQC/fastqc_trimmed_R1.{samples}.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/FASTQC/fastqc_trimmed.{samples}.benchmark.tsv" % (config["project-folder"])
     threads: 20
     params:
         outfolder="%s/QC/TRIMMED/" % (config["project-folder"])
@@ -203,7 +186,7 @@ rule multiqc_quality_control_trimmed_data:
         R1="%s/logs/MULTIQC/multiqc_trimmed_R1.log" % (config["project-folder"]),
         R2="%s/logs/MULTIQC/multiqc_trimmed_R2.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/MULTIQC/multiqc_trimmed_R1.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/MULTIQC/multiqc_trimmed.benchmark.tsv" % (config["project-folder"])
     params:
        R1="%s/QC/TRIMMED/*.R1_fastqc.zip" % (config["project-folder"]),
        R2="%s/QC/TRIMMED/*.R2_fastqc.zip" % (config["project-folder"])
@@ -212,4 +195,24 @@ rule multiqc_quality_control_trimmed_data:
     shell:"""
         multiqc -f --interactive -o {output.R1} {params.R1} &> {log.R1};
         multiqc -f --interactive -o {output.R2} {params.R2} &> {log.R2};
+    """
+    
+rule qualDist_trimmed_data:
+    """
+    Quality control of fastq files (FASTQC).
+    """
+    input:
+        R1="%s/FASTQ/TRIMMED/{samples}.R1.fq.gz" % (config["project-folder"]),
+        R2="%s/FASTQ/TRIMMED/{samples}.R2.fq.gz" % (config["project-folder"])
+    output:
+        R1="%s/QC/TRIMMED/{samples}_R1_qualdist.txt" % (config["project-folder"]),
+        R2="%s/QC/TRIMMED/{samples}_R2_qualdist.txt" % (config["project-folder"])
+    benchmark:
+        "%s/benchmark/SHELL/qualdist_trimmed.{samples}.benchmark.tsv" % (config["project-folder"])
+    params:
+        outfolder="%s/QC/TRIMMED/" % (config["project-folder"])
+    shell:"""
+        mkdir -p {params.outfolder};
+        ./scripts/getQualDist.sh {input.R1} > {output.R1}
+        ./scripts/getQualDist.sh {input.R2} > {output.R2}
     """

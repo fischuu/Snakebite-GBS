@@ -328,6 +328,9 @@ if(nrow(tmp)>0){
 plotFastQCFeature(rawFastQC.R1, rawFastQC.R2, feature="Total.Sequences", axes=FALSE)
 ```
 
+### Quality value distribution
+TO BE ADDED: Import the quality distribution reports here and visualize them
+
 ### Summary
 ```{r raw data summary stats}
 mqcStats.raw <- read.table(file.path(projFolder,"QC","RAW","multiqc_R1", "multiqc_data", "multiqc_fastqc.txt"), header=TRUE, sep="\t")
@@ -430,6 +433,9 @@ if(nrow(tmp)>0){
 par(mar=c(10,5,1,1))
 plotFastQCFeature(conFastQC.R1, conFastQC.R2, feature="Total.Sequences")
 ```
+
+### Quality value distribution
+TO BE ADDED: Import the quality distribution reports here and visualize them
 
 ### Per base N content (left: R1, right: R2)
 
@@ -554,6 +560,9 @@ if(nrow(tmp)>0){
 par(mar=c(10,5,1,1))
 plotFastQCFeature(trimmedFastQC.R1, trimmedFastQC.R2, feature="Total.Sequences")
 ```
+
+### Quality value distribution
+TO BE ADDED: Import the quality distribution reports here and visualize them
 
 ### Per base N content
 

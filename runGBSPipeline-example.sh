@@ -47,8 +47,8 @@ snakemake -s /scratch/project_2001746/Pipeline-GBS/GBS-pipeline.smk \
           -j 150 \
           --use-singularity \
           --singularity-args "-B /scratch:/scratch,/projappl:/projappl,/$TMPDIR:/tmp" \
-          --configfile /scratch/project_2001746/Pipeline-GBS/GBS-pipeline_config-example.yaml \
+          --configfile /scratch/project_2001746/Pipeline-GBS/GBS-pipeline_config.yaml \
           --latency-wait 60 \
-          --cluster-config /scratch/project_2001746/Pipeline-GBS/GBS-pipeline_puhti-config.yaml \
+          --cluster-config /scratch/project_2001746/Pipeline-GBS/GBS-pipeline_server-config.yaml \
           --cluster "sbatch -t {cluster.time} --account={cluster.account} --gres=nvme:{cluster.nvme} --job-name={cluster.job-name} --tasks-per-node={cluster.ntasks} --cpus-per-task={cluster.cpus-per-task} --mem-per-cpu={cluster.mem-per-cpu} -p {cluster.partition} -D {cluster.working-directory}" \
           $1 

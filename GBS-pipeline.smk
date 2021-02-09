@@ -9,7 +9,7 @@ import os
 ##### Daniel Fischer (daniel.fischer@luke.fi)
 ##### Natural Resources Institute Finland (Luke)
 ##### This pipeline is build upon the the GBS-SNP-CROP pipeline
-##### Version: 0.2
+##### Version: 0.3.1
 
 ##### set minimum snakemake version #####
 #min_version("5.1.2")
@@ -34,15 +34,15 @@ rule all:
       # OUTPUT: PREPARATION MODULE
 #        expand("%s/FASTQ/CONCATENATED/{samples}_R1_001.merged.fastq.gz" % (config["project-folder"]), samples=samples),
 #        expand("%s/FASTQ/CONCATENATED/{samples}_R2_001.merged.fastq.gz" % (config["project-folder"]), samples=samples),
-      # QC OF RAW AND CONCATENATED FILES
-        "%s/QC/RAW/multiqc_R1/" % (config["project-folder"]),
-        "%s/QC/CONCATENATED/multiqc_R1/" % (config["project-folder"]),
-        "%s/QC/TRIMMED/multiqc_R1/" % (config["project-folder"]),
+#      # QC OF RAW AND CONCATENATED FILES
+#        "%s/QC/RAW/multiqc_R1/" % (config["project-folder"]),
+#        "%s/QC/CONCATENATED/multiqc_R1/" % (config["project-folder"]),
+#        "%s/QC/TRIMMED/multiqc_R1/" % (config["project-folder"]),
       # OUTPUT STEP 2
         expand("%s/FASTQ/TRIMMED/{samples}.R1.fq.gz" % (config["project-folder"]), samples=samples),
         expand("%s/FASTQ/TRIMMED/{samples}.R2.fq.gz" % (config["project-folder"]), samples=samples),
-      # OUTPUT STEP 2b
-        expand("%s/FASTQ/SUBSTITUTED/{samples}.R1.fq.gz" % (config["project-folder"]), samples=samples),
+#      # OUTPUT STEP 2b
+#        expand("%s/FASTQ/SUBSTITUTED/{samples}.R1.fq.gz" % (config["project-folder"]), samples=samples),
       # OUTPUT STEP 4
         "%s/FASTQ/TRIMMED/GSC.MR.Genome.fa" % (config["project-folder"]),
         "%s/BAM/Mockref/mockToRef.sam.flagstat" % (config["project-folder"]),
@@ -79,8 +79,8 @@ rule all:
 report: "report/workflow.rst"
 
 ##### load rules #####
+include: "rules/Module1-QC"
 include: "rules/Step0-Preparations"
-include: "rules/Step1-QC"
 include: "rules/Step2-Preprocessing"
 include: "rules/Step3-MockReference"
 include: "rules/Step4-Indexing"
