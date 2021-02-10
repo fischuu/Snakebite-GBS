@@ -10,11 +10,11 @@ rule cutadapt_trim_reads:
         second=temp("%s/FASTQ/CUTADAPT/{samples}_R2_001.cutadapt.fastq.gz" % (config["project-folder"]))
     params:
         adapter_file_R1=config["enz1"],
-        adapter_file_R2=config["enz2"],
+        adapter_file_R2=config["enz2"]
     log:
-        "%s/logs/cutadapt.{samples}.log" % (config["project-folder"])
+        "%s/logs/CUTADAPT/cutadapt.{samples}.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/cutadapt.{samples}.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/CUTADAPT/cutadapt.{samples}.benchmark.tsv" % (config["project-folder"])
     threads: 1
     conda:"envs/cutadapt.yaml"
     singularity: config["singularity"]["cutadapt"]
@@ -40,7 +40,7 @@ rule cutadapt_trim_reads:
       	cutadapt -g {params.adapter_file_R1} -G {params.adapter_file_R2} -o {output.first} -p {output.second} {input} > {log}  
 	"""
 	
-rule Step2_TrimBasedOnQuality:
+rule TrimBasedOnQuality:
     """
     Trimming based on quality.
     """
@@ -63,16 +63,16 @@ rule Step2_TrimBasedOnQuality:
         slwin=config["params"]["step2"]["slwin"],
         trail=config["params"]["step2"]["trail"]            
     log:
-        "%s/logs/step2_{samples}.log" % (config["project-folder"])
+        "%s/logs/TRIMMOMATIC/trimmomatic_{samples}.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/step2_{samples}.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/TRIMMOMATIC/trimmomatic_{samples}.benchmark.tsv" % (config["project-folder"])
     conda:"envs/cutadapt.yaml"
     singularity: config["singularity"]["gbs"]
     shell:"""
        java -jar /Trimmomatic-0.38/trimmomatic-0.38.jar PE -phred33 -threads {params.threads} -trimlog {output.trimlog} {input.R1} {input.R2} {output.R1} {output.R1SE} {output.R2} {output.R2SE} MINLEN:{params.minlen} ILLUMINACLIP:{params.ad}:{params.iclip} LEADING:{params.leading} SLIDINGWINDOW:{params.slwin} TRAILING:{params.trail} &>{log}
   	"""
 
-rule Step2b_SubstituteLowQualityBases:
+rule SubstituteLowQualityBases:
     """
     Substitute low quality reads with N.
     """
@@ -86,10 +86,10 @@ rule Step2b_SubstituteLowQualityBases:
         q=config["params"]["step2b"]["q"],
         outfolder="%s/FASTQ/SUBSTITUTED" % (config["project-folder"])
     log:
-        R1="%s/logs/step2b_{samples}_R1.log" % (config["project-folder"]),
-        R2="%s/logs/step2b_{samples}_R2.log" % (config["project-folder"])
+        R1="%s/logs/FASTQ_MASKER/Fastq_masker_{samples}_R1.log" % (config["project-folder"]),
+        R2="%s/logs/FASTQ_MASKER/Fastq_masker_{samples}_R2.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/step2b_{samples}.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/FASTQ_MASKER/Fastq_masker_{samples}.benchmark.tsv" % (config["project-folder"])
     conda:"envs/gbs.yaml"
     singularity: config["singularity"]["gbs"]
     shell:"""
@@ -107,5 +107,4 @@ rule Step2b_SubstituteLowQualityBases:
 
        fastq_masker -q {params.q} -r N -z -i <(zcat {input.R1}) -o {output.R1} &> {log.R1}
        fastq_masker -q {params.q} -r N -z -i <(zcat {input.R2}) -o {output.R2} &> {log.R2}
-
   	"""

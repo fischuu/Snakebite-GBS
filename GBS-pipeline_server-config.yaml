@@ -91,6 +91,23 @@ multiqc_quality_control_trimmed_data:
 qualDist_trimmed_data:
    job-name: qualDist-trimmed
    
+# Module2 - DataPreprocessing
+################################################################################
+cutadapt_trim_reads:
+    time: 01:00:00
+    job-name:  AdapterTrimming
+
+TrimBasedOnQuality:
+    time: 02:00:00
+    job-name:  QualityTrimming
+    cpus-per-task: 20
+    mem-per-cpu: 2000
+
+SubstituteLowQualityBases:
+    time: 02:00:00
+    job-name:  Step2b
+    mem-per-cpu: 8000
+   
 ################################################################################   
     
 star_map_reads:
@@ -99,24 +116,6 @@ star_map_reads:
     cpus-per-task: 12
     mem-per-cpu: 4000
     
-cutadapt_trim_reads:
-    time: 01:00:00
-    job-name:  AdapterTrimming
-    cpus-per-task: 1
-    mem-per-cpu: 4000
-
-Step2_TrimBasedOnQuality:
-    time: 02:00:00
-    job-name:  Step2
-    cpus-per-task: 20
-    mem-per-cpu: 2000
-
-Step2b_SubstituteLowQualityBases:
-    time: 02:00:00
-    job-name:  Step2b
-    cpus-per-task: 1
-    mem-per-cpu: 8000
-
 Step4_0_ClusterAndMockReference:
     time: 05:00:00
     job-name:  Step4
