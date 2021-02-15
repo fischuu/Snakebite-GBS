@@ -119,10 +119,13 @@ rule multiqc_quality_control_concatenated_data:
         "%s/benchmark/MULTIQC/multiqc_concatenated.benchmark.tsv" % (config["project-folder"])
     params:
        R1="%s/QC/CONCATENATED/*_R1_001.merged_fastqc.zip" % (config["project-folder"]),
-       R2="%s/QC/CONCATENATED/*_R2_001.merged_fastqc.zip" % (config["project-folder"])
+       R2="%s/QC/CONCATENATED/*_R2_001.merged_fastqc.zip" % (config["project-folder"]),
+       tmpdir=config["tmpdir"]
     conda:"envs/gbs.yaml"
     singularity: config["singularity"]["gbs"]
     shell:"""
+        export TMPDIR={params.tmpdir}
+        echo $TMPDIR
         multiqc -f --interactive -o {output.R1} {params.R1} &> {log.R1};
         multiqc -f --interactive -o {output.R2} {params.R2} &> {log.R2};
     """
@@ -192,10 +195,13 @@ rule multiqc_quality_control_trimmed_data:
         "%s/benchmark/MULTIQC/multiqc_trimmed.benchmark.tsv" % (config["project-folder"])
     params:
        R1="%s/QC/TRIMMED/*.R1_fastqc.zip" % (config["project-folder"]),
-       R2="%s/QC/TRIMMED/*.R2_fastqc.zip" % (config["project-folder"])
+       R2="%s/QC/TRIMMED/*.R2_fastqc.zip" % (config["project-folder"]),
+       tmpdir=config["tmpdir"]
     conda:"envs/gbs.yaml"
     singularity: config["singularity"]["gbs"]
     shell:"""
+        export TMPDIR={params.tmpdir}
+        echo $TMPDIR
         multiqc -f --interactive -o {output.R1} {params.R1} &> {log.R1};
         multiqc -f --interactive -o {output.R2} {params.R2} &> {log.R2};
     """
