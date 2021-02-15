@@ -15,6 +15,7 @@ genome-star-index:  "/scratch/project_2001746/Example/references/STAR2.7.3a"    
 refsample: ""                                                                                                       # Id of ref sample used to build mock reference (NOT SURE, IF USED, CHECK THIS)
 local-scratch: $LOCAL_SCRATCH                                                                                       # Path for fast local storage for tmp files (Here, a system variable is used. Check with your server configs)
 adapter: "/scratch/project_2001746/Pipeline-GBS/adapter.fa"                                                         # Path for the adapter sequences, used by Trimmomatic (MAKE THIS OPTIONAL)
+tmpdir: "/scratch/project_2001746/tmp"
 
 # Parameters for the GBS-SNP-CROP tools
 ################################################################################

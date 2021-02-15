@@ -46,7 +46,7 @@ export TMPDIR=$local_scratch
 snakemake -s /scratch/project_2001746/Pipeline-GBS/GBS-pipeline.smk \
           -j 150 \
           --use-singularity \
-          --singularity-args "-B /scratch:/scratch,/projappl:/projappl,/$TMPDIR:/tmp" \
+          --singularity-args "-B /scratch:/scratch,/projappl:/projappl" \
           --configfile /scratch/project_2001746/Pipeline-GBS/GBS-pipeline_config.yaml \
           --latency-wait 60 \
           --cluster-config /scratch/project_2001746/Pipeline-GBS/GBS-pipeline_server-config.yaml \
