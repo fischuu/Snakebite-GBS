@@ -10,7 +10,8 @@ rule cutadapt_trim_reads:
         second=temp("%s/FASTQ/CUTADAPT/{samples}_R2_001.cutadapt.fastq.gz" % (config["project-folder"]))
     params:
         adapter_file_R1=config["enz1"],
-        adapter_file_R2=config["enz2"]
+        adapter_file_R2=config["enz2"],
+        tmpdir=config["tmpdir"]
     log:
         "%s/logs/CUTADAPT/cutadapt.{samples}.log" % (config["project-folder"])
     benchmark:
@@ -19,6 +20,9 @@ rule cutadapt_trim_reads:
     conda:"envs/cutadapt.yaml"
     singularity: config["singularity"]["cutadapt"]
     shell:"""
+        export TMPDIR={params.tmpdir}
+        echo $TMPDIR
+    
         output_dir=$(dirname {output.first})
         [ ! -d \"$output_dir\" ] && mkdir -p $output_dir
 

@@ -68,11 +68,12 @@ rule qualDist_raw_data:
     benchmark:
         "%s/benchmark/SHELL/qualdist_raw.{rawsamples}.benchmark.tsv" % (config["project-folder"])
     params:
-        outfolder="%s/QC/RAW/" % (config["project-folder"])
+        outfolder="%s/QC/RAW/" % (config["project-folder"]),
+        pipeFolder=config["pipeline-folder"]
     shell:"""
         mkdir -p {params.outfolder};
-        ./scripts/getQualDist.sh {input.R1} > {output.R1}
-        ./scripts/getQualDist.sh {input.R2} > {output.R2}
+        {params.pipeFolder}/scripts/getQualDist.sh {input.R1} > {output.R1}
+        {params.pipeFolder}/scripts/getQualDist.sh {input.R2} > {output.R2}
     """
  
     
@@ -143,11 +144,12 @@ rule qualDist_concateated_data:
     benchmark:
         "%s/benchmark/SHELL/qualdist_concatenated.{samples}.benchmark.tsv" % (config["project-folder"])
     params:
-        outfolder="%s/QC/CONCATENATED/" % (config["project-folder"])
+        outfolder="%s/QC/CONCATENATED/" % (config["project-folder"]),
+        pipeFolder=config["pipeline-folder"]
     shell:"""
         mkdir -p {params.outfolder};
-        ./scripts/getQualDist.sh {input.R1} > {output.R1}
-        ./scripts/getQualDist.sh {input.R2} > {output.R2}
+        {params.pipeFolder}/scripts/getQualDist.sh {input.R1} > {output.R1}
+        {params.pipeFolder}/scripts/getQualDist.sh {input.R2} > {output.R2}
     """
   
 rule fastqc_quality_control_trimmed_data:
@@ -219,9 +221,10 @@ rule qualDist_trimmed_data:
     benchmark:
         "%s/benchmark/SHELL/qualdist_trimmed.{samples}.benchmark.tsv" % (config["project-folder"])
     params:
-        outfolder="%s/QC/TRIMMED/" % (config["project-folder"])
+        outfolder="%s/QC/TRIMMED/" % (config["project-folder"]),
+        pipeFolder=config["pipeline-folder"]
     shell:"""
         mkdir -p {params.outfolder};
-        ./scripts/getQualDist.sh {input.R1} > {output.R1}
-        ./scripts/getQualDist.sh {input.R2} > {output.R2}
+        {params.pipeFolder}/scripts/getQualDist.sh {input.R1} > {output.R1}
+        {params.pipeFolder}/scripts/getQualDist.sh {input.R2} > {output.R2}
     """

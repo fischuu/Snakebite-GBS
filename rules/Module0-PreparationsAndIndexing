@@ -25,9 +25,6 @@ rule Concatenate_lanes:
     """
     Concatenate the demultiplexed fastq files (BASH).
     """
-    input:
-        R1=expand("%s/FASTQ/RAW/{rawsamples}_R1_001.fastq.gz" % (config["project-folder"]), rawsamples=rawsamples),
-        R2=expand("%s/FASTQ/RAW/{rawsamples}_R2_001.fastq.gz" % (config["project-folder"]), rawsamples=rawsamples)
     output:
         R1=temp("%s/FASTQ/CONCATENATED/{samples}_R1_001.merged.fastq.gz" % (config["project-folder"])),
         R1Report="%s/FASTQ/CONCATENATED/{samples}_R1_001.merged.fastq.gz.report" % (config["project-folder"]),
