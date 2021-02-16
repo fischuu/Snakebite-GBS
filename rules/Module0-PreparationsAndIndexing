@@ -18,6 +18,7 @@ else:
         singularity: config["singularity"]["star"]
         params: index=config["genome-star-index"]
         shell:"""
+                mkdir -p {params.index}
                 STAR --runThreadN {threads} --runMode genomeGenerate --genomeDir {params.index} --genomeFastaFiles {input.fasta} 2> {log}
         """
         

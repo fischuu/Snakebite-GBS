@@ -41,7 +41,7 @@ rule cutadapt_trim_reads:
 
       	printf \"Removing restriction enzymes from the reads\\n\"
 
-      	cutadapt -g {params.adapter_file_R1} -G {params.adapter_file_R2} -o {output.first} -p {output.second} {input} > {log}  
+      	cutadapt -g {params.adapter_file_R1} -G {params.adapter_file_R2} -o {output.first} -p {output.second} {input} &> {log}  
 	"""
 	
 rule TrimBasedOnQuality:

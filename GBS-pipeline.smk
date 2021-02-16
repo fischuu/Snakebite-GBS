@@ -9,10 +9,11 @@ import os
 ##### Daniel Fischer (daniel.fischer@luke.fi)
 ##### Natural Resources Institute Finland (Luke)
 ##### This pipeline is build upon the the GBS-SNP-CROP pipeline
-##### Version: 0.3.4
+##### Version: 0.3.6
+version = "0.3.6"
 
 ##### set minimum snakemake version #####
-#min_version("5.1.2")
+min_version("5.24")
 
 ##### Sample sheets #####
 
@@ -25,7 +26,54 @@ wildcard_constraints:
     rawsamples="|".join(rawsamples),
     samples="|".join(samples)
 
-##### Input definitions #####
+##### Complete the input configuration
+config["genome-bwa-index"] = config["genome"]+".bwt"
+config["genome-star-index"] = config["project-folder"]+"/references/STAR2.7.3a"
+config["report-script"] = config["pipeline-folder"]+"/scripts/workflow-report.Rmd"
+config["adapter"]=config["pipeline-folder"]+"/adapter.fa"
+
+##### Singularity container #####
+config["singularity"] = {}
+config["singularity"]["star"] = "docker://fischuu/star:2.7.3a-0.1"
+config["singularity"]["gbs"] = "docker://fischuu/gbs:0.2"
+config["singularity"]["cutadapt"] = "docker://fischuu/cutadapt:2.8-0.3"
+config["singularity"]["minimap2"] = "docker://fischuu/minimap2:2.17-0.2"
+config["singularity"]["r-gbs"] = "docker://fischuu/r-gbs:3.6.3-0.2"
+
+##### Print the welcome screen #####
+print("#################################################################################")
+print("##### Welcome to the GBS pipeline")
+print("##### version: "+version)
+print("#####")
+print("##### Pipeline configuration")
+print("##### --------------------------------")
+print("##### project-folder  : "+config["project-folder"])
+print("##### pipeline-folder : "+config["pipeline-folder"])
+print("##### report-script   : "+config["report-script"])
+print("##### pipeline-config (NOT NECESSARILY THE USED ONE!!!): "+config["pipeline-config"])
+print("#####")
+print("##### Singularity configuration")
+print("##### --------------------------------")
+print("##### star     : "+config["singularity"]["star"])
+print("##### gbs      : "+config["singularity"]["gbs"])
+print("##### cutadapt : "+config["singularity"]["cutadapt"])
+print("##### minimap2 : "+config["singularity"]["minimap2"])
+print("##### r-gbs    : "+config["singularity"]["r-gbs"])
+print("#####")
+print("##### Runtime-configurations")
+print("##### --------------------------------")
+print("##### genome         : "+ config["genome"])
+print("##### barcodes-file  : "+ config["barcodes"])
+print("##### rawsample file : "+ config["rawsamples"])
+print("#####")
+print("##### Derived runtime parameters")
+print("##### --------------------------------")
+print("##### BWA-Genome index  : "+config["genome-bwa-index"])
+print("##### STAR-Genome index : "+config["genome-star-index"])
+print("##### Adapter file      : "+ config["adapter"])
+print("#################################################################################")
+
+
     
 ##### run complete pipeline #####
 
