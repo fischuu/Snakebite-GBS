@@ -6,3 +6,4 @@ rm -rf QC/
 rm -rf SAM/
 rm -rf FASTQ/CONCATENATED/
 rm -rf FASTQ/TRIMMED/
+rm -rf .snakemake/

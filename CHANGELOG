@@ -4,6 +4,7 @@
 #####                                                                      #####
 ################################################################################
 
+0.3.12: * Singularity binding added and makeClean script extended
 0.3.11: * Typo in rule MockVsRef_samtools_SamToSortedBam output fixed
 0.3.10: * Module 6 and 7 finalized
 0.3.9 : * Step 6 and 7 moved to Module 5 and reorganised
