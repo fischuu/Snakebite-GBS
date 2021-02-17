@@ -877,7 +877,7 @@ These are the flagstats from mapping the mock clusters against an existing refer
 
 ```{r sam.flagstats}
 if(refAvail){
-samFlagstats <- read.table(file.path(projFolder,"SAM","mockToRef.samflags"))
+samFlagstats <- read.table(file.path(projFolder,"BAM", "Mockref", "mockToRef.sam.flagstat"))
 colnames(samFlagstats) <- c("Freq.", "Flag")
 totalLoci <- samFlagstats$V1[samFlagstats$V2==0] + samFlagstats$V1[samFlagstats$V2==16]
 out_html <- knitr::kable(samFlagstats, "html")
@@ -920,7 +920,7 @@ barplot(mappedLoci[,2], main="Alignments per Chromosome in Reference", col=virid
 
 ```{r SAMbed}
 if(refAvail){
- SAMLoci <- read.table(file.path(projFolder,"SAM","mockToRef.bed"))
+ SAMLoci <- read.table(file.path(projFolder,"BAM","Mockref","mockToRef.bed"))
 }
 ```
 
@@ -956,7 +956,7 @@ barplot(avgDist, main="Avg cluster mapping distance per Chromosome", col=viridis
 
 ```{r}
 if(refAvail){
-flankingCounts <- read.table(file.path(projFolder,"SAM","mockToRef.combined.fa.counts"))
+flankingCounts <- read.table(file.path(projFolder,"BAM","Mockref","mockToRef.combined.fa.counts"))
 } else {
   flankingCounts <- 0
 }

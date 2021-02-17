@@ -4,6 +4,7 @@
 #####                                                                      #####
 ################################################################################
 
+0.3.14: * Path typos in final report fixed
 0.3.13: * Increased default NVME space for mock reference building
 0.3.12: * Singularity binding added and makeClean script extended
 0.3.11: * Typo in rule MockVsRef_samtools_SamToSortedBam output fixed
