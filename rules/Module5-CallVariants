@@ -161,7 +161,7 @@ rule create_MasterMatrix_parallel:
     log:
             "%s/logs/BASH/create_MasterMatrix_parallel_{i}.log" % (config["project-folder"])
     benchmark:
-            "%s/benchmark/BASH/create_MasterMatrix_parallel.benchmark.tsv" % (config["project-folder"])
+            "%s/benchmark/BASH/create_MasterMatrix_parallel_{i}.benchmark.tsv" % (config["project-folder"])
     params:
         p=config["params"]["step6"]["p"],
         wd="%s/FASTQ/TRIMMED/VerticalRefPos" % config["project-folder"],
@@ -188,7 +188,7 @@ else:
         log:
             "%s/logs/BASH/create_MasterMatrix_parallel_reference_{i}.log" % (config["project-folder"])
         benchmark:
-            "%s/benchmark/BASH/create_MasterMatrix_parallel_reference.benchmark.tsv" % (config["project-folder"])
+            "%s/benchmark/BASH/create_MasterMatrix_parallel_reference.benchmark_{i}.tsv" % (config["project-folder"])
         params:
             p=config["params"]["step6"]["p"],
             wd="%s/MPILEUP/mpileup_reference/VerticalRefPos" % config["project-folder"],

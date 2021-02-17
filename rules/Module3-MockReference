@@ -81,9 +81,7 @@ else:
             sam="%s/SAM/mockToRef.sam" % (config["project-folder"])
         output:
             bam="%s/BAM/Mockref/mockToRef.bam" % (config["project-folder"]),
-            sorted="%s/BAM/Mockref/mockToRef.sorted.bam" % (config["project-folder"]),
-            FA="%s/SAM/mockToRef.combined.fa" % (config["project-folder"]),
-            FACounts="%s/SAM/mockToRef.combined.fa.counts" % (config["project-folder"])
+            sorted="%s/BAM/Mockref/mockToRef.sorted.bam" % (config["project-folder"])
         log:
             "%s/logs/Samtools/MockVsRef_samtools_SamToSortedBam.log" % (config["project-folder"])
         benchmark:
