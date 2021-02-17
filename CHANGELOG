@@ -4,6 +4,7 @@
 #####                                                                      #####
 ################################################################################
 
+0.3.7: * Step3 moved to Module3 and reorganised
 0.3.6: * Welcoming screen added
        * Config file simplified
        * Added a makeClean.sh script to delete all files created from the pipeline (=use it carefully!!!)
