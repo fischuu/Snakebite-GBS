@@ -9,7 +9,7 @@ __default__:
     working-directory: /scratch/project_2001746/logs/
     nvme: 50
     
-# Module0 - PreparationsAndIndexing:
+# Module 0 - PreparationsAndIndexing:
 ################################################################################
 
 star_create_index:
@@ -47,7 +47,7 @@ IndexClustersSamtools:
     job-name:  IndexMockRefClusters_Samtools
     mem-per-cpu: 25000
     
-# Module1 - QC:
+# Module 1 - QC:
 ################################################################################
 fastqc_quality_control_raw_data:
     time: 05:00:00
@@ -91,24 +91,24 @@ multiqc_quality_control_trimmed_data:
 qualDist_trimmed_data:
    job-name: qualDist-trimmed
    
-# Module2 - DataPreprocessing
+# Module 2 - DataPreprocessing
 ################################################################################
 cutadapt_trim_reads:
-    time: 01:00:00
+    time: 02:00:00
     job-name:  AdapterTrimming
 
 TrimBasedOnQuality:
-    time: 02:00:00
+    time: 04:00:00
     job-name:  QualityTrimming
     cpus-per-task: 20
     mem-per-cpu: 2000
 
 SubstituteLowQualityBases:
-    time: 02:00:00
+    time: 04:00:00
     job-name:  Step2b
     mem-per-cpu: 8000
 
-# Module3 - MockReference   
+# Module 3 - MockReference   
 ################################################################################   
 CreateClusterAndMockReference:
     time: 1-00:00:00
@@ -133,6 +133,72 @@ MockVsRef_SortedBamToMpileup:
     time: 05:00:00
     job-name: MockVsRef_SortedBamToMpileup
 
+# Module 4 - Read alignment
+################################################################################   
+RefGenome_AlignReads:
+    time: 05:00:00
+    job-name:  AlignReadsToReference
+    cpus-per-task: 20
+    mem-per-cpu: 15000
+
+RefGenome_SamToSortedBam:
+    time: 05:00:00
+    job-name:  SamToSortedBamReference
+    mem-per-cpu: 30000
+
+RefGenome_SortedBamToMpileup:
+    time: 05:00:00
+    job-name:  SortedBamToMpileupReference
+    mem-per-cpu: 30000
+
+RefGenome_AlignmentStats:
+    time: 05:00:00
+    job-name:  Step5_3
+    cpus-per-task: 1
+    mem-per-cpu: 30000
+
+MockRef_AlignReads:
+    time: 01:00:00
+    job-name:  MockRef_AlignReads
+    cpus-per-task: 20
+    mem-per-cpu: 5000
+
+MockRefClusters_AlignReads:
+    time: 01:00:00
+    job-name:  MockRefClusters_AlignReads
+    cpus-per-task: 20
+    mem-per-cpu: 5000
+
+MockRef_SamToSortedBam:
+    time: 01:00:00
+    job-name:  MockRef_SamToSortedBam
+    cpus-per-task: 20
+    mem-per-cpu: 5000
+
+MockRefClusters_SamToSortedBam:
+    time: 01:00:00
+    job-name:  MockRefClusters_SamToSortedBam
+    cpus-per-task: 20
+    mem-per-cpu: 5000
+
+MockRef_SortedBamToMpileup:
+    time: 01:00:00
+    job-name:  MockRef_SortedBamToMpileup
+    cpus-per-task: 20
+    mem-per-cpu: 5000
+
+MockRef_AlignmentStats:
+    time: 01:00:00
+    job-name:  MockRef_AlignmentStats
+    cpus-per-task: 20
+    mem-per-cpu: 5000
+
+MockRefClusters_AlignmentStats:
+    time: 01:00:00
+    job-name:  MockRefClusters_AlignmentStats
+    cpus-per-task: 20
+    mem-per-cpu: 5000
+
 ################################################################################   
 
 star_map_reads:
@@ -141,96 +207,6 @@ star_map_reads:
     cpus-per-task: 12
     mem-per-cpu: 4000
     
-
-Step4_3_AlignmentStatsMockVsReference:
-    time: 05:00:00
-    cpus-per-task: 1
-    job-name:  S43_sort
-
-Step4_4_SortedBamToMpileupMockVsReference:
-    time: 2-00:00:00
-    job-name:  S44_sort
-    mem-per-cpu: 80000
-
-################################################################################
-
-Step5_0_AlignReadsToReference:
-    time: 05:00:00
-    job-name:  Step5_0
-    cpus-per-task: 20
-    mem-per-cpu: 15000
-
-Step5_1_SamToSortedBamReference:
-    time: 05:00:00
-    job-name:  Step5_1
-    cpus-per-task: 1
-    mem-per-cpu: 30000
-
-Step5_2_SortedBamToMpileupReference:
-    time: 05:00:00
-    job-name:  Step5_2
-    cpus-per-task: 1
-    mem-per-cpu: 30000
-
-Step5_3_AlignmentStatsReference:
-    time: 05:00:00
-    job-name:  Step5_3
-    cpus-per-task: 1
-    mem-per-cpu: 30000
-
-Step5_AlignAndProcessReads:
-    time: 05:00:00
-    job-name:  Step5
-    cpus-per-task: 20
-    mem-per-cpu: 15000
-
-Step5b_AlignReadsToGenome:
-    time: 01:00:00
-    job-name:  Step5b
-    cpus-per-task: 20
-    mem-per-cpu: 5000
-    
-Step5c_AlignReadsToClusters:
-    time: 01:00:00
-    job-name:  Step5c
-    cpus-per-task: 20
-    mem-per-cpu: 5000
-
-Step5d_AlignReadsToReference:
-    time: 05:00:00
-    job-name:  Step5c
-    cpus-per-task: 20
-    mem-per-cpu: 5000
-    
-Step5d_SamToSortedBamGenome:
-    time: 01:00:00
-    job-name:  Step5d
-    cpus-per-task: 20
-    mem-per-cpu: 5000
-
-Step5e_SamToSortedBamClusters:
-    time: 01:00:00
-    job-name:  Step5e
-    cpus-per-task: 20
-    mem-per-cpu: 5000
-
-Step5f_SortedBamToMpileup:
-    time: 01:00:00
-    job-name:  Step5f
-    cpus-per-task: 20
-    mem-per-cpu: 5000
-
-Step5g_AlignmentStatsGenome:
-    time: 01:00:00
-    job-name:  Step5g
-    cpus-per-task: 20
-    mem-per-cpu: 5000
-
-Step5h_AlignmentStatsClusters:
-    time: 01:00:00
-    job-name:  Step5h
-    cpus-per-task: 20
-    mem-per-cpu: 5000
 
 # Step 6 Server definitions
 ################################################################################
