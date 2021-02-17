@@ -274,51 +274,28 @@ CreateVCF_reference:
     job-name:  CreateVCF_reference
     mem-per-cpu: 30000
 
+# Module 6 - Postprocessing
 ################################################################################
-
-star_map_reads:
-    time: 05:00:00
-    job-name:  STAR_map
-    cpus-per-task: 12
-    mem-per-cpu: 4000
-    
-
-# Step 6 Server definitions
-################################################################################
-
-
-    
-# Step 7 server definitions
-################################################################################
-
-
-
-Step9_0_getVariantFlanking_reference  :
+Ref_getVariantFlanking:
     time: 02:00:00
-    job-name:  getVariantFlanking_reference
+    job-name:  Ref_getVariantFlanking
     
-Step9_getVariantFlanking:
+MockRef_getVariantFlanking:
     time: 05:00:00
-    job-name:  getVariantFlanking
+    job-name:  MockRef_getVariantFlanking
 
-Step9_alignMockFlankingToReference:
+AlignMockFlankingToReference:
     job-name:  Step9_alignMockFlankingToReference
     cpus-per-task: 20
     mem-per-cpu: 5000
 
-Step9_SamToSortedBam_MockFlankingToReference:
-    job-name:  Step9_SamToSortedBam_MockFlankingToReference
+MockFlankingToReference_SamToSortedBam:
+    job-name: MockFlankingToReference_SamToSortedBam
     cpus-per-task: 20
     mem-per-cpu: 1000
 
-bash_filter_softclipped_fastq:
-    nvme: 20
-    
-picard_markDuplicates:
-    job-name: markDuplicates
-    time: 02:00:00
-    nvme: 20  
-      
+# Module 7 - Reporting
+################################################################################
 R_finalReport:
     time: 0-12:00:00
     job-name: Rreport

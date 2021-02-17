@@ -4,15 +4,16 @@
 #####                                                                      #####
 ################################################################################
 
-0.3.9: * Step 6 and 7 moved to Module 5 and reorganised
-0.3.8: * Step 5 moved to Module4
-0.3.7: * Step3 moved to Module3 and reorganised
-0.3.6: * Welcoming screen added
-       * Config file simplified
-       * Added a makeClean.sh script to delete all files created from the pipeline (=use it carefully!!!)
-0.3.5: * Cutadapt container 0.3 used now
-0.3.4: * Step2 moved to Module2 and organized 
-0.3.3: * Step4 merged into Module0
-0.3.2: * Step0 renamed to Module0 and organised
-0.3.1: * Step1 renamed to Module1 and organised
-       * Changelog introduced
+0.3.10: * Module 6 and 7 finalized
+0.3.9 : * Step 6 and 7 moved to Module 5 and reorganised
+0.3.8 : * Step 5 moved to Module4
+0.3.7 : * Step3 moved to Module3 and reorganised
+0.3.6 : * Welcoming screen added
+        * Config file simplified
+        * Added a makeClean.sh script to delete all files created from the pipeline (=use it carefully!!!)
+0.3.5 : * Cutadapt container 0.3 used now
+0.3.4 : * Step2 moved to Module2 and organized 
+0.3.3 : * Step4 merged into Module0
+0.3.2 : * Step0 renamed to Module0 and organised
+0.3.1 : * Step1 renamed to Module1 and organised
+        * Changelog introduced 
