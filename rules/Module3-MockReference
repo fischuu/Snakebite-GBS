@@ -109,7 +109,7 @@ else:
             sbam="%s/BAM/Mockref/mockToRef.sorted.bam" % (config["project-folder"])
         output:
             fs="%s/BAM/Mockref/mockToRef.sam.flagstat" % (config["project-folder"]),
-            samflags="%s/BAM/Mockref/mockToRef.sam.samflags" % (config["project-folder"])
+            samflags="%s/BAM/Mockref/mockToRef.sam.samflags" % (config["project-folder"]),
             stats="%s/BAM/Mockref/mockToRef.sam.stats" % (config["project-folder"]),
             c="%s/BAM/Mockref/mockToRef.coverage" % (config["project-folder"]),
             bed="%s/BAM/Mockref/mockToRef.bed" % (config["project-folder"]),
