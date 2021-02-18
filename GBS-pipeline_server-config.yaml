@@ -1,0 +1,303 @@
+__default__:
+    time: 00:30:00
+    job-name:  GBSDefault
+    account: project_2001746
+    ntasks: 1
+    cpus-per-task: 1
+    mem-per-cpu: 4000
+    partition: small
+    working-directory: /scratch/project_2001746/logs/
+    nvme: 50
+    
+# Module 0 - PreparationsAndIndexing:
+################################################################################
+
+star_create_index:
+    time: 05:00:00
+    job-name:  Create-StarIndex
+    cpus-per-task: 20
+    mem-per-cpu: 4000
+
+Concatenate_lanes:
+    time: 01:00:00
+    job-name: Concatenate_lanes
+  
+bwa_create_index:
+    time: 05:00:00
+    job-name:  Create-bwaIndex
+    mem-per-cpu: 50000
+
+IndexMockReferenceBWA:
+    time: 02:00:00
+    job-name:  IndexMockRefGenome_BWA
+    mem-per-cpu: 25000
+    
+IndexMockReferenceSamtools:
+    time: 02:00:00
+    job-name:  IndexMockRefGenome_Samtools
+    mem-per-cpu: 25000
+
+IndexClustersBWA:
+    time: 02:00:00
+    job-name:  IndexMockRefClusters_BWA
+    mem-per-cpu: 25000
+
+IndexClustersSamtools:
+    time: 02:00:00
+    job-name:  IndexMockRefClusters_Samtools
+    mem-per-cpu: 25000
+    
+# Module 1 - QC:
+################################################################################
+fastqc_quality_control_raw_data:
+    time: 05:00:00
+    job-name: fastqc-raw
+    cpus-per-task: 20
+
+multiqc_quality_control_raw_data:
+    time: 05:00:00
+    job-name: multiqc-raw
+    mem-per-cpu: 32000
+    nvme: 10
+
+qualDist_raw_data:
+    job-name: qualDist-raw
+    
+fastqc_quality_control_concatenated_data:
+    time: 05:00:00
+    job-name: fastqc-conc
+    cpus-per-task: 20
+
+multiqc_quality_control_concatenated_data:
+    time: 05:00:00
+    job-name: multiqc-conc
+    mem-per-cpu: 32000
+    nvme: 10
+
+qualDist_concateated_data:
+    job-name: qualDist-conc
+
+fastqc_quality_control_trimmed_data:
+    time: 05:00:00
+    job-name: fastqc-trimmed
+    cpus-per-task: 20
+
+multiqc_quality_control_trimmed_data:
+    time: 05:00:00
+    job-name: multiqc-trimmed
+    mem-per-cpu: 32000
+    nvme: 10    
+
+qualDist_trimmed_data:
+   job-name: qualDist-trimmed
+   
+# Module 2 - DataPreprocessing
+################################################################################
+cutadapt_trim_reads:
+    time: 02:00:00
+    job-name:  AdapterTrimming
+
+TrimBasedOnQuality:
+    time: 04:00:00
+    job-name:  QualityTrimming
+    cpus-per-task: 20
+    mem-per-cpu: 2000
+
+SubstituteLowQualityBases:
+    time: 04:00:00
+    job-name:  SubstituteLowQualityBases
+    mem-per-cpu: 8000
+
+# Module 3 - MockReference   
+################################################################################   
+CreateClusterAndMockReference:
+    time: 1-00:00:00
+    job-name:  CreateClusterAndMockReference
+    cpus-per-task: 20
+    mem-per-cpu: 15000
+    nvme: 500
+
+MockVsRef_alignment:
+    time: 05:00:00
+    cpus-per-task: 20
+    job-name:  MockVsRef_alignment
+
+MockVsRef_samtools_SamToSortedBam:
+    time: 05:00:00
+    job-name:  MockVsRef_samtools_SamToSortedBam
+
+MockVsRef_AlignmentStats:
+    time: 05:00:00
+    job-name: MockVsRef_AlignmentStats
+
+MockVsRef_SortedBamToMpileup:
+    time: 05:00:00
+    job-name: MockVsRef_SortedBamToMpileup
+
+# Module 4 - Read alignment
+################################################################################   
+RefGenome_AlignReads:
+    time: 05:00:00
+    job-name:  AlignReadsToReference
+    cpus-per-task: 20
+    mem-per-cpu: 15000
+
+RefGenome_SamToSortedBam:
+    time: 05:00:00
+    job-name:  SamToSortedBamReference
+    mem-per-cpu: 30000
+
+RefGenome_SortedBamToMpileup:
+    time: 05:00:00
+    job-name:  SortedBamToMpileupReference
+    mem-per-cpu: 30000
+
+RefGenome_AlignmentStats:
+    time: 05:00:00
+    job-name:  RefGenome_AlignmentStats
+    cpus-per-task: 1
+    mem-per-cpu: 30000
+
+MockRef_AlignReads:
+    time: 01:00:00
+    job-name:  MockRef_AlignReads
+    cpus-per-task: 20
+    mem-per-cpu: 5000
+
+MockRefClusters_AlignReads:
+    time: 01:00:00
+    job-name:  MockRefClusters_AlignReads
+    cpus-per-task: 20
+    mem-per-cpu: 5000
+
+MockRef_SamToSortedBam:
+    time: 01:00:00
+    job-name:  MockRef_SamToSortedBam
+    cpus-per-task: 20
+    mem-per-cpu: 5000
+
+MockRefClusters_SamToSortedBam:
+    time: 01:00:00
+    job-name:  MockRefClusters_SamToSortedBam
+    cpus-per-task: 20
+    mem-per-cpu: 5000
+
+MockRef_SortedBamToMpileup:
+    time: 01:00:00
+    job-name:  MockRef_SortedBamToMpileup
+    cpus-per-task: 20
+    mem-per-cpu: 5000
+
+MockRef_AlignmentStats:
+    time: 01:00:00
+    job-name:  MockRef_AlignmentStats
+    cpus-per-task: 20
+    mem-per-cpu: 5000
+
+MockRefClusters_AlignmentStats:
+    time: 01:00:00
+    job-name:  MockRefClusters_AlignmentStats
+    cpus-per-task: 20
+    mem-per-cpu: 5000
+
+# Module 5 - Call Variants
+################################################################################   
+
+ParseMpileup_createCountFiles:
+    time: 05:00:00
+    job-name:  createCountFiles_mockref
+    mem-per-cpu: 16000
+
+ParseMpileup_createCountFiles_reference:
+    time: 05:00:00
+    job-name:  createCountFiles_reference
+    mem-per-cpu: 16000
+
+create_verticalRef:
+    time: 01:00:00
+    job-name:  create_verticalRef
+    mem-per-cpu: 16000
+    nvme: 20
+
+create_verticalRef_reference:
+    time: 01:00:00
+    job-name:  create_verticalRef_reference
+    mem-per-cpu: 16000
+    nvme: 20
+
+cut_verticalRef:
+    job-name: cut_verticalRef
+    
+cut_verticalRef_reference:
+    job-name: cut_verticalRef_reference
+
+create_MasterMatrix_parallel:
+    time: 0-12:00:00
+    job-name:  create_MasterMatrix_parallel
+    mem-per-cpu: 64000
+    nvme: 20
+
+create_MasterMatrix_parallel_reference:
+    time: 0-12:00:00
+    job-name:  create_MasterMatrix_parallel_reference
+    mem-per-cpu: 64000
+    nvme: 20
+
+aggregate_MasterMatrix:
+    job-name: aggregate_MasterMatrix
+    time: 0-12:00:00
+    mem-per-cpu: 48000
+    nvme: 20
+    
+aggregate_MasterMatrix_reference:
+    job-name: aggregate_MasterMatrix_reference
+    time: 0-12:00:00
+    mem-per-cpu: 48000
+    nvme: 20
+
+FilterVariants:
+    time: 1-12:00:00
+    job-name:  filterVariants
+    mem-per-cpu: 30000
+
+FilterVariants_reference:
+    time: 1-12:00:00
+    job-name:  filterVariants_reference
+    mem-per-cpu: 30000
+    
+CreateVCF:
+    time: 01:00:00
+    job-name: CreateVCF
+    mem-per-cpu: 30000    
+
+CreateVCF_reference:
+    time: 01:00:00
+    job-name:  CreateVCF_reference
+    mem-per-cpu: 30000
+
+# Module 6 - Postprocessing
+################################################################################
+Ref_getVariantFlanking:
+    time: 02:00:00
+    job-name:  Ref_getVariantFlanking
+    
+MockRef_getVariantFlanking:
+    time: 05:00:00
+    job-name:  MockRef_getVariantFlanking
+
+AlignMockFlankingToReference:
+    job-name:  AlignMockFlankingToReference
+    cpus-per-task: 20
+    mem-per-cpu: 5000
+
+MockFlankingToReference_SamToSortedBam:
+    job-name: MockFlankingToReference_SamToSortedBam
+    cpus-per-task: 20
+    mem-per-cpu: 1000
+
+# Module 7 - Reporting
+################################################################################
+R_finalReport:
+    time: 0-12:00:00
+    job-name: Rreport
+    mem-per-cpu: 80000

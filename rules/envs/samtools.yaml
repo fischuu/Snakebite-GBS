@@ -1,5 +1,5 @@
-name: picard
+name: samtools
 channels:
   - bioconda
 dependencies:
-  - picard=2.21.9
+  - samtools=1.9

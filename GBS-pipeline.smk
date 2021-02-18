@@ -9,10 +9,11 @@ import os
 ##### Daniel Fischer (daniel.fischer@luke.fi)
 ##### Natural Resources Institute Finland (Luke)
 ##### This pipeline is build upon the the GBS-SNP-CROP pipeline
-##### Version: 0.2
+##### Version: 0.4
+version = "0.4"
 
 ##### set minimum snakemake version #####
-#min_version("5.1.2")
+min_version("5.24")
 
 ##### Sample sheets #####
 
@@ -25,16 +26,63 @@ wildcard_constraints:
     rawsamples="|".join(rawsamples),
     samples="|".join(samples)
 
-##### Input definitions #####
+##### Complete the input configuration
+config["genome-bwa-index"] = config["genome"]+".bwt"
+config["genome-star-index"] = config["project-folder"]+"/references/STAR2.7.3a"
+config["report-script"] = config["pipeline-folder"]+"/scripts/workflow-report.Rmd"
+config["adapter"]=config["pipeline-folder"]+"/adapter.fa"
+
+##### Singularity container #####
+config["singularity"] = {}
+config["singularity"]["star"] = "docker://fischuu/star:2.7.3a-0.1"
+config["singularity"]["gbs"] = "docker://fischuu/gbs:0.2"
+config["singularity"]["cutadapt"] = "docker://fischuu/cutadapt:2.8-0.3"
+config["singularity"]["minimap2"] = "docker://fischuu/minimap2:2.17-0.2"
+config["singularity"]["r-gbs"] = "docker://fischuu/r-gbs:3.6.3-0.2"
+
+##### Print the welcome screen #####
+print("#################################################################################")
+print("##### Welcome to the GBS pipeline")
+print("##### version: "+version)
+print("#####")
+print("##### Pipeline configuration")
+print("##### --------------------------------")
+print("##### project-folder  : "+config["project-folder"])
+print("##### pipeline-folder : "+config["pipeline-folder"])
+print("##### report-script   : "+config["report-script"])
+print("##### pipeline-config (NOT NECESSARILY THE USED ONE!!!): "+config["pipeline-config"])
+print("#####")
+print("##### Singularity configuration")
+print("##### --------------------------------")
+print("##### star     : "+config["singularity"]["star"])
+print("##### gbs      : "+config["singularity"]["gbs"])
+print("##### cutadapt : "+config["singularity"]["cutadapt"])
+print("##### minimap2 : "+config["singularity"]["minimap2"])
+print("##### r-gbs    : "+config["singularity"]["r-gbs"])
+print("#####")
+print("##### Runtime-configurations")
+print("##### --------------------------------")
+print("##### genome         : "+ config["genome"])
+print("##### barcodes-file  : "+ config["barcodes"])
+print("##### rawsample file : "+ config["rawsamples"])
+print("#####")
+print("##### Derived runtime parameters")
+print("##### --------------------------------")
+print("##### BWA-Genome index  : "+config["genome-bwa-index"])
+print("##### STAR-Genome index : "+config["genome-star-index"])
+print("##### Adapter file      : "+ config["adapter"])
+print("#################################################################################")
+
+
     
 ##### run complete pipeline #####
 
 rule all:
     input:
       # OUTPUT: PREPARATION MODULE
-#        expand("%s/FASTQ/CONCATENATED/{samples}_R1_001.merged.fastq.gz" % (config["project-folder"]), samples=samples),
-#        expand("%s/FASTQ/CONCATENATED/{samples}_R2_001.merged.fastq.gz" % (config["project-folder"]), samples=samples),
-      # QC OF RAW AND CONCATENATED FILES
+        expand("%s/FASTQ/CONCATENATED/{samples}_R1_001.merged.fastq.gz" % (config["project-folder"]), samples=samples),
+        expand("%s/FASTQ/CONCATENATED/{samples}_R2_001.merged.fastq.gz" % (config["project-folder"]), samples=samples),
+#      # QC OF RAW AND CONCATENATED FILES
         "%s/QC/RAW/multiqc_R1/" % (config["project-folder"]),
         "%s/QC/CONCATENATED/multiqc_R1/" % (config["project-folder"]),
         "%s/QC/TRIMMED/multiqc_R1/" % (config["project-folder"]),
@@ -79,14 +127,11 @@ rule all:
 report: "report/workflow.rst"
 
 ##### load rules #####
-include: "rules/Step0-Preparations"
-include: "rules/Step1-QC"
-include: "rules/Step2-Preprocessing"
-include: "rules/Step3-MockReference"
-include: "rules/Step4-Indexing"
-include: "rules/Step5-AlignReads"
-include: "rules/Step6-ParseMpileup"
-include: "rules/Step7-FilterVariants"
-include: "rules/Step8-CreateVCF"
-include: "rules/Step9-VariantFlanking"
-include: "rules/Step10-Reporting"
+include: "rules/Module0-PreparationsAndIndexing"
+include: "rules/Module1-QC"
+include: "rules/Module2-DataPreprocessing"
+include: "rules/Module3-MockReference"
+include: "rules/Module4-ReadAlignment"
+include: "rules/Module5-CallVariants"
+include: "rules/Module6-PostProcessing"
+include: "rules/Module7-Reporting"

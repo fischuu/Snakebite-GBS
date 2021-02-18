@@ -31,9 +31,12 @@
 #
 
 module load bioconda/3
+source activate Snakemake
 # Uncomment this, once the environemnt is created
-source activate /projappl/project_2001746/conda_envs/Genotype
+#source activate /projappl/project_2001746/conda_envs/Genotype
 #source activate /projappl/project_2001289/FAANGlncRNA
+
+export TMPDIR=$local_scratch
 
 # Create the rulegraph
 #snakemake -s GBS-pipeline.smk \
@@ -42,11 +45,10 @@ source activate /projappl/project_2001746/conda_envs/Genotype
 
 snakemake -s /scratch/project_2001746/Pipeline-GBS/GBS-pipeline.smk \
           -j 150 \
-          --use-conda \
           --use-singularity \
-          --singularity-args "-B /scratch:/scratch,/projappl:/projappl" \
-          --configfile /scratch/project_2001746/Pipeline-GBS/GBS-pipeline_config-example.yaml \
+          --singularity-args "-B /scratch:/scratch,/projappl:/projappl,$TMPDIR:/tmp,/run/nvme:/run/nvme" \
+          --configfile /scratch/project_2001746/Pipeline-GBS/GBS-pipeline_config.yaml \
           --latency-wait 60 \
-          --cluster-config /scratch/project_2001746/Pipeline-GBS/GBS-pipeline_puhti-config.yaml \
+          --cluster-config /scratch/project_2001746/Pipeline-GBS/GBS-pipeline_server-config.yaml \
           --cluster "sbatch -t {cluster.time} --account={cluster.account} --gres=nvme:{cluster.nvme} --job-name={cluster.job-name} --tasks-per-node={cluster.ntasks} --cpus-per-task={cluster.cpus-per-task} --mem-per-cpu={cluster.mem-per-cpu} -p {cluster.partition} -D {cluster.working-directory}" \
-          $1 
+          $@
