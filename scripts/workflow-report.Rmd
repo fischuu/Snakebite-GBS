@@ -956,7 +956,7 @@ barplot(avgDist, main="Avg cluster mapping distance per Chromosome", col=viridis
 
 ```{r}
 if(refAvail){
-flankingCounts <- read.table(file.path(projFolder,"BAM","Mockref","mockToRef.combined.fa.counts"))
+flankingCounts <- read.table(file.path(projFolder,"BAM","Mockref","mockToRef.merged.combined.fa.counts"))
 } else {
   flankingCounts <- 0
 }
