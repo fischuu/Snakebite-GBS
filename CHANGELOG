@@ -4,6 +4,8 @@
 #####                                                                      #####
 ################################################################################
 
+0.4   : Release version
+0.3.16: * Several other small path typos
 0.3.15: * Mixup in samflags anf flagsts solev for final report
 0.3.14: * Path typos in final report fixed
 0.3.13: * Increased default NVME space for mock reference building
