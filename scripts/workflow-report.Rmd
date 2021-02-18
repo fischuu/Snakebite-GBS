@@ -875,9 +875,9 @@ These are the flagstats from mapping the mock clusters against an existing refer
 * 2064: Supplementary alignment reverse
 * 4: Unmapped
 
-```{r sam.flagstats}
+```{r samflags}
 if(refAvail){
-samFlagstats <- read.table(file.path(projFolder,"BAM", "Mockref", "mockToRef.sam.flagstat"))
+samFlagstats <- read.table(file.path(projFolder,"BAM", "Mockref", "mockToRef.sam.samflags"))
 colnames(samFlagstats) <- c("Freq.", "Flag")
 totalLoci <- samFlagstats$V1[samFlagstats$V2==0] + samFlagstats$V1[samFlagstats$V2==16]
 out_html <- knitr::kable(samFlagstats, "html")

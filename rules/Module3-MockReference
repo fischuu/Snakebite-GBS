@@ -109,6 +109,7 @@ else:
             sbam="%s/BAM/Mockref/mockToRef.sorted.bam" % (config["project-folder"])
         output:
             fs="%s/BAM/Mockref/mockToRef.sam.flagstat" % (config["project-folder"]),
+            samflags="%s/BAM/Mockref/mockToRef.sam.samflags" % (config["project-folder"])
             stats="%s/BAM/Mockref/mockToRef.sam.stats" % (config["project-folder"]),
             c="%s/BAM/Mockref/mockToRef.coverage" % (config["project-folder"]),
             bed="%s/BAM/Mockref/mockToRef.bed" % (config["project-folder"]),
@@ -131,7 +132,7 @@ else:
         shell:"""
             df -h &> {log}
             echo "Number of threads used:" {threads}
-            samtools flagstat {input.sam} > {output.fs}
+            sed '/^@/d' {input.sam} | cut -f2 | sort | uniq -c > {output.samflags}
             samtools stats {input.sam} > {output.stats}
             samtools idxstats {input.sbam} | awk '{{print $1\" \"$3}}' > {output.c}
             bedtools genomecov -ibam {input.sbam} -bg > {output.bed}
