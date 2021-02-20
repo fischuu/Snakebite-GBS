@@ -114,7 +114,7 @@ CreateClusterAndMockReference:
     time: 1-00:00:00
     job-name:  CreateClusterAndMockReference
     cpus-per-task: 20
-    mem-per-cpu: 15000
+    mem-per-cpu: 4000
     nvme: 500
 
 MockVsRef_alignment:
