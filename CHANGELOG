@@ -4,6 +4,7 @@
 #####                                                                      #####
 ################################################################################
 
+0.5.1 : * samtools index set to csi instead of bai
 0.4.1 : * Bugfix - Missing outputfile script added
 0.4   : Release version
 0.3.16: * Several other small path typos

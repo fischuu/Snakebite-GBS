@@ -52,7 +52,7 @@ else:
             echo "Number of threads used:" {threads}
             samtools view -b -q {params.q} -f {params.f} -F {params.F} {input} > {output.bam}
             samtools sort {output.bam} -o {output.sorted}
-            samtools index {output.sorted}
+            samtools index -c {output.sorted}
       	"""
 
 if config["genome"] == "":
@@ -182,7 +182,7 @@ rule MockRef_SamToSortedBam:
         df -h &> {log}
         samtools view -b -q {params.q} -f {params.f} -F {params.F} {input} > {output.bam}
         samtools sort {output.bam} -o {output.sorted}
-        samtools index {output.sorted}
+        samtools index -c {output.sorted}
   	"""
 
 rule MockRefClusters_SamToSortedBam:
@@ -209,7 +209,7 @@ rule MockRefClusters_SamToSortedBam:
         df -h &> {log}
         samtools view -b -q {params.q} -f {params.f} -F {params.F} {input} > {output.bam}
         samtools sort {output.bam} -o {output.sorted}
-        samtools index {output.sorted}
+        samtools index -c {output.sorted}
   	"""
 
 rule MockRef_SortedBamToMpileup:
