@@ -4,6 +4,7 @@
 #####                                                                      #####
 ################################################################################
 
+0.4.1 : * Bugfix - Missing outputfile script added
 0.4   : Release version
 0.3.16: * Several other small path typos
 0.3.15: * Mixup in samflags anf flagsts solev for final report
