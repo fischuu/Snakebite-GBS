@@ -9,8 +9,8 @@ import os
 ##### Daniel Fischer (daniel.fischer@luke.fi)
 ##### Natural Resources Institute Finland (Luke)
 ##### This pipeline is build upon the the GBS-SNP-CROP pipeline
-##### Version: 0.5.1
-version = "0.5.1"
+##### Version: 0.5.2
+version = "0.5.2"
 
 ##### set minimum snakemake version #####
 min_version("5.24")
@@ -30,6 +30,7 @@ wildcard_constraints:
 config["genome-bwa-index"] = config["genome"]+".bwt"
 config["genome-star-index"] = config["project-folder"]+"/references/STAR2.7.3a"
 config["report-script"] = config["pipeline-folder"]+"/scripts/workflow-report.Rmd"
+config["refinement-script"] = config["pipeline-folder"]+"/scripts/refineMockReference.R"
 config["adapter"]=config["pipeline-folder"]+"/adapter.fa"
 
 ##### Singularity container #####

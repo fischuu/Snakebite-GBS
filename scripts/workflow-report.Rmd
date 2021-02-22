@@ -679,7 +679,7 @@ plotMQCFeature(x=file.path(projFolder,"QC","CONCATENATED","multiqc_R1"),
                y=file.path(projFolder,"QC","TRIMMED","multiqc_R1"),
                feature="fastqc_per_base_sequence_quality_plot")
 ```
-# Mock Reference
+# Preliminary Mock Reference
 
 ## Basic stats
 ```{r import required files, warning=FALSE, }
@@ -843,6 +843,22 @@ barplot(outQual, ylab="Frequency", main="Quality-score distribution")
 ## Ratio samles used to length Mock reference
 How much were the reads merged down? Length of Mock reference vs the length of all used reads together.
 
+# Mock reference
+
+## Basic stats
+```{r import required files, warning=FALSE, }
+finalMockClusters <- importFA(file.path(projFolder,"MockReference","MockReference.fa"))
+```
+
+Basic information for the final mock reference:
+```{r mock build stats}
+  out <- summary(finalMockClusters)
+  out[,2] <- formatC(out[,2],  format="d", big.mark=",")
+  out_html <- knitr::kable(out, col.names = NULL, "html")
+  kable_styling(out_html, "striped", position = "left")
+```
+
+
 # Existing Reference
 In case a reference genome was provided, here are a few statistics regarding it
 
@@ -869,7 +885,7 @@ if(refAvail){
 ## Mock vs reference
 
 These are the flagstats from mapping the mock clusters against an existing reference genome. Typical flag stats are:
-* 0: Read aligned aginst forward strand
+* 0: Read aligned against forward strand
 * 16: Read aligned against reverse strand
 * 2048: Supplementary alignment forward
 * 2064: Supplementary alignment reverse
@@ -877,11 +893,7 @@ These are the flagstats from mapping the mock clusters against an existing refer
 
 ```{r samflags}
 if(refAvail){
-<<<<<<< HEAD
-samFlagstats <- read.table(file.path(projFolder,"BAM", "Mockref","mockToRef.sam.samflags"))
-=======
 samFlagstats <- read.table(file.path(projFolder,"BAM", "Mockref", "mockToRef.sam.samflags"))
->>>>>>> 890fdad704ef6963b6091df7c6746a2bdac03490
 colnames(samFlagstats) <- c("Freq.", "Flag")
 totalLoci <- samFlagstats$V1[samFlagstats$V2==0] + samFlagstats$V1[samFlagstats$V2==16]
 out_html <- knitr::kable(samFlagstats, "html")
@@ -906,7 +918,7 @@ totalBases <- sum(abs(mergedLoci$V3 - mergedLoci$V2))
 ```
 
 However, in total we have `r nrow(unmergedLoci)` mapping loci that can be merged down (by intersection of the bed) to `r nrow(mergedLoci)` if their chromosomal location is intersected.
-Please note, if the difference between these two numbers is too large, it indicates that the mock reference needs to be stricted merged.
+Please note, if the difference between these two numbers is too large, it indicates that the mock reference needs to be merged more strict.
 
 In total `r formatC(totalBases, big.mark=",")` bases are covered in the reference genome from mock cluster sequences.
 
@@ -999,7 +1011,6 @@ datatable(tmp)
 ```
 
 WE COULD COUNT HERE STILL HOW MANY SEQUENCES MATCH THE GIVEN ONE WITH ONE SUBSTITUTION ALLOWED.
-
 
 # Alignment
 
@@ -1148,6 +1159,9 @@ for(i in 3:ncol(clusterCoverage)){
 ```
 ### Cluster coverage Mock samples vs others
 ADD HERE STILL A COMPARISON, HOW THE READS FROM THE MOCK DISTRIBUTE ACROSS THE REFERENCE VS ALL OTHER SAMPLES
+
+## Refind Mock reference
+ADD THIS STILL TO THE REPORT!!!
 
 ## Reference genome
 

@@ -176,3 +176,40 @@ else:
             df -h &> {log}
             samtools mpileup -Q {params.Q} -q {params.q} -B -C 50 -f {input.refgenome} {input.bam} > {output}
       	"""
+
+##########################################################
+##
+## Mock Reference refinement
+##
+##########################################################
+
+rule refine_mock_reference:
+    """
+    Refine the mock reference (R).
+    """
+    input:
+        clusters="%s/FASTQ/TRIMMED/GSC.MR.Clusters.fa" % (config["project-folder"]),
+        script=config["refinement-script"],
+        c="%s/FASTQ/TRIMMED/alignments_clusters/{samples}.coverage" % (config["project-folder"])
+    output:
+        "%s/MockReference/MockReference.fa" % (config["project-folder"])
+    log:
+        "%s/logs/R/refine_mock_reference.log" % (config["project-folder"])
+    benchmark:
+        "%s/benchmark/R/refine_mock_reference.benchmark.tsv" % (config["project-folder"])
+    singularity:
+        "docker://fischuu/r-gbs:3.6.3-0.2"
+    params:
+       projFolder=config["project-folder"],
+       pipeFolder=config["pipeline-folder"],
+       minTotalReadCoverage=config["mockref"]["TotalReadCoverage"],
+       minSampleCoverage=config["mockref"]["minSampleCoverage"]
+    shell:"""
+       R -e "projFolder <- '{params.projFolder}'; \
+             mockClusters.file <- '{input.clusters}'; \
+             minTotalReadCoverage <- '{params.minTotalReadCoverage}'; \
+             minSampleCoverage <- '{params.minSampleCoverage}'; \
+             mockClusters.refined.file <- '{output}'; \
+             snakemake <- TRUE;\
+             source('{input.script}')" &> {log}
+    """
