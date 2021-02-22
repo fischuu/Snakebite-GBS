@@ -1,0 +1,144 @@
+if config["genome"] == "":
+    print(f"No reference genome provided, skipping the star indexing step for reference genome")
+else:
+    rule star_create_index:
+        """
+        Create Genome Index for reference genome (STAR).
+        """
+        input:
+            fasta=config["genome"],
+        output:
+            "%s/chrName.txt" % (config["genome-star-index"])
+        log:
+            "%s/logs/STAR/star_reference_index.log" % (config["project-folder"])
+        benchmark:
+            "%s/benchmark/STAR/star_reference_index.benchmark.tsv" % (config["project-folder"])
+        threads: lambda cores: cpu_count()
+        conda:"envs/star.yaml"
+        singularity: config["singularity"]["star"]
+        params: index=config["genome-star-index"]
+        shell:"""
+                mkdir -p {params.index}
+                STAR --runThreadN {threads} --runMode genomeGenerate --genomeDir {params.index} --genomeFastaFiles {input.fasta} 2> {log}
+        """
+        
+rule Concatenate_lanes:
+    """
+    Concatenate the demultiplexed fastq files (BASH).
+    """
+    output:
+        R1=temp("%s/FASTQ/CONCATENATED/{samples}_R1_001.merged.fastq.gz" % (config["project-folder"])),
+        R1Report="%s/FASTQ/CONCATENATED/{samples}_R1_001.merged.fastq.gz.report" % (config["project-folder"]),
+        R2=temp("%s/FASTQ/CONCATENATED/{samples}_R2_001.merged.fastq.gz" % (config["project-folder"])),
+        R2Report="%s/FASTQ/CONCATENATED/{samples}_R2_001.merged.fastq.gz.report" % (config["project-folder"])
+    log:
+        "%s/logs/SHELL/catFastq_{samples}.log" % (config["project-folder"])
+    benchmark:
+        "%s/benchmark/SHELL/{samples}_concatenate.benchmark.tsv" % (config["project-folder"])
+    threads: lambda cores: cpu_count()
+    params:
+        infolder="%s/FASTQ/RAW" % (config["project-folder"]),
+        outfolder="%s/FASTQ/CONCATENATED" % (config["project-folder"])
+    shell:"""
+        mkdir -p {params.outfolder}
+        cat {params.infolder}/{wildcards.samples}*_R1_001.fastq.gz > {output.R1} 2> {log}
+        ls {params.infolder}/{wildcards.samples}*_R1_001.fastq.gz > {output.R1Report} 2> {log}
+        cat {params.infolder}/{wildcards.samples}*_R2_001.fastq.gz > {output.R2} 2> {log}
+        ls {params.infolder}/{wildcards.samples}*_R2_001.fastq.gz > {output.R2Report} 2> {log}
+  	"""
+
+if config["genome"] == "":
+    print(f"No reference genome provided, skipping the bwa indexing step for reference genome")
+else:  	
+    rule bwa_create_index:
+        """
+        Index the Reference Genome (BWA).
+        """
+        input:
+            config["genome"]
+        output:
+            config["genome-bwa-index"]
+        log:
+            "%s/logs/BWA/bwa-fai-IndexReferenceGenome.log" % (config["project-folder"])
+        benchmark:
+            "%s/benchmark/BWA/bwaIndexReferenceGenome.benchmark.tsv" % (config["project-folder"])
+        threads: lambda cores: cpu_count()
+        conda:"envs/gbs.yaml"
+        singularity: config["singularity"]["gbs"]
+        shell:"""
+                bwa index -a bwtsw {input} 2> {log}
+                samtools faidx {input} 2> {log}
+      	"""
+
+rule IndexMockReferenceBWA:
+    """
+    Index the Mock Reference Genome (BWA).
+    """
+    input:
+        "%s/FASTQ/TRIMMED/GSC.MR.Genome.fa" % (config["project-folder"]),
+    output:
+        "%s/FASTQ/TRIMMED/GSC.MR.Genome.fa.bwt" % (config["project-folder"])
+    log:
+        "%s/BWA/IndexGMockReference.log" % (config["project-folder"])
+    benchmark:
+        "%s/benchmark/BWA/IndexMockReference.benchmark.tsv" % (config["project-folder"])
+    conda:"envs/gbs.yaml"
+    singularity: config["singularity"]["gbs"]
+    shell:"""
+        bwa index -a bwtsw {input}
+  	"""
+
+rule IndexMockReferenceSamtools:
+    """
+    Index the Mock Reference Genome (samtools).
+    """
+    input:
+        "%s/FASTQ/TRIMMED/GSC.MR.Genome.fa" % (config["project-folder"]),
+    output:
+        "%s/FASTQ/TRIMMED/GSC.MR.Genome.fa.fai" % (config["project-folder"])
+    log:
+        "%s/logs/Samtools/IndexGenomeSam.log" % (config["project-folder"])
+    benchmark:
+        "%s/benchmark/Samtools/IndexGenomeSam.benchmark.tsv" % (config["project-folder"])
+    conda:"envs/samtools.yaml"
+    singularity: config["singularity"]["gbs"]
+    shell:"""
+        samtools faidx {input}
+  	"""
+
+
+rule IndexClustersBWA:
+    """
+    Index the Mock Reference Genome Clusters (BWA).
+    """
+    input:
+        "%s/FASTQ/TRIMMED/GSC.MR.Clusters.fa" % (config["project-folder"]),
+    output:
+        "%s/FASTQ/TRIMMED/GSC.MR.Clusters.fa.bwt" % (config["project-folder"])
+    log:
+        "%s/logs/BWA/IndexClusters.log" % (config["project-folder"])
+    benchmark:
+        "%s/benchmark/BWA/IndexClusters.benchmark.tsv" % (config["project-folder"])
+    conda:"envs/gbs.yaml"
+    singularity: config["singularity"]["gbs"]
+    shell:"""
+        bwa index -a bwtsw {input}
+  	"""
+
+rule IndexClustersSamtools:
+    """
+    Index the Mock Reference Genome Clusters (samtools).
+    """
+    input:
+        "%s/FASTQ/TRIMMED/GSC.MR.Clusters.fa" % (config["project-folder"]),
+    output:
+        "%s/FASTQ/TRIMMED/GSC.MR.Clusters.fa.fai" % (config["project-folder"])
+    log:
+        "%s/logs/Samtools/IndexClustersSam.log" % (config["project-folder"])
+    benchmark:
+        "%s/benchmark/Samtools/IndexClustersSam.benchmark.tsv" % (config["project-folder"])
+    conda:"envs/samtools.yaml"
+    singularity: config["singularity"]["gbs"]
+    shell:"""
+        samtools faidx {input}
+  	"""

@@ -328,6 +328,9 @@ if(nrow(tmp)>0){
 plotFastQCFeature(rawFastQC.R1, rawFastQC.R2, feature="Total.Sequences", axes=FALSE)
 ```
 
+### Quality value distribution
+TO BE ADDED: Import the quality distribution reports here and visualize them
+
 ### Summary
 ```{r raw data summary stats}
 mqcStats.raw <- read.table(file.path(projFolder,"QC","RAW","multiqc_R1", "multiqc_data", "multiqc_fastqc.txt"), header=TRUE, sep="\t")
@@ -430,6 +433,9 @@ if(nrow(tmp)>0){
 par(mar=c(10,5,1,1))
 plotFastQCFeature(conFastQC.R1, conFastQC.R2, feature="Total.Sequences")
 ```
+
+### Quality value distribution
+TO BE ADDED: Import the quality distribution reports here and visualize them
 
 ### Per base N content (left: R1, right: R2)
 
@@ -554,6 +560,9 @@ if(nrow(tmp)>0){
 par(mar=c(10,5,1,1))
 plotFastQCFeature(trimmedFastQC.R1, trimmedFastQC.R2, feature="Total.Sequences")
 ```
+
+### Quality value distribution
+TO BE ADDED: Import the quality distribution reports here and visualize them
 
 ### Per base N content
 
@@ -866,9 +875,13 @@ These are the flagstats from mapping the mock clusters against an existing refer
 * 2064: Supplementary alignment reverse
 * 4: Unmapped
 
-```{r sam.flagstats}
+```{r samflags}
 if(refAvail){
+<<<<<<< HEAD
 samFlagstats <- read.table(file.path(projFolder,"BAM", "Mockref","mockToRef.sam.samflags"))
+=======
+samFlagstats <- read.table(file.path(projFolder,"BAM", "Mockref", "mockToRef.sam.samflags"))
+>>>>>>> 890fdad704ef6963b6091df7c6746a2bdac03490
 colnames(samFlagstats) <- c("Freq.", "Flag")
 totalLoci <- samFlagstats$V1[samFlagstats$V2==0] + samFlagstats$V1[samFlagstats$V2==16]
 out_html <- knitr::kable(samFlagstats, "html")
@@ -911,7 +924,7 @@ barplot(mappedLoci[,2], main="Alignments per Chromosome in Reference", col=virid
 
 ```{r SAMbed}
 if(refAvail){
- SAMLoci <- read.table(file.path(projFolder,"SAM","mockToRef.bed"))
+ SAMLoci <- read.table(file.path(projFolder,"BAM","Mockref","mockToRef.bed"))
 }
 ```
 
@@ -947,7 +960,7 @@ barplot(avgDist, main="Avg cluster mapping distance per Chromosome", col=viridis
 
 ```{r}
 if(refAvail){
-flankingCounts <- read.table(file.path(projFolder,"SAM","mockToRef.combined.fa.counts"))
+flankingCounts <- read.table(file.path(projFolder,"BAM","Mockref","mockToRef.merged.combined.fa.counts"))
 } else {
   flankingCounts <- 0
 }

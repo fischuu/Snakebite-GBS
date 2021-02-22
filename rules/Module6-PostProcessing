@@ -1,4 +1,4 @@
-rule Step9_getVariantFlanking:
+rule MockRef_getVariantFlanking:
     """
     Get the flanking sequences from identified variants.
     """
@@ -13,9 +13,9 @@ rule Step9_getVariantFlanking:
         pipefolder=config["pipeline-folder"],
         flanking=config["params"]["step9"]["flanking"]
     log:
-        "%s/logs/step9.log" % (config["project-folder"])
+        "%s/logs/BASH/MockRef_getVariantFlanking.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/step9.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/BASH/MockRef_getVariantFlanking.benchmark.tsv" % (config["project-folder"])
     conda:"envs/gbs.yaml"
     singularity: config["singularity"]["gbs"]
     shell:"""
@@ -28,7 +28,7 @@ rule Step9_getVariantFlanking:
 if config["genome"] == "":
     print(f"No reference genome provided, skipping the star indexing step for reference genome")
 else:
-    rule Step9_0_getVariantFlanking_reference:
+    rule Ref_getVariantFlanking:
         """
         Get the flanking sequences from identified variants for reference genome.
         """
@@ -43,9 +43,9 @@ else:
             pipefolder=config["pipeline-folder"],
             flanking=config["params"]["step9"]["flanking"]
         log:
-            "%s/logs/step9_0.log" % (config["project-folder"])
+            "%s/logs/BASH/Ref_getVariantFlanking.log" % (config["project-folder"])
         benchmark:
-            "%s/benchmark/step9_0.benchmark.tsv" % (config["project-folder"])
+            "%s/benchmark/BASH/Ref_getVariantFlanking.benchmark.tsv" % (config["project-folder"])
         conda:"envs/gbs.yaml"
         singularity: config["singularity"]["gbs"]
         shell:"""
@@ -58,7 +58,7 @@ else:
 if config["genome"] == "":
     print(f"No reference genome provided, skipping the star indexing step for reference genome")
 else:      	
-    rule Step9_alignMockFlankingToReference:
+    rule AlignMockFlankingToReference:
         """
         Align the flanking sites from mock referene to reference genome.
         """
@@ -69,9 +69,9 @@ else:
         output:
             "%s/SAM/mockVariantsToReference/mockVariantsToReference.sam" % (config["project-folder"])
         log:
-            "%s/logs/Step9_alignMockFlankingToReference.log" % (config["project-folder"])
+            "%s/logs/BWA/AlignMockFlankingToReference.log" % (config["project-folder"])
         benchmark:
-            "%s/benchmark/Step9_alignMockFlankingToReference.benchmark.tsv" % (config["project-folder"])
+            "%s/benchmark/BWA/AlignMockFlankingToReference.benchmark.tsv" % (config["project-folder"])
         threads: 20
         conda:"envs/gbs.yaml"
         singularity: config["singularity"]["gbs"]
@@ -83,7 +83,7 @@ else:
 if config["genome"] == "":
     print(f"No reference genome provided, skipping the star indexing step for reference genome")
 else:  	
-    rule Step9_SamToSortedBam_MockFlankingToReference:
+    rule MockFlankingToReference_SamToSortedBam:
         """
         Sam to sorted bam for flanking sites mapped toreference genome bam (SAMTOOLS)
         """
@@ -93,9 +93,9 @@ else:
             bam="%s/BAM/mockVariantsToReference/mockVariantsToReference.bam" % (config["project-folder"]),
             sorted="%s/BAM/mockVariantsToReference/mockVariantsToReference.sorted.bam" % (config["project-folder"])
         log:
-            "%s/logs/Step9_SamToSortedBam_MockFlankingToReference.log" % (config["project-folder"])
+            "%s/logs/Samtools/MockFlankingToReference_SamToSortedBam.log" % (config["project-folder"])
         benchmark:
-            "%s/benchmark/Step9_SamToSortedBam_MockFlankingToReference.benchmark.tsv" % (config["project-folder"])
+            "%s/benchmark/Samtools/MockFlankingToReference_SamToSortedBam.benchmark.tsv" % (config["project-folder"])
         threads: lambda cores: 20
         params:
             q=config["params"]["step5d"]["q"],

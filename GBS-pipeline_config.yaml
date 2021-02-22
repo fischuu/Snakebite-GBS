@@ -6,15 +6,16 @@
 project-folder: "/scratch/project_2001746/Example"                                                                  # Absolute path to the project root folder
 pipeline-folder: "/scratch/project_2001746/Pipeline-GBS"                                                            # Absolute path to the pipeline folder
 pipeline-config: "/scratch/project_2001746/Pipeline-GBS/GBS-pipeline_config-example.yaml"                           # Absolute path to the pipeline configuration file
-report-script: "/scratch/project_2001746/Pipeline-GBS/scripts/workflow-report.Rmd"                                  # Absolute path to the report scripts (THIS OPTION SHOULD BE OBSOLETE)
+#report-script: "/scratch/project_2001746/Pipeline-GBS/scripts/workflow-report.Rmd"                                  # Absolute path to the report scripts (THIS OPTION SHOULD BE OBSOLETE)
 barcodes: "/scratch/project_2001746/Example/barcodesID.txt"                                                         # Absolute path to the barcodes file (MAKE THIS OPTIONAL)
 rawsamples: "/scratch/project_2001746/Example/rawsamples"                                                           # Absolute path to the raw samples file (MAKE THIS OPTIONAL)
 genome: "/scratch/project_2001746/Example/references/Vulpes_vulpes.VulVul2.2.dna.toplevel.fa"                       # Absolute path to an existing reference genome, leave empty "" if not available
-genome-bwa-index: "/scratch/project_2001746/Example/references/Vulpes_vulpes.VulVul2.2.dna.toplevel.fa.bwt"         # Absolute path to the bwa index (THIS OPTION SHOULD BE OBSOLETE)
-genome-star-index:  "/scratch/project_2001746/Example/references/STAR2.7.3a"                                        # Absolute path to the star index (THIS OPTION SHOULD BE OBSOLETE)
+#genome-bwa-index: "/scratch/project_2001746/Example/references/Vulpes_vulpes.VulVul2.2.dna.toplevel.fa.bwt"         # Absolute path to the bwa index (THIS OPTION SHOULD BE OBSOLETE)
+#genome-star-index:  "/scratch/project_2001746/Example/references/STAR2.7.3a"                                        # Absolute path to the star index (THIS OPTION SHOULD BE OBSOLETE)
 refsample: ""                                                                                                       # Id of ref sample used to build mock reference (NOT SURE, IF USED, CHECK THIS)
 local-scratch: $LOCAL_SCRATCH                                                                                       # Path for fast local storage for tmp files (Here, a system variable is used. Check with your server configs)
-adapter: "/scratch/project_2001746/Pipeline-GBS/adapter.fa"                                                         # Path for the adapter sequences, used by Trimmomatic (MAKE THIS OPTIONAL)
+#adapter: "/scratch/project_2001746/Pipeline-GBS/adapter.fa"                                                         # Path for the adapter sequences, used by Trimmomatic (MAKE THIS OPTIONAL)
+tmpdir: "/scratch/project_2001746/tmp"
 
 # Parameters for the GBS-SNP-CROP tools
 ################################################################################
@@ -106,9 +107,3 @@ params:
   step9:
     flanking: 25
   
-# Singularity containers
-singularity:
-  star: "docker://fischuu/star:2.7.3a-0.1"
-  gbs: "docker://fischuu/gbs:0.2"
-  cutadapt: "docker://fischuu/cutadapt:2.8-0.2"
-  minimap2: "docker://fischuu/minimap2:2.17-0.2"
