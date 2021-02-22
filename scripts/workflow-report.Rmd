@@ -43,13 +43,13 @@ knitr::opts_chunk$set(echo = FALSE,
                       fig.align = 'center', fig.height = 5, fig.width = 8.5)
 mockClusters.file <- "GSC.MR.Clusters.fa"
 mockReference.file <- "GSC.MR.Genome.fa"
-refGenome.file <- basename(refGenome.file)
 if(!is.element("snakemake",ls())){
   projFolder <- "/scratch/project_2001746/BSF"
   pipelineFolder <- "/scratch/project_2001746/Pipeline-GBS/"
   pipelineConfig <- "/scratch/project_2001746/BSF/Pipeline-GBS/GBS-pipeline_config-BSF.yaml"
   refGenome.file <- "hermetiaRef_112020.fasta"
 }
+refGenome.file <- basename(refGenome.file)
 ifelse(refGenome.file == "", refAvail <- FALSE, refAvail <- TRUE)
 ```
 
@@ -163,7 +163,7 @@ getFastQCJSON <- function(path){
 The DAG of the used pipeline with rule dependencies.
 
 ```{r import workflow, echo=FALSE, fig.cap="Overview of the applied workflow", out.width = '100%'}
-if(file.exists(file.path(pipelineFolder,"workflow.png"))) knitr::include_graphics(file.path(pipelineFolder,"workflow.png"))
+if(file.exists(file.path(projFolder,"workflow.png"))) knitr::include_graphics(file.path(projFolder,"workflow.png"))
 ```
 
 
@@ -199,7 +199,7 @@ kable_styling(out_html, "striped", position = "left")
 ```
 
 ## Concatenating stats
-As the concatenating is a crucial step in this pipeline, it is important to make this right. As a double check that things went right, we check how
+As the concatenating is a crucial step in this pipeline, it is important to make this correct. As a double check that things went right, we check how
 many raw samples were concatenated per sample. We do this visually. Basically, the height of the bars should correspond to your number of used lanes,
 normally 1,2 or 4. Sometimes, you might want to concatenate also more files together (e.g. technical replicates), in this case the bar can be also higher.
 
@@ -707,7 +707,7 @@ Total length of the Mock Reference (Used as reference): `r format(sum(nchar(mock
 ## Theoretical coverage of Mock per sample
 Given the length of the mock reference assembly and the total number of sequenced bases per sample, we can estimate the theoretical coverage of the mock for each sample
 
-Currently I hard-code here the paired-end reads and assume equal lengths and reads in both pairs. Adjust this later 'to reality'...
+Currently I hard-code here the paired-end reads and assume equal lengths and reads in both pairs.
 
 ```{r mock coverage}
 par(mar=c(10,5,1,1))
@@ -769,7 +769,7 @@ barplot(t(atDist), main="A,C,T,G distribution", col=viridis(20)[8])
 ```
 
 ### Assembling statistics
-Statistics on how many reads have been assembled (=had a minimum overlap of 10 bases between R1 and R2), have been discarded ( due to length and/or quality) or were not possible to overlap.
+Statistics on how many reads have been assembled (=had a minimum overlap of x-bases (see table above) between R1 and R2), have been discarded ( due to length and/or quality) or were not possible to overlap.
 
 ```{r assembling stat}
 tmp <- pearIn[c(startPos+23, startPos+24, startPos+25)]
@@ -868,7 +868,7 @@ These are the flagstats from mapping the mock clusters against an existing refer
 
 ```{r sam.flagstats}
 if(refAvail){
-samFlagstats <- read.table(file.path(projFolder,"SAM","mockToRef.samflags"))
+samFlagstats <- read.table(file.path(projFolder,"BAM", "Mockref","mockToRef.sam.samflags"))
 colnames(samFlagstats) <- c("Freq.", "Flag")
 totalLoci <- samFlagstats$V1[samFlagstats$V2==0] + samFlagstats$V1[samFlagstats$V2==16]
 out_html <- knitr::kable(samFlagstats, "html")
