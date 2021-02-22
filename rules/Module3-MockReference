@@ -133,6 +133,7 @@ else:
             df -h &> {log}
             echo "Number of threads used:" {threads}
             sed '/^@/d' {input.sam} | cut -f2 | sort | uniq -c > {output.samflags}
+            samtools flagstat {input.sam} > {output.fs}
             samtools stats {input.sam} > {output.stats}
             samtools idxstats {input.sbam} | awk '{{print $1\" \"$3}}' > {output.c}
             bedtools genomecov -ibam {input.sbam} -bg > {output.bed}

@@ -9,8 +9,8 @@ import os
 ##### Daniel Fischer (daniel.fischer@luke.fi)
 ##### Natural Resources Institute Finland (Luke)
 ##### This pipeline is build upon the the GBS-SNP-CROP pipeline
-##### Version: 0.4
-version = "0.4"
+##### Version: 0.4.1
+version = "0.4.1"
 
 ##### set minimum snakemake version #####
 min_version("5.24")
