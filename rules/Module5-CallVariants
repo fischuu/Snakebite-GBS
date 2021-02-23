@@ -421,3 +421,32 @@ else:
             perl {params.pipefolder}/scripts/GBS-SNP-CROP-8.pl -in {input.unfiltered} -out {params.unfilteredOut} -b {params.barcodes} -formats {params.format} &> {log}
             cd ../..
       	"""
+
+################################################################################
+##
+## Process the final mock
+
+rule ParseMpileup_createCountFiles_finalMock:
+    """
+    Parse mpileup outputs and create count/ref files for final mock
+    """
+    input:
+        "%s/MPILEUP/mpileup_finalMock/{samples}.mpileup" % (config["project-folder"])
+    output:
+        co="%s/MPILEUP/mpileup_finalMock/{samples}.count.txt" % (config["project-folder"]),
+        ref="%s/MPILEUP/mpileup_finalMock/{samples}.ref.txt" % (config["project-folder"])
+    params:
+        p=config["params"]["step6"]["p"],
+        wd="%s/FASTQ/TRIMMED" % config["project-folder"],
+        pipefolder=config["pipeline-folder"]
+    log:
+        "%s/logs/Perl/ParseMpileup_createCountFiles_finalMock.{samples}.log" % (config["project-folder"])
+    benchmark:
+        "%s/benchmark/Perl/ParseMpileup_createCountFiles_finalMock.{samples}.benchmark.tsv" % (config["project-folder"])
+    threads: 1
+    conda:"envs/gbs.yaml"
+    singularity: config["singularity"]["gbs"]
+    shell:"""
+        cd {params.wd}
+        perl {params.pipefolder}/scripts/GBS-SNP-CROP-6_1.pl -b {input} -p {params.p} &> {log}
+  	"""
