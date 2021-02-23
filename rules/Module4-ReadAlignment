@@ -333,3 +333,45 @@ rule FinalMockRef_SamToSortedBam:
         samtools index -c {output.sorted}
   	"""
 
+rule FinalMockRef_SortedBamToMpileup:
+    """
+    Get Mpileup for final Mock Reference Genome.
+    """
+    input:
+        bam="%s/BAM/alignments_finalMock/{samples}.sorted.bam" % (config["project-folder"]),
+        reference="%s/MockReference/MockReference.fa" % (config["project-folder"])
+    output:
+        bam="%s/MPILEUP/mpileup_finalMock/{samples}.mpileup" % (config["project-folder"])
+    log:
+        "%s/logs/Samtoools/FinalMockRef_SortedBamToMpileup.{samples}.log" % (config["project-folder"])
+    benchmark:
+        "%s/benchmark/Samtools/FinalMockRef_SortedBamToMpileup.{samples}.benchmark.tsv" % (config["project-folder"])
+    params:
+        threads=config["params"]["step5d"]["threads"],
+        Q=config["params"]["step5d"]["Q"],
+        q=config["params"]["step5d"]["q"]
+    conda:"envs/samtools.yaml"
+    singularity: config["singularity"]["gbs"]
+    shell:"""
+        df -h &> {log}
+        samtools mpileup -Q {params.Q} -q {params.q} -B -C 50 -f {input.reference} {input.bam} > {output}
+  	"""
+
+
+rule finalMockRef_AlignmentStats:
+    """
+    Alignment stats for reads mapped to mock ref
+    """
+    input:
+        "%s/FASTQ/TRIMMED/alignments/{samples}.sam" % (config["project-folder"])
+    output:
+        "%s/FASTQ/TRIMMED/alignments/{samples}.sam.flagstat" % (config["project-folder"])
+    log:
+        "%s/logs/Samtools/MockRef_AlignmentStats.{samples}.log" % (config["project-folder"])
+    benchmark:
+        "%s/benchmark/Samtools/MockRef_AlignmentStats.{samples}.benchmark.tsv" % (config["project-folder"])
+    conda:"envs/samtools.yaml"
+    singularity: config["singularity"]["gbs"]
+    shell:"""
+        samtools flagstat {input} > {output}
+  	"""
