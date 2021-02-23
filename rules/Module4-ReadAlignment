@@ -360,16 +360,16 @@ rule FinalMockRef_SortedBamToMpileup:
 
 rule finalMockRef_AlignmentStats:
     """
-    Alignment stats for reads mapped to mock ref
+    Alignment stats for reads mapped to final mock ref
     """
     input:
-        "%s/FASTQ/TRIMMED/alignments/{samples}.sam" % (config["project-folder"])
+        "%s/SAM/alignments_finalMock/{samples}.sam" % (config["project-folder"])
     output:
-        "%s/FASTQ/TRIMMED/alignments/{samples}.sam.flagstat" % (config["project-folder"])
+        "%s/BAM/alignments_finalMock/{samples}.sam.flagstat" % (config["project-folder"])
     log:
-        "%s/logs/Samtools/MockRef_AlignmentStats.{samples}.log" % (config["project-folder"])
+        "%s/logs/Samtools/FinalMockRef_AlignmentStats.{samples}.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/Samtools/MockRef_AlignmentStats.{samples}.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/Samtools/FinalMockRef_AlignmentStats.{samples}.benchmark.tsv" % (config["project-folder"])
     conda:"envs/samtools.yaml"
     singularity: config["singularity"]["gbs"]
     shell:"""

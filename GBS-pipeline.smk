@@ -120,7 +120,7 @@ rule all:
       # OUTPUT STEP 9
 #        "%s/BAM/mockVariantsToReference/mockVariantsToReference.bam" % (config["project-folder"]),
       # Quality check
-        #"%s/finalReport.html" % (config["project-folder"]),
+        "%s/finalReport.html" % (config["project-folder"]),
         expand("%s/MPILEUP/mpileup_finalMock/{samples}.mpileup" % (config["project-folder"]), samples=samples)
 
 
