@@ -4,7 +4,6 @@
 #####                                                                      #####
 ################################################################################
 
-0.5.4 : * Index final mock reference added
 0.5.3 : * Rule all rule simplified
 0.5.2 : * Script to refine the mock reference added
 0.5.1 : * samtools index set to csi instead of bai

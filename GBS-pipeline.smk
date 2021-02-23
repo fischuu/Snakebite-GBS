@@ -121,7 +121,7 @@ rule all:
 #        "%s/BAM/mockVariantsToReference/mockVariantsToReference.bam" % (config["project-folder"]),
       # Quality check
         #"%s/finalReport.html" % (config["project-folder"]),
-        "%s/MockReference/MockReference.fa.bwt" % (config["project-folder"])
+        expand("%s/logs/BWA/FinalMockRef_AlignReads.{samples}.log" % (config["project-folder"]), samples=samples)
 
 
 

@@ -278,3 +278,30 @@ rule MockRefClusters_AlignmentStats:
         samtools idxstats {input.sbam} | awk '{{print $1\" \"$3}}' > {output.c}
   	"""
 
+################################################################################
+##
+## Process the final Mock
+
+rule FinalMockRef_AlignReads:
+    """
+    Align reads to the final mock reference Genome.
+    """
+    input:
+        reference="%s/MockReference/MockReference.fa" % (config["project-folder"]),
+        refFiles="%s/MockReference/MockReference.fa.bwt" % (config["project-folder"]),
+        R1="%s/FASTQ/TRIMMED/{samples}.R1.fq.gz" % (config["project-folder"]),
+        R2="%s/FASTQ/TRIMMED/{samples}.R2.fq.gz" % (config["project-folder"]),
+    output:
+        temp("%s/SAM/alignments_finalMock/{samples}.sam" % (config["project-folder"]))
+    log:
+        "%s/logs/BWA/FinalMockRef_AlignReads.{samples}.log" % (config["project-folder"])
+    benchmark:
+        "%s/benchmark/BWA/FinalMockRef_AlignReads.{samples}.benchmark.tsv" % (config["project-folder"])
+    params:
+        threads=config["params"]["step5b"]["threads"],
+    conda:"envs/gbs.yaml"
+    singularity: config["singularity"]["gbs"]
+    shell:"""
+        df -h &> {log}
+        bwa mem -t {params.threads} -M {input.reference} {input.R1} {input.R2} > {output} 2> {log}
+  	"""
