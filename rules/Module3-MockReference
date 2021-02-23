@@ -190,7 +190,7 @@ rule refine_mock_reference:
     input:
         clusters="%s/FASTQ/TRIMMED/GSC.MR.Clusters.fa" % (config["project-folder"]),
         script=config["refinement-script"],
-        c="%s/FASTQ/TRIMMED/alignments_clusters/{samples}.coverage" % (config["project-folder"])
+        c=expand("%s/FASTQ/TRIMMED/alignments_clusters/{samples}.coverage" % (config["project-folder"]), samples=samples)
     output:
         "%s/MockReference/MockReference.fa" % (config["project-folder"])
     log:

@@ -46,6 +46,12 @@ IndexClustersSamtools:
     time: 02:00:00
     job-name:  IndexMockRefClusters_Samtools
     mem-per-cpu: 25000
+
+IndexFinalMockBWA:
+    time: 02:00:00
+    job-name:  IndexFinalMockBWA
+    mem-per-cpu: 25000
+
     
 # Module 1 - QC:
 ################################################################################
@@ -133,6 +139,9 @@ MockVsRef_AlignmentStats:
 MockVsRef_SortedBamToMpileup:
     time: 05:00:00
     job-name: MockVsRef_SortedBamToMpileup
+
+refine_mock_reference:
+    job-name: refine_mock_reference
 
 # Module 4 - Read alignment
 ################################################################################   

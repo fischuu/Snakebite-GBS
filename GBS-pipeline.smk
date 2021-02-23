@@ -120,7 +120,9 @@ rule all:
       # OUTPUT STEP 9
 #        "%s/BAM/mockVariantsToReference/mockVariantsToReference.bam" % (config["project-folder"]),
       # Quality check
-        "%s/finalReport.html" % (config["project-folder"])
+        #"%s/finalReport.html" % (config["project-folder"]),
+        "%s/MockReference/MockReference.fa.bwt" % (config["project-folder"])
+
 
 
 ### setup report #####
