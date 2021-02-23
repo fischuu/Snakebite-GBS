@@ -68,7 +68,7 @@ print("##### barcodes-file  : "+ config["barcodes"])
 print("##### rawsample file : "+ config["rawsamples"])
 print("#####")
 print("##### Derived runtime parameters")
-print("##### --------------------------------")Variant calling for final mock added
+print("##### --------------------------------")
 print("##### BWA-Genome index  : "+config["genome-bwa-index"])
 print("##### STAR-Genome index : "+config["genome-star-index"])
 print("##### Adapter file      : "+ config["adapter"])
