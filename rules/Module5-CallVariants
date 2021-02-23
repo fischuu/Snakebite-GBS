@@ -440,7 +440,7 @@ rule ParseMpileup_createCountFiles_finalMock:
         ref="%s/MPILEUP/mpileup_finalMock/{samples}.ref.txt" % (config["project-folder"])
     params:
         p=config["params"]["step6"]["p"],
-        wd="%s/FASTQ/TRIMMED" % config["project-folder"],
+        wd="%s/MPILEUP/mpileup_finalMock" % config["project-folder"],
         pipefolder=config["pipeline-folder"]
     log:
         "%s/logs/Perl/ParseMpileup_createCountFiles_finalMock.{samples}.log" % (config["project-folder"])
