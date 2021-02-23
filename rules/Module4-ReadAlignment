@@ -305,3 +305,31 @@ rule FinalMockRef_AlignReads:
         df -h &> {log}
         bwa mem -t {params.threads} -M {input.reference} {input.R1} {input.R2} > {output} 2> {log}
   	"""
+  	
+rule FinalMockRef_SamToSortedBam:
+    """
+    Sam to sorted bam for final mock reference (SAMTOOLS)
+    """
+    input:
+        "%s/SAM/alignments_finalMock/{samples}.sam" % (config["project-folder"])
+    output:
+        bam=temp("%s/BAM/alignments_finalMock/{samples}.bam" % (config["project-folder"])),
+        sorted="%s/BAM/alignments_finalMock/{samples}.sorted.bam" % (config["project-folder"])
+    log:
+        "%s/logs/Samtools/FinalMockRef_SamToSortedBam.{samples}.log" % (config["project-folder"])
+    benchmark:
+        "%s/benchmark/Samtools/FinalMockRef_SamToSortedBam.{samples}.benchmark.tsv" % (config["project-folder"])
+    params:
+        threads=config["params"]["step5d"]["threads"],
+        q=config["params"]["step5d"]["q"],
+        f=config["params"]["step5d"]["f"],
+        F=config["params"]["step5d"]["F"]
+    conda:"envs/samtools.yaml"
+    singularity: config["singularity"]["gbs"]
+    shell:"""
+        df -h &> {log}
+        samtools view -b -q {params.q} -f {params.f} -F {params.F} {input} > {output.bam}
+        samtools sort {output.bam} -o {output.sorted}
+        samtools index -c {output.sorted}
+  	"""
+

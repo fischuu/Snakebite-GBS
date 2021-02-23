@@ -209,6 +209,20 @@ MockRefClusters_AlignmentStats:
     cpus-per-task: 20
     mem-per-cpu: 5000
 
+FinalMockRef_AlignReads:
+    time: 01:00:00
+    job-name:  FinalMockRef_AlignReads
+    cpus-per-task: 20
+    mem-per-cpu: 5000
+  
+FinalMockRef_SamToSortedBam:
+    time: 01:00:00
+    job-name: FinalMockRef_SamToSortedBam
+    cpus-per-task: 20
+    mem-per-cpu: 5000
+
+
+
 # Module 5 - Call Variants
 ################################################################################   
 
