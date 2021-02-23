@@ -9,8 +9,8 @@ import os
 ##### Daniel Fischer (daniel.fischer@luke.fi)
 ##### Natural Resources Institute Finland (Luke)
 ##### This pipeline is build upon the the GBS-SNP-CROP pipeline
-##### Version: 0.5.3
-version = "0.5.3"
+##### Version: 0.5.4
+version = "0.5.4"
 
 ##### set minimum snakemake version #####
 min_version("5.24")
@@ -68,7 +68,7 @@ print("##### barcodes-file  : "+ config["barcodes"])
 print("##### rawsample file : "+ config["rawsamples"])
 print("#####")
 print("##### Derived runtime parameters")
-print("##### --------------------------------")
+print("##### --------------------------------")Variant calling for final mock added
 print("##### BWA-Genome index  : "+config["genome-bwa-index"])
 print("##### STAR-Genome index : "+config["genome-star-index"])
 print("##### Adapter file      : "+ config["adapter"])
