@@ -121,7 +121,8 @@ rule all:
 #        "%s/BAM/mockVariantsToReference/mockVariantsToReference.bam" % (config["project-folder"]),
       # Quality check
         "%s/finalReport.html" % (config["project-folder"]),
-        expand("%s/MPILEUP/mpileup_finalMock/{samples}.count.txt" % (config["project-folder"]), samples=samples)
+      #  expand("%s/MPILEUP/mpileup_finalMock/{samples}.count.txt" % (config["project-folder"]), samples=samples)
+        "%s/MPILEUP/mpileup_finalMock/CountFileList.txt" % (config["project-folder"])
 
 
 

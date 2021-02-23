@@ -316,6 +316,12 @@ ParseMpileup_createCountFiles_finalMock:
     time: 05:00:00
     job-name:  createCountFiles_finalmock
     mem-per-cpu: 16000
+    
+create_verticalRef_finalMock:
+    time: 01:00:00
+    job-name:  create_verticalRef_finalMock
+    mem-per-cpu: 16000
+    nvme: 20
 
 # Module 6 - Postprocessing
 ################################################################################

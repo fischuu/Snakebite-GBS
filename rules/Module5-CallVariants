@@ -450,3 +450,27 @@ rule ParseMpileup_createCountFiles_finalMock:
         cd {params.wd}
         perl {params.pipefolder}/scripts/GBS-SNP-CROP-6_1.pl -b {input} -p {params.p} &> {log}
   	"""
+  	
+rule create_verticalRef_finalMock:
+    """
+    Merge the separate ref files for final mock
+    """
+    input:
+        co=expand("%s/MPILEUP/mpileup_finalMock/{samples}.count.txt" % (config["project-folder"]), samples=samples),
+        ref=expand("%s/MPILEUP/mpileup_finalMock/{samples}.ref.txt" % (config["project-folder"]), samples=samples)
+    output:
+       vref="%s/MPILEUP/mpileup_finalMock/VerticalRefPos.txt" % (config["project-folder"]),
+       co="%s/MPILEUP/mpileup_finalMock/CountFileList.txt" % (config["project-folder"])
+    log:
+       "%s/logs/BASH/create_verticalRef_finalMock.log" % (config["project-folder"])
+    benchmark:
+        "%s/benchmark/BASH/create_verticalRef_finalMock.benchmark.tsv" % (config["project-folder"])
+    params:
+        wd="%s/MPILEUP/mpileup_finalMock" % config["project-folder"],
+    threads: 1
+    shell:"""
+        sort -u -m -k2n {input.ref} -o {params.wd}/VerticalRefPos.tmp;
+        sort -k2n {params.wd}/VerticalRefPos.tmp | uniq >{output.vref};
+        #ls {params.wd}/*count.txt | xargs -n1 basename > {output.co}
+        ls {params.wd}/*count.txt > {output.co}
+    """
