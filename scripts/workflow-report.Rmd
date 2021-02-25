@@ -846,12 +846,12 @@ How much were the reads merged down? Length of Mock reference vs the length of a
 # Mock reference
 
 ## Basic stats
-```{r import required files, warning=FALSE, }
+```{r import required files mock, warning=FALSE, }
 finalMockClusters <- importFA(file.path(projFolder,"MockReference","MockReference.fa"))
 ```
 
 Basic information for the final mock reference:
-```{r mock build stats}
+```{r final mock build stats}
   out <- summary(finalMockClusters)
   out[,2] <- formatC(out[,2],  format="d", big.mark=",")
   out_html <- knitr::kable(out, col.names = NULL, "html")
