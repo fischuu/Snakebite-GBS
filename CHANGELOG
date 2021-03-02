@@ -4,6 +4,7 @@
 #####                                                                      #####
 ################################################################################
 
+0.5.6 : * Bugfix - wrong path for reference based vcf fixed
 0.5.5 : * Bugfix - wrong reference vcf address in module 6
 0.5.4 : * Variant calling for final mock added
 0.5.3 : * Rule all rule simplified
