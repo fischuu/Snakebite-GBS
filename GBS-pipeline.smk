@@ -9,8 +9,8 @@ import os
 ##### Daniel Fischer (daniel.fischer@luke.fi)
 ##### Natural Resources Institute Finland (Luke)
 ##### This pipeline is build upon the the GBS-SNP-CROP pipeline
-##### Version: 0.5.7
-version = "0.5.7"
+##### Version: 0.5.8
+version = "0.5.8"
 
 ##### set minimum snakemake version #####
 min_version("5.24")
@@ -121,6 +121,7 @@ rule all:
         "%s/BAM/mockVariantsToReference/mockVariantsToReference.bam" % (config["project-folder"]),
       # Quality check
         expand("%s/BAM/alignments_finalMock/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
+        "%s/MockReference/MockReference.fa" % (config["project-folder"]),
         "%s/VCF/FinalSetVariants_finalMock.vcf" % (config["project-folder"]),
         "%s/finalReport.html" % (config["project-folder"])
 
