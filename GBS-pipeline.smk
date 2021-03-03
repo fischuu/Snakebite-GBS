@@ -9,8 +9,8 @@ import os
 ##### Daniel Fischer (daniel.fischer@luke.fi)
 ##### Natural Resources Institute Finland (Luke)
 ##### This pipeline is build upon the the GBS-SNP-CROP pipeline
-##### Version: 0.5.6
-version = "0.5.6"
+##### Version: 0.5.7
+version = "0.5.7"
 
 ##### set minimum snakemake version #####
 min_version("5.24")
@@ -81,45 +81,47 @@ print("#########################################################################
 rule all:
     input:
       # OUTPUT: PREPARATION MODULE
-#        expand("%s/FASTQ/CONCATENATED/{samples}_R1_001.merged.fastq.gz" % (config["project-folder"]), samples=samples),
-#        expand("%s/FASTQ/CONCATENATED/{samples}_R2_001.merged.fastq.gz" % (config["project-folder"]), samples=samples),
-#      # QC OF RAW AND CONCATENATED FILES
+        expand("%s/FASTQ/CONCATENATED/{samples}_R1_001.merged.fastq.gz" % (config["project-folder"]), samples=samples),
+        expand("%s/FASTQ/CONCATENATED/{samples}_R2_001.merged.fastq.gz" % (config["project-folder"]), samples=samples),
+      # QC OF RAW AND CONCATENATED FILES
         "%s/QC/RAW/multiqc_R1/" % (config["project-folder"]),
         "%s/QC/CONCATENATED/multiqc_R1/" % (config["project-folder"]),
         "%s/QC/TRIMMED/multiqc_R1/" % (config["project-folder"]),
       # OUTPUT STEP 2
-#        expand("%s/FASTQ/TRIMMED/{samples}.R1.fq.gz" % (config["project-folder"]), samples=samples),
-#        expand("%s/FASTQ/TRIMMED/{samples}.R2.fq.gz" % (config["project-folder"]), samples=samples),
+        expand("%s/FASTQ/TRIMMED/{samples}.R1.fq.gz" % (config["project-folder"]), samples=samples),
+        expand("%s/FASTQ/TRIMMED/{samples}.R2.fq.gz" % (config["project-folder"]), samples=samples),
       # OUTPUT STEP 2b
-#        expand("%s/FASTQ/SUBSTITUTED/{samples}.R1.fq.gz" % (config["project-folder"]), samples=samples),
+        expand("%s/FASTQ/SUBSTITUTED/{samples}.R1.fq.gz" % (config["project-folder"]), samples=samples),
       # OUTPUT STEP 4
-#        "%s/FASTQ/TRIMMED/GSC.MR.Genome.fa" % (config["project-folder"]),
-#        "%s/BAM/Mockref/mockToRef.sam.flagstat" % (config["project-folder"]),
-#        "%s/MPILEUP/mpileup_mockToRef/mockToRef.mpileup" % (config["project-folder"]),
+        "%s/FASTQ/TRIMMED/GSC.MR.Genome.fa" % (config["project-folder"]),
+        "%s/BAM/Mockref/mockToRef.sam.flagstat" % (config["project-folder"]),
+        "%s/MPILEUP/mpileup_mockToRef/mockToRef.mpileup" % (config["project-folder"]),
       # OUTPUT STEP 5
-#        expand("%s/FASTQ/TRIMMED/alignments/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
-#        expand("%s/FASTQ/TRIMMED/alignments/{samples}.sorted.bam" % (config["project-folder"]), samples=samples),
-#        expand("%s/FASTQ/TRIMMED/alignments_clusters/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
-#        expand("%s/FASTQ/TRIMMED/alignments_clusters/{samples}.sorted.bam" % (config["project-folder"]), samples=samples),
-#        expand("%s/FASTQ/TRIMMED/alignments_clusters/{samples}.coverage" % (config["project-folder"]), samples=samples),
-#        expand("%s/FASTQ/TRIMMED/alignments_reference/{samples}.sorted.bam" % (config["project-folder"]), samples=samples),
-#        expand("%s/FASTQ/TRIMMED/alignments_reference/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
-#        expand("%s/MPILEUP/mpileup_reference/{samples}.mpileup" % (config["project-folder"]), samples=samples),
+        expand("%s/FASTQ/TRIMMED/alignments/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
+        expand("%s/FASTQ/TRIMMED/alignments/{samples}.sorted.bam" % (config["project-folder"]), samples=samples),
+        expand("%s/FASTQ/TRIMMED/alignments_clusters/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
+        expand("%s/FASTQ/TRIMMED/alignments_clusters/{samples}.sorted.bam" % (config["project-folder"]), samples=samples),
+        expand("%s/FASTQ/TRIMMED/alignments_clusters/{samples}.coverage" % (config["project-folder"]), samples=samples),
+        expand("%s/FASTQ/TRIMMED/alignments_reference/{samples}.sorted.bam" % (config["project-folder"]), samples=samples),
+        expand("%s/FASTQ/TRIMMED/alignments_reference/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
+        expand("%s/MPILEUP/mpileup_reference/{samples}.mpileup" % (config["project-folder"]), samples=samples),
       # OUTPUT STEP 6
-#        "%s/FASTQ/TRIMMED/GSC.MasterMatrix.txt" % (config["project-folder"]),
-#        "%s/MPILEUP/mpileup_reference/GSC.MasterMatrix.txt" % (config["project-folder"]),
-#        expand("%s/FASTQ/TRIMMED/{samples}.count.txt" % (config["project-folder"]), samples=samples),
+        "%s/FASTQ/TRIMMED/GSC.MasterMatrix.txt" % (config["project-folder"]),
+        "%s/MPILEUP/mpileup_reference/GSC.MasterMatrix.txt" % (config["project-folder"]),
+        expand("%s/FASTQ/TRIMMED/{samples}.count.txt" % (config["project-folder"]), samples=samples),
       # OUTPUT STEP 7
-#        "%s/FASTQ/TRIMMED/variants/GSC.GenoMatrix.txt" % (config["project-folder"]),
-#        "%s/MPILEUP/mpileup_reference/variants/GSC.GenoMatrix.txt" % (config["project-folder"]),
+        "%s/FASTQ/TRIMMED/variants/GSC.GenoMatrix.txt" % (config["project-folder"]),
+        "%s/MPILEUP/mpileup_reference/variants/GSC.GenoMatrix.txt" % (config["project-folder"]),
       # OUTPUT STEP 8  
-#        "%s/FASTQ/TRIMMED/GSC.vcf" % (config["project-folder"]),
-#        "%s/FASTQ/TRIMMED/GSC.vcf.fa" % (config["project-folder"]),
-#        "%s/MPILEUP/mpileup_reference/GSC.vcf" % (config["project-folder"]),
-#        "%s/MPILEUP/mpileup_reference/GSC.vcf.fa" % (config["project-folder"]),
+        "%s/FASTQ/TRIMMED/GSC.vcf" % (config["project-folder"]),
+        "%s/FASTQ/TRIMMED/GSC.vcf.fa" % (config["project-folder"]),
+        "%s/MPILEUP/mpileup_reference/GSC.vcf" % (config["project-folder"]),
+        "%s/MPILEUP/mpileup_reference/GSC.vcf.fa" % (config["project-folder"]),
       # OUTPUT STEP 9
-#        "%s/BAM/mockVariantsToReference/mockVariantsToReference.bam" % (config["project-folder"]),
+        "%s/BAM/mockVariantsToReference/mockVariantsToReference.bam" % (config["project-folder"]),
       # Quality check
+        expand("%s/BAM/alignments_finalMock/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
+        "%s/VCF/FinalSetVariants_finalMock.vcf" % (config["project-folder"]),
         "%s/finalReport.html" % (config["project-folder"])
 
 
