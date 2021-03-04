@@ -1507,16 +1507,18 @@ if(is.element(colnames(sampleInfo), "casecontrol")){
 Then we identify the following potentially causative mutations:
 
 ```{r}
-if(ncol(sampleInfo)>1){
-  if(length(causativeRef)>0){
-    datatable(as.data.frame(causativeRef))
-  } else {
-    cat("No potentially mutations found for homozygeous reference!\n")
-  }
-  if(length(causativeAlt)>0){
-    datatable(as.data.frame(causativeAlt))
-  } else {
-    cat("No potentially mutations found for homozygeous alternative!\n")
+if(is.element(colnames(sampleInfo), "casecontrol")){
+  if(ncol(sampleInfo)>1){
+    if(length(causativeRef)>0){
+      datatable(as.data.frame(causativeRef))
+    } else {
+      cat("No potentially mutations found for homozygeous reference!\n")
+    }
+    if(length(causativeAlt)>0){
+      datatable(as.data.frame(causativeAlt))
+    } else {
+      cat("No potentially mutations found for homozygeous alternative!\n")
+    }
   }
 }
 ```
