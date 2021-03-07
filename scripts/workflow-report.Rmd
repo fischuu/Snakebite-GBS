@@ -857,6 +857,18 @@ Basic information for the final mock reference:
   out_html <- knitr::kable(out, col.names = NULL, "html")
   kable_styling(out_html, "striped", position = "left")
 ```
+## Theoretical coverage of Mock per sample
+Given the length of the final mock reference assembly and the total number of sequenced bases per sample, we can estimate the theoretical coverage of the final mock for each sample
+
+```{r final mock coverage}
+par(mar=c(10,5,1,1))
+finalMockLength <- sum(nchar(finalMockClusters))
+mockCov <- 2*mqcStats.trim[,10] * mqcStats.trim[,5]/finalMockLength
+names(mockCov) <- mqcStats.trim[,1]
+barplot(mockCov, ylab="'x'-fold Coverage", col=viridis(20)[8], las=2)
+lines(c(-100,10000),c(1,1), lty="dotted")
+lines(c(-100,10000),c(10,10), lty="dotted")
+```
 
 
 # Existing Reference
@@ -1160,7 +1172,7 @@ for(i in 3:ncol(clusterCoverage)){
 ### Cluster coverage Mock samples vs others
 ADD HERE STILL A COMPARISON, HOW THE READS FROM THE MOCK DISTRIBUTE ACROSS THE REFERENCE VS ALL OTHER SAMPLES
 
-## Refind Mock reference
+## Refined Mock reference
 ADD THIS STILL TO THE REPORT!!!
 
 ## Reference genome
