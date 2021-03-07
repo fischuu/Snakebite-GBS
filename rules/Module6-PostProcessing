@@ -33,7 +33,7 @@ else:
         Get the flanking sequences from identified variants for reference genome.
         """
         input:
-            vcf="%s/MPILEUP/mpileup_reference/GSC.vcf" % (config["project-folder"]),
+            vcf="%s/VCF/FinalSetVariants_referenceGenome.vcf" % (config["project-folder"]),
             genome=config["genome"]
         output:
             fl="%s/MPILEUP/mpileup_reference/GSC.vcf.flanking" % (config["project-folder"]),

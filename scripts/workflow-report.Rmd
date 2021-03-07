@@ -679,6 +679,7 @@ plotMQCFeature(x=file.path(projFolder,"QC","CONCATENATED","multiqc_R1"),
                y=file.path(projFolder,"QC","TRIMMED","multiqc_R1"),
                feature="fastqc_per_base_sequence_quality_plot")
 ```
+
 # Preliminary Mock Reference
 
 ## Basic stats
@@ -846,12 +847,12 @@ How much were the reads merged down? Length of Mock reference vs the length of a
 # Mock reference
 
 ## Basic stats
-```{r import required files, warning=FALSE, }
+```{r import required files mock, warning=FALSE, }
 finalMockClusters <- importFA(file.path(projFolder,"MockReference","MockReference.fa"))
 ```
 
 Basic information for the final mock reference:
-```{r mock build stats}
+```{r final mock build stats}
   out <- summary(finalMockClusters)
   out[,2] <- formatC(out[,2],  format="d", big.mark=",")
   out_html <- knitr::kable(out, col.names = NULL, "html")
@@ -1466,68 +1467,71 @@ accepted mistakes).
 
 ```{r}
 
-if(ncol(sampleInfo)>1){
-  mmCase <- 2
-  mmControl <- 5
-  vcf.cases <- vcf$genotypes[sampleInfo$casecontrol=="case",]
-  vcf.control <- vcf$genotypes[sampleInfo$casecontrol=="control",]
-  
-  vcf.cases.table <- apply(vcf.cases,2,table)
-  vcf.control.table <- apply(vcf.control,2,table)
-  
-  nCases <- nrow(vcf.cases)
-  nControl <- nrow(vcf.control)
-  
-  candidateLociRef <- c()
-  candidateLociAlt <- c()
-  for(i in 1:length(vcf.cases.table)){
-    tmp <- vcf.cases.table[[i]]
-    homRef <- tmp[names(tmp)=="00"] + tmp[names(tmp)=="03"]
-    homAlt <- tmp[names(tmp)=="02"] + tmp[names(tmp)=="03"]
-    if(length(homRef)==0) homRef <- 0
-    if(length(homAlt)==0) homAlt <- 0
-    if(homRef>=(nCases - mmCase)) candidateLociRef <- c(candidateLociRef, names(vcf.cases.table)[i])
-    if(homAlt>=(nCases - mmCase)) candidateLociAlt <- c(candidateLociAlt, names(vcf.cases.table)[i])
-  }
-  
-  causativeRef <- c()
-  causativeAlt <- c()
-  for(i in 1:length(candidateLociRef)){
-    tmp <- vcf.control.table[[which(names(vcf.control.table)==candidateLociRef[i])]]
-    homRef <- tmp[names(tmp)=="00"] + tmp[names(tmp)=="03"]
-    homAlt <- tmp[names(tmp)=="02"] + tmp[names(tmp)=="03"]
-    if(length(homRef)==0) homRef <- 0
-    if(length(homAlt)==0) homAlt <- 0
-  #  if(homRef>=(nControl - 1)) causativeRef <- c(causativeRef, names(vcf.control.table)[i])
-    if(homAlt>=(nControl - mmControl)) causativeRef <- c(causativeRef, names(vcf.control.table)[i])
-  }
-  
-  for(i in 1:length(candidateLociAlt)){
-    tmp <- vcf.control.table[[which(names(vcf.control.table)==candidateLociAlt[i])]]
-    homRef <- tmp[names(tmp)=="00"] + tmp[names(tmp)=="03"]
-    homAlt <- tmp[names(tmp)=="02"] + tmp[names(tmp)=="03"]
-    if(length(homRef)==0) homRef <- 0
-    if(length(homAlt)==0) homAlt <- 0
-    if(homRef>=(nControl - mmControl)) causativeAlt <- c(causativeAlt, names(vcf.control.table)[i])
-  #  if(homAlt>=(nControl - 1)) causativeAlt <- c(causativeAlt, names(vcf.control.table)[i])
+if(is.element(colnames(sampleInfo), "casecontrol")){
+  if(ncol(sampleInfo)>1){
+    mmCase <- 2
+    mmControl <- 5
+    vcf.cases <- vcf$genotypes[sampleInfo$casecontrol=="case",]
+    vcf.control <- vcf$genotypes[sampleInfo$casecontrol=="control",]
+    
+    vcf.cases.table <- apply(vcf.cases,2,table)
+    vcf.control.table <- apply(vcf.control,2,table)
+    
+    nCases <- nrow(vcf.cases)
+    nControl <- nrow(vcf.control)
+    
+    candidateLociRef <- c()
+    candidateLociAlt <- c()
+    for(i in 1:length(vcf.cases.table)){
+      tmp <- vcf.cases.table[[i]]
+      homRef <- tmp[names(tmp)=="00"] + tmp[names(tmp)=="03"]
+      homAlt <- tmp[names(tmp)=="02"] + tmp[names(tmp)=="03"]
+      if(length(homRef)==0) homRef <- 0
+      if(length(homAlt)==0) homAlt <- 0
+      if(homRef>=(nCases - mmCase)) candidateLociRef <- c(candidateLociRef, names(vcf.cases.table)[i])
+      if(homAlt>=(nCases - mmCase)) candidateLociAlt <- c(candidateLociAlt, names(vcf.cases.table)[i])
+    }
+    
+    causativeRef <- c()
+    causativeAlt <- c()
+    for(i in 1:length(candidateLociRef)){
+      tmp <- vcf.control.table[[which(names(vcf.control.table)==candidateLociRef[i])]]
+      homRef <- tmp[names(tmp)=="00"] + tmp[names(tmp)=="03"]
+      homAlt <- tmp[names(tmp)=="02"] + tmp[names(tmp)=="03"]
+      if(length(homRef)==0) homRef <- 0
+      if(length(homAlt)==0) homAlt <- 0
+    #  if(homRef>=(nControl - 1)) causativeRef <- c(causativeRef, names(vcf.control.table)[i])
+      if(homAlt>=(nControl - mmControl)) causativeRef <- c(causativeRef, names(vcf.control.table)[i])
+    }
+    
+    for(i in 1:length(candidateLociAlt)){
+      tmp <- vcf.control.table[[which(names(vcf.control.table)==candidateLociAlt[i])]]
+      homRef <- tmp[names(tmp)=="00"] + tmp[names(tmp)=="03"]
+      homAlt <- tmp[names(tmp)=="02"] + tmp[names(tmp)=="03"]
+      if(length(homRef)==0) homRef <- 0
+      if(length(homAlt)==0) homAlt <- 0
+      if(homRef>=(nControl - mmControl)) causativeAlt <- c(causativeAlt, names(vcf.control.table)[i])
+    #  if(homAlt>=(nControl - 1)) causativeAlt <- c(causativeAlt, names(vcf.control.table)[i])
+    }
   }
 }
-
 ```
 
 Then we identify the following potentially causative mutations:
 
 ```{r}
-if(ncol(sampleInfo)>1){
-  if(length(causativeRef)>0){
-    datatable(as.data.frame(causativeRef))
-  } else {
-    cat("No potentially mutations found for homozygeous reference!\n")
-  }
-  if(length(causativeAlt)>0){
-    datatable(as.data.frame(causativeAlt))
-  } else {
-    cat("No potentially mutations found for homozygeous alternative!\n")
+if(is.element(colnames(sampleInfo), "casecontrol")){
+  if(ncol(sampleInfo)>1){
+    if(length(causativeRef)>0){
+      datatable(as.data.frame(causativeRef))
+    } else {
+      cat("No potentially mutations found for homozygeous reference!\n")
+    }
+    if(length(causativeAlt)>0){
+      datatable(as.data.frame(causativeAlt))
+    } else {
+      cat("No potentially mutations found for homozygeous alternative!\n")
+    }
   }
 }
 ```

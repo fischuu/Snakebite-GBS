@@ -8,6 +8,9 @@ rule R_finalReport:
         script=config["report-script"],
         fa="%s/FASTQ/TRIMMED/GSC.vcf.fa" % (config["project-folder"]),
         mockToRef="%s/BAM/Mockref/mockToRef.sorted.bam" % (config["project-folder"]),
+        mockToRefSamflags="%s/BAM/Mockref/mockToRef.sam.samflags" % (config["project-folder"]), 
+        mockFlagstats=expand("%s/FASTQ/TRIMMED/alignments/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
+        c=expand("%s/FASTQ/TRIMMED/alignments_clusters/{samples}.coverage" % (config["project-folder"]), samples=samples),
         mqcraw="%s/QC/RAW/multiqc_R1/" % (config["project-folder"]),
         mqcconcatenated="%s/QC/CONCATENATED/multiqc_R1/" % (config["project-folder"]),
         mqctrimmed="%s/QC/TRIMMED/multiqc_R1/" % (config["project-folder"]),
@@ -16,7 +19,9 @@ rule R_finalReport:
         qdConc=expand("%s/QC/CONCATENATED/{samples}_R1_qualdist.txt" % (config["project-folder"]), samples=samples),
         qdTrimmed=expand("%s/QC/TRIMMED/{samples}_R1_qualdist.txt" % (config["project-folder"]), samples=samples),
         fsFinal=expand("%s/BAM/alignments_finalMock/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
-        finalSetVariants="%s/VCF/FinalSetVariants_finalMock.vcf" % (config["project-folder"])
+        finalSetVariants="%s/VCF/FinalSetVariants_finalMock.vcf" % (config["project-folder"]),
+        fsRef=expand("%s/FASTQ/TRIMMED/alignments_reference/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
+        cRef=expand("%s/FASTQ/TRIMMED/alignments_reference/{samples}.coverage" % (config["project-folder"]), samples=samples)
     output:
         "%s/finalReport.html" % (config["project-folder"])
     log:

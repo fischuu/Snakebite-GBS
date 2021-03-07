@@ -403,7 +403,7 @@ else:
             format=config["params"]["step8"]["format"],
             wd="%s/MPILEUP/mpileup_reference" % config["project-folder"],
             outdir="%s/VCF" % config["project-folder"],
-            pipeout="%s/MPILEUP/mpileup_finalMock/GSC.vcf" % (config["project-folder"]),
+            pipeout="%s/MPILEUP/mpileup_reference/GSC.vcf" % (config["project-folder"]),
             pipefolder=config["pipeline-folder"]
         log:
             "%s/logs/Perl/CreateVCF_reference.log" % (config["project-folder"])

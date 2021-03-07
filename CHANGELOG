@@ -4,6 +4,11 @@
 #####                                                                      #####
 ################################################################################
 
+0.5.9 : * Bugfix - Final report crashed, in case that no casecontrol is given in samplelist
+0.5.8 : * Final mock reference was not declared in output
+0.5.7 : * Dependencies between the rules improved
+0.5.6 : * Bugfix - wrong path for reference based vcf fixed
+0.5.5 : * Bugfix - wrong reference vcf address in module 6
 0.5.4 : * Variant calling for final mock added
 0.5.3 : * Rule all rule simplified
 0.5.2 : * Script to refine the mock reference added
