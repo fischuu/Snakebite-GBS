@@ -4,6 +4,7 @@
 #####                                                                      #####
 ################################################################################
 
+0.5.11: * Inpur rule all cleaned up a bit to account for temporary output
 0.5.10: * Mapping stats for final mock vs reference genome added
 0.5.9 : * Bugfix - Final report crashed, in case that no casecontrol is given in samplelist
 0.5.8 : * Final mock reference was not declared in output

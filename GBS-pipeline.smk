@@ -10,8 +10,8 @@ import os
 ##### Natural Resources Institute Finland (Luke)
 ##### This pipeline is build upon the the GBS-SNP-CROP pipeline:
 ##### https://github.com/halelab/GBS-SNP-CROP
-##### Version: 0.5.10
-version = "0.5.10"
+##### Version: 0.5.11
+version = "0.5.11"
 
 ##### set minimum snakemake version #####
 min_version("5.24")
@@ -81,18 +81,10 @@ print("#########################################################################
 
 rule all:
     input:
-      # OUTPUT: PREPARATION MODULE
-        expand("%s/FASTQ/CONCATENATED/{samples}_R1_001.merged.fastq.gz" % (config["project-folder"]), samples=samples),
-        expand("%s/FASTQ/CONCATENATED/{samples}_R2_001.merged.fastq.gz" % (config["project-folder"]), samples=samples),
       # QC OF RAW AND CONCATENATED FILES
         "%s/QC/RAW/multiqc_R1/" % (config["project-folder"]),
         "%s/QC/CONCATENATED/multiqc_R1/" % (config["project-folder"]),
         "%s/QC/TRIMMED/multiqc_R1/" % (config["project-folder"]),
-      # OUTPUT STEP 2
-        expand("%s/FASTQ/TRIMMED/{samples}.R1.fq.gz" % (config["project-folder"]), samples=samples),
-        expand("%s/FASTQ/TRIMMED/{samples}.R2.fq.gz" % (config["project-folder"]), samples=samples),
-      # OUTPUT STEP 2b
-        expand("%s/FASTQ/SUBSTITUTED/{samples}.R1.fq.gz" % (config["project-folder"]), samples=samples),
       # OUTPUT STEP 4
         "%s/FASTQ/TRIMMED/GSC.MR.Genome.fa" % (config["project-folder"]),
         "%s/BAM/Mockref/mockToRef.sam.flagstat" % (config["project-folder"]),
