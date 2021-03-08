@@ -44,10 +44,10 @@ knitr::opts_chunk$set(echo = FALSE,
 mockClusters.file <- "GSC.MR.Clusters.fa"
 mockReference.file <- "GSC.MR.Genome.fa"
 if(!is.element("snakemake",ls())){
-  projFolder <- "/scratch/project_2001746/BSF"
+  projFolder <- "/scratch/project_2001746/Whitefish_benchMS"
   pipelineFolder <- "/scratch/project_2001746/Pipeline-GBS/"
   pipelineConfig <- "/scratch/project_2001746/BSF/Pipeline-GBS/GBS-pipeline_config-BSF.yaml"
-  refGenome.file <- "hermetiaRef_112020.fasta"
+  refGenome.file <- "GCA_902175075.1_AWG_v1_genomic.fna"
 }
 refGenome.file <- basename(refGenome.file)
 ifelse(refGenome.file == "", refAvail <- FALSE, refAvail <- TRUE)
@@ -337,8 +337,9 @@ mqcStats.raw <- read.table(file.path(projFolder,"QC","RAW","multiqc_R1", "multiq
 tmp <- mqcStats.raw[,-c(1:4,7,11:21)]
 
 totalRawSequences <- sum(mqcStats.raw$Total.Sequences)
-out <- c(totalRawSequences,apply(tmp,2,mean))
+out <- c(totalRawSequences,sd(tmp[,1]),apply(tmp,2,mean))
 names(out) <- c("Tot. number sequences",
+                "SD total sequences",
                 "Avg. total sequences",
                 "Avg. poor quality",
                 "Avg. GC Percent",
@@ -682,10 +683,13 @@ plotMQCFeature(x=file.path(projFolder,"QC","CONCATENATED","multiqc_R1"),
 
 # Preliminary Mock Reference
 
+## To Add
+ * Get statistics on multi-mapping of the reads.
+
 ## Basic stats
 ```{r import required files, warning=FALSE, }
-mockReference <- importFA(file.path(projFolder,"FASTQ", "TRIMMED", mockReference.file))
-mockClusters <- importFA(file.path(projFolder,"FASTQ", "TRIMMED", mockClusters.file))
+prelimMockReference <- importFA(file.path(projFolder,"FASTQ", "TRIMMED", mockReference.file))
+prelimMockClusters <- importFA(file.path(projFolder,"FASTQ", "TRIMMED", mockClusters.file))
 vsearchIN <- importFA(file.path(projFolder,"FASTQ", "TRIMMED", "VsearchIN.fa"))
 #vsearchOUT <- importFA(file.path(projFolder,"FASTQ", "TRIMMED", "VsearchOUT.fa"))
 ```
@@ -701,7 +705,7 @@ Basic information on the sequences used to build the mock reference:
 Basic information on the identified clusters, used as mock reference
 
 ```{r summarise mock reference clusters}
-  out <- summary(mockClusters)
+  out <- summary(prelimMockClusters)
   out[1,1] <- c("No. of Clusters")
   out[,2] <- formatC(out[,2],  format="d", big.mark=",")
   out_html <- knitr::kable(out, col.names = NULL, "html")
@@ -710,9 +714,9 @@ Basic information on the identified clusters, used as mock reference
 
 Total length of the input fasta to build reference: `r format(sum(nchar(vsearchIN)), big.mark=",")` bp.
 
-Total length of the Mock Reference Clusters: `r format(sum(nchar(mockClusters)), big.mark=",")` bp.
+Total length of the Mock Reference Clusters: `r format(sum(nchar(prelimMockClusters)), big.mark=",")` bp.
 
-Total length of the Mock Reference (Used as reference): `r format(sum(nchar(mockReference)), big.mark=",")` bp.
+Total length of the Mock Reference (Used as reference): `r format(sum(nchar(prelimMockReference)), big.mark=",")` bp.
 
 ## Theoretical coverage of Mock per sample
 Given the length of the mock reference assembly and the total number of sequenced bases per sample, we can estimate the theoretical coverage of the mock for each sample
@@ -721,7 +725,7 @@ Currently I hard-code here the paired-end reads and assume equal lengths and rea
 
 ```{r mock coverage}
 par(mar=c(10,5,1,1))
-mockLength <- sum(nchar(mockReference))
+mockLength <- sum(nchar(prelimMockReference))
 mockCov <- 2*mqcStats.trim[,10] * mqcStats.trim[,5]/mockLength
 names(mockCov) <- mqcStats.trim[,1]
 barplot(mockCov, ylab="'x'-fold Coverage", col=viridis(20)[8], las=2)
@@ -830,7 +834,7 @@ out_html <- knitr::kable(out, col.names = NULL, "html")
 kable_styling(out_html, "striped", position = "left")
 ```
 
-Quality values for the first 100.000 sequences. As a rule of thumb, capital letters are good, special characters are bad quality.
+Quality values for the first 100,000 sequences. As a rule of thumb, capital letters are good, special characters are bad quality.
 ```{r quality measues}
 outQual <- table(unlist(strsplit(discardedReads$qual[1:100000],"")))
 out_html <- knitr::kable(formatC(outQual,  format="d", big.mark=","), "html")
@@ -1027,7 +1031,8 @@ WE COULD COUNT HERE STILL HOW MANY SEQUENCES MATCH THE GIVEN ONE WITH ONE SUBSTI
 
 # Alignment
 
-## Mock Reference
+## Preliminary Mock Reference
+### Mapping stats
  
 Import the mapping statistics to the Mock reference
 
@@ -1173,11 +1178,156 @@ for(i in 3:ncol(clusterCoverage)){
 ### Cluster coverage Mock samples vs others
 ADD HERE STILL A COMPARISON, HOW THE READS FROM THE MOCK DISTRIBUTE ACROSS THE REFERENCE VS ALL OTHER SAMPLES
 
-## Refined Mock reference
-ADD THIS STILL TO THE REPORT!!!
+## Mock Reference
+### Mapping stats
+
+Import the mapping statistics to the Mock reference
+
+```{r import flagstats}
+flagstatFiles <- list.files(file.path(projFolder,"BAM", "alignments_finalMock"), pattern="*.flagstat")
+flagstats <- list()
+for(i in 1:length(flagstatFiles)){
+  flagstats[[i]] <- readLines(file.path(projFolder,"BAM", "alignments_finalMock",flagstatFiles[i]))
+}
+```
+
+Visualization of the alignments, red stars indicate the mock reference samples
+
+```{r vis mapping stats}
+par(oma=c(6,3,0,0))
+mapStats <- matrix(0,ncol=length(flagstatFiles), nrow=2)
+
+sampleNames <- gsub(".sam.flagstat", "", flagstatFiles)
+
+colnames(mapStats) <- sampleNames
+
+tmp <- as.numeric(sapply(strsplit(sapply(flagstats,"[",1), " +"),"[",1))
+mapStats[1,] <- as.numeric(sapply(strsplit(sapply(flagstats,"[",5), " +"),"[",1))
+mapStats[2,] <- tmp - mapStats[1,]
+
+p <- barplot(mapStats, col=c(viridis(20)[8], viridis(20)[16]), las=2)
+
+legend("topleft", pch=c(20,20), col=c(viridis(20)[16], viridis(20)[8]), legend=c("Unmapped", "Mapped"), fill="white")
+
+# highlight the mock reference samples
+mockFiles <- paste(mockSamples, ".sam.flagstat", sep="")
+mockPos <- which(is.element(flagstatFiles, mockFiles))
+
+points(p[mockPos], rep(200000, length(mockPos)), pch="*", col="red", cex=4)
+```
+
+```{r mapping percentage}
+barplot(mapStats[1,] / (apply(mapStats,2,sum)), ylim=c(0,1), ylab="Mapping in Percent", col=viridis(20)[8], las=2)
+```
+
+
+### Coverage
+
+Data mapped against the clusters and then the reads per cluster visualized
+```{r importClusterCoverage, warning=FALSE}
+clusterFiles <- list.files(file.path(projFolder, "BAM", "alignments_finalMock"), pattern="*.coverage")
+clusterCoverage <- read.table(file.path(projFolder, "BAM", "alignments_finalMock", clusterFiles[1]))
+names(clusterCoverage)[1:2] <- c("cluster", clusterFiles[1])
+
+for(i in 2:length(clusterFiles)){
+  tmp <- read.table(file.path(projFolder, "BAM", "alignments_finalMock", clusterFiles[i]))
+  names(tmp)[1:2] <- c("cluster", clusterFiles[i])
+  clusterCoverage <- merge(clusterCoverage, tmp, by="cluster")
+}
+names(clusterCoverage)[2:(length(clusterFiles)+1)] <- clusterFiles
+clusterCoverage[,1] <- as.numeric(gsub("Cluster", "", clusterCoverage[,1]))
+clusterCoverage <- clusterCoverage[order(clusterCoverage[,1]),]
+clusterCoverage <- clusterCoverage[is.na(clusterCoverage[,1])==FALSE,]
+
+clusterCoverage.std <- t(t(clusterCoverage)/apply(clusterCoverage,2,sum))*100000
+```
+
+### Lorenz curve
+Concentration measure of reads against clusters
+
+```{r lorenz}
+plot(cumsum(sort(clusterCoverage[,2] / sum(clusterCoverage[,2]))), type="l", xlab="Cluster", ylab="Concentration")
+for(i in 3:ncol(clusterCoverage)){
+  lines(cumsum(sort(clusterCoverage[,i] / sum(clusterCoverage[,i]))))
+}
+```
+
+
+### Stats on coverage
+
+These are the amounts of clusters with different samples. 
+
+```{r cluster coverage stats}
+coveredClusters <- apply(clusterCoverage[,-1]>0,1,sum)
+barplot(table(coveredClusters), xlab="No. of different samples aligned to cluster", col=viridis(20)[8])
+```
+
+Now we have here the number of reads per coverage class. That means, instead of having it binary as in the previous plot, we now count all the reads per coverage group.
+
+```{r reads per coverage group}
+readsPerCoverageGroup <- c()
+
+for(i in 1:max(coveredClusters)){
+ readsPerCoverageGroup[i] <-  sum(clusterCoverage[coveredClusters==i,-1])
+}
+
+names(readsPerCoverageGroup) <- 1:max(coveredClusters)
+
+barplot(readsPerCoverageGroup, xlab="Coverage group", ylab="Reads on cluster group", col=viridis(20)[8])
+```
+
+
+```{r reads per coverage group in percent}
+barplot(readsPerCoverageGroup/sum(readsPerCoverageGroup)*100, xlab="Coverage group", ylab="Reads on cluster group (in %)", ylim=c(0,100), col=viridis(20)[8])
+```
+
+Then still the number of clusters without coverage per sample
+
+```{r clusters without coverage}
+nonHittedClusters <- apply(clusterCoverage[,-1]==0,2,sum)
+names(nonHittedClusters) <- gsub(".coverage", "", names(nonHittedClusters))
+barplot(nonHittedClusters, col=viridis(20)[8], las=2)
+lines(c(0,100000), c(nrow(clusterCoverage), nrow(clusterCoverage)), lty="dotted")
+```
+
+And then this still as percentage
+
+```{r clusterhits percentage}
+barplot(nonHittedClusters/nrow(clusterCoverage), ylim=c(0,1), las=2, col=viridis(20)[8])
+lines(c(0,10000),c(0.2,0.2), lty="dotted")
+lines(c(0,10000),c(0.4,0.4), lty="dotted")
+lines(c(0,10000),c(0.5,0.5), lty="dashed")
+lines(c(0,10000),c(0.6,0.6), lty="dotted")
+lines(c(0,10000),c(0.8,0.8), lty="dotted")
+```
+
+### Smoothed log-coverage per cluster
+
+```{r vizCusterCoverage}
+plot(smooth.spline(clusterCoverage[,1], log(clusterCoverage[,2]+1), all.knots=FALSE), type="l", xlab="Cluster", ylab="Log-coverage", ylim=c(0, max(log(clusterCoverage))/2))
+
+for(i in 3:ncol(clusterCoverage)){
+  lines(smooth.spline(clusterCoverage[,1], log(clusterCoverage[,i]+1), all.knots=FALSE))  
+}
+```
+
+### Smoothed std-log-coverage per cluster
+
+Now the coverages are divided by the total amount of reads per sample and then multiplied by 10^5.
+
+```{r vizStdCusterCoverage}
+# I use here the first column of the other matrix to keep the same coordinates. It does not affect the plot.
+plot(smooth.spline(clusterCoverage[,1], log(clusterCoverage.std[,2]+1), all.knots=FALSE), type="l", xlab="Cluster", ylab="", ylim=c(0, max(log(clusterCoverage.std))/4))
+
+for(i in 3:ncol(clusterCoverage)){
+  lines(smooth.spline(clusterCoverage[,1], log(clusterCoverage.std[,i]+1), all.knots=FALSE))  
+}
+```
+
+
 
 ## Reference genome
-
+### Basic stats
 Import the mapping statistics to the reference genome
 
 ```{r import ref flagstats}
@@ -1217,6 +1367,7 @@ points(p[mockPos], rep(200000, length(mockPos)), pch="*", col="red", cex=4)
 ```{r ref mapping percentage}
 barplot(mapStats[1,] / (apply(mapStats,2,sum)), ylim=c(0,1), ylab="Mapping in Percent", col=viridis(20)[8], las=2)
 ```
+
 
 # Variants
 Import the Result vcf
