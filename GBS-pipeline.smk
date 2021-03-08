@@ -8,7 +8,8 @@ import os
 ##### GBS-snakemake pipeline #####
 ##### Daniel Fischer (daniel.fischer@luke.fi)
 ##### Natural Resources Institute Finland (Luke)
-##### This pipeline is build upon the the GBS-SNP-CROP pipeline
+##### This pipeline is build upon the the GBS-SNP-CROP pipeline:
+##### https://github.com/halelab/GBS-SNP-CROP
 ##### Version: 0.5.9
 version = "0.5.9"
 
