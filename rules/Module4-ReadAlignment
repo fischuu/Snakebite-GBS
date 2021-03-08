@@ -363,9 +363,11 @@ rule finalMockRef_AlignmentStats:
     Alignment stats for reads mapped to final mock ref
     """
     input:
-        "%s/SAM/alignments_finalMock/{samples}.sam" % (config["project-folder"])
+        sam="%s/SAM/alignments_finalMock/{samples}.sam" % (config["project-folder"]),
+        sbam="%s/BAM/alignments_finalMock/{samples}.sorted.bam" % (config["project-folder"])
     output:
-        "%s/BAM/alignments_finalMock/{samples}.sam.flagstat" % (config["project-folder"])
+        fs="%s/BAM/alignments_finalMock/{samples}.sam.flagstat" % (config["project-folder"]),
+        c="%s/BAM/alignments_finalMock/{samples}.coverage" % (config["project-folder"])
     log:
         "%s/logs/Samtools/FinalMockRef_AlignmentStats.{samples}.log" % (config["project-folder"])
     benchmark:
@@ -373,5 +375,6 @@ rule finalMockRef_AlignmentStats:
     conda:"envs/samtools.yaml"
     singularity: config["singularity"]["gbs"]
     shell:"""
-        samtools flagstat {input} > {output}
+        samtools flagstat {input.sam} > {output.fs}
+        samtools idxstats {input.sbam} | awk '{{print $1\" \"$3}}' > {output.c}
   	"""

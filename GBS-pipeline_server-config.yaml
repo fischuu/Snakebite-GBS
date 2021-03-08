@@ -140,6 +140,19 @@ MockVsRef_AlignmentStats:
     time: 05:00:00
     job-name: MockVsRef_AlignmentStats
 
+FinalMockVsRef_alignment:
+    time: 05:00:00
+    cpus-per-task: 20
+    job-name:  FinalMockVsRef_alignment
+
+FinalMockVsRef_samtools_SamToSortedBam:
+    time: 05:00:00
+    job-name:  FinalMockVsRef_samtools_SamToSortedBam
+
+FinalMockVsRef_AlignmentStats:
+    time: 05:00:00
+    job-name: FinalMockVsRef_AlignmentStats
+
 MockVsRef_SortedBamToMpileup:
     time: 05:00:00
     job-name: MockVsRef_SortedBamToMpileup
