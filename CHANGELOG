@@ -4,6 +4,7 @@
 #####                                                                      #####
 ################################################################################
 
+0.5.10: * Mapping stats for final mock vs reference genome added
 0.5.9 : * Bugfix - Final report crashed, in case that no casecontrol is given in samplelist
 0.5.8 : * Final mock reference was not declared in output
 0.5.7 : * Dependencies between the rules improved

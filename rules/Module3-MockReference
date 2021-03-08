@@ -213,3 +213,101 @@ rule refine_mock_reference:
              snakemake <- TRUE;\
              source('{input.script}')" &> {log}
     """
+
+if config["genome"] == "":
+    print(f"No reference genome provided, skipping the star indexing step for reference genome")
+else:
+    rule FinalMockVsRef:
+        """
+        Map the mock reference clusters to the genome (minimap2).
+        """
+        input:
+            refgenome=config["genome"],
+            mockgenome="%s/MockReference/MockReference.fa" % (config["project-folder"])
+        output:
+            "%s/SAM/finalMockToRef.sam" % (config["project-folder"])
+        singularity: config["singularity"]["minimap2"]
+        shell:"""
+           minimap2 -ax sr {input.refgenome} {input.mockgenome} > {output} 2> {log}
+
+        """
+
+if config["genome"] == "":
+    print(f"No reference genome provided, skipping the star indexing step for reference genome")
+else:
+    rule FinalMockVsRef_samtools_SamToSortedBam:
+        """
+        Index the Mock Reference Genome.
+        """
+        input:
+            ref=config["genome"],
+            sam="%s/SAM/finalMockToRef.sam" % (config["project-folder"])
+        output:
+            bam="%s/BAM/FinalMockref/mockToRef.bam" % (config["project-folder"]),
+            sorted="%s/BAM/FinalMockref/mockToRef.sorted.bam" % (config["project-folder"])
+        log:
+            "%s/logs/Samtools/FinalMockVsRef_samtools_SamToSortedBam.log" % (config["project-folder"])
+        benchmark:
+            "%s/benchmark/Samtools/FinalMockVsRef_samtools_SamToSortedBam.benchmark.tsv" % (config["project-folder"])
+        singularity: config["singularity"]["gbs"]
+        shell:"""
+            df -h &> {log}
+            samtools view -b {input.sam} > {output.bam}
+            samtools sort {output.bam} -o {output.sorted}
+            samtools index {output.sorted}
+      	"""
+
+
+if config["genome"] == "":
+    print(f"No reference genome provided, skipping the star indexing step for reference genome")
+else:  	
+    rule FinalMockVsRef_AlignmentStats:
+        """
+        Get the mapping stats for the mock vs. reference.
+        """
+        input:
+            ref=config["genome"],
+            sam="%s/SAM/finalMockToRef.sam" % (config["project-folder"]),
+            sbam="%s/BAM/FinalMockref/mockToRef.sorted.bam" % (config["project-folder"])
+        output:
+            fs="%s/BAM/FinalMockref/mockToRef.sam.flagstat" % (config["project-folder"]),
+            samflags="%s/BAM/FinalMockref/mockToRef.sam.samflags" % (config["project-folder"]), 
+            stats="%s/BAM/FinalMockref/mockToRef.sam.stats" % (config["project-folder"]),
+            c="%s/BAM/FinalMockref/mockToRef.coverage" % (config["project-folder"]),
+            bed="%s/BAM/FinalMockref/mockToRef.bed" % (config["project-folder"]),
+            bedMerged="%s/BAM/FinalMockref/mockToRef.merged.bed" % (config["project-folder"]),
+            leftBed="%s/BAM/FinalMockref/mockToRef.merged.left.bed" % (config["project-folder"]),
+            rightBed="%s/BAM/FinalMockref/mockToRef.merged.right.bed" % (config["project-folder"]),
+            leftFACounts="%s/SAM/finalMockToRef.left.fa.counts" % (config["project-folder"]),
+            rightFACounts="%s/SAM/finalMockToRef.right.fa.counts" % (config["project-folder"]),
+            leftFA="%s/BAM/FinalMockref/mockToRef.merged.left.fa" % (config["project-folder"]),
+            rightFA="%s/BAM/FinalMockref/mockToRef.merged.right.fa" % (config["project-folder"]),
+            FA="%s/BAM/FinalMockref/mockToRef.merged.combined.fa" % (config["project-folder"]),
+            FACounts="%s/BAM/FinalMockref/mockToRef.merged.combined.fa.counts" % (config["project-folder"])
+        log:
+            "%s/logs/FinalMockVsRef_AlignmentStats.log" % (config["project-folder"])
+        benchmark:
+            "%s/benchmark/MockVsRef_AlignmentStats.benchmark.tsv" % (config["project-folder"])
+        threads: lambda cores: cpu_count()
+        conda:"envs/step3.yaml"
+        singularity: config["singularity"]["gbs"]
+        shell:"""
+            df -h &> {log}
+            echo "Number of threads used:" {threads}
+            sed '/^@/d' {input.sam} | cut -f2 | sort | uniq -c > {output.samflags}
+            samtools flagstat {input.sam} > {output.fs}
+            samtools stats {input.sam} > {output.stats}
+            samtools idxstats {input.sbam} | awk '{{print $1\" \"$3}}' > {output.c}
+            bedtools genomecov -ibam {input.sbam} -bg > {output.bed}
+            bedtools merge -i {output.bed} > {output.bedMerged}
+            awk '{{print $1 "\\t" (($2 - 6)<0?0:($2 - 6)) "\\t" $2}}' {output.bedMerged} > {output.leftBed}
+            awk '{{print $1 "\\t" $3 "\\t" $3 + 6}}' {output.bedMerged} > {output.rightBed}
+            bedtools getfasta -fi {input.ref} -bed {output.leftBed} > {output.leftFA}
+            bedtools getfasta -fi {input.ref} -bed {output.rightBed} > {output.rightFA}
+            
+            sed '/^>/d' {output.leftFA} | sort | awk '{{ print toupper($0) }}' | uniq -c > {output.leftFACounts}
+            sed '/^>/d' {output.rightFA} | sort | awk '{{ print toupper($0) }}' | uniq -c > {output.rightFACounts}
+
+            paste -d '+' {output.leftFA} {output.rightFA} > {output.FA}
+            sed '/^>/d' {output.FA} | sort | awk '{{ print toupper($0) }}' | uniq -c > {output.FACounts}
+      	"""
