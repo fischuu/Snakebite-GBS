@@ -4,6 +4,7 @@
 #####                                                                      #####
 ################################################################################
 
+0.5.13: * Bugfix: Rule FinalMockVsRef_alignment didn't have resource allocations
 0.5.12: * Coverage for finalMock alignments are now also calculated
 0.5.11: * Input rule all cleaned up a bit to account for temporary output
 0.5.10: * Mapping stats for final mock vs reference genome added
