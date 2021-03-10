@@ -14,7 +14,7 @@ import os
 version = "0.5.14"
 
 ##### set minimum snakemake version #####
-min_version("5.24")
+min_version("6.0")
 
 ##### Sample sheets #####
 
