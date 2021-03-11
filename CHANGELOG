@@ -4,6 +4,7 @@
 #####                                                                      #####
 ################################################################################
 
+0.5.15: * Report adjusted
 0.5.14: * Bugfix: Rule FinalMockVsRef_alignment didn't have resource allocations
 0.5.13: * Statistics on final mock reference added
 0.5.12: * Coverage for finalMock alignments are now also calculated
