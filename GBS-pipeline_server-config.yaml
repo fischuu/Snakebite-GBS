@@ -46,7 +46,17 @@ IndexClustersSamtools:
     time: 02:00:00
     job-name:  IndexMockRefClusters_Samtools
     mem-per-cpu: 25000
-    
+
+IndexFinalMockBWA:
+    time: 02:00:00
+    job-name:  IndexFinalMockBWA
+    mem-per-cpu: 25000
+
+IndexFinalMockSamtools:
+    time: 02:00:00
+    job-name:  IndexFinalMockSamtools
+    mem-per-cpu: 25000
+
 # Module 1 - QC:
 ################################################################################
 fastqc_quality_control_raw_data:
@@ -130,9 +140,25 @@ MockVsRef_AlignmentStats:
     time: 05:00:00
     job-name: MockVsRef_AlignmentStats
 
+FinalMockVsRef_alignment:
+    time: 05:00:00
+    cpus-per-task: 20
+    job-name:  FinalMockVsRef_alignment
+
+FinalMockVsRef_samtools_SamToSortedBam:
+    time: 05:00:00
+    job-name:  FinalMockVsRef_samtools_SamToSortedBam
+
+FinalMockVsRef_AlignmentStats:
+    time: 05:00:00
+    job-name: FinalMockVsRef_AlignmentStats
+
 MockVsRef_SortedBamToMpileup:
     time: 05:00:00
     job-name: MockVsRef_SortedBamToMpileup
+
+refine_mock_reference:
+    job-name: refine_mock_reference
 
 # Module 4 - Read alignment
 ################################################################################   
@@ -200,6 +226,30 @@ MockRefClusters_AlignmentStats:
     cpus-per-task: 20
     mem-per-cpu: 5000
 
+FinalMockRef_AlignReads:
+    time: 01:00:00
+    job-name:  FinalMockRef_AlignReads
+    cpus-per-task: 20
+    mem-per-cpu: 5000
+  
+FinalMockRef_SamToSortedBam:
+    time: 01:00:00
+    job-name: FinalMockRef_SamToSortedBam
+    cpus-per-task: 20
+    mem-per-cpu: 5000
+
+FinalMockRef_SortedBamToMpileup:
+    time: 01:00:00
+    job-name:  FinalMockRef_SortedBamToMpileup
+    cpus-per-task: 20
+    mem-per-cpu: 5000
+
+finalMockRef_AlignmentStats:
+    time: 01:00:00
+    job-name:  FinalMockRef_AlignmentStats
+    cpus-per-task: 20
+    mem-per-cpu: 5000
+
 # Module 5 - Call Variants
 ################################################################################   
 
@@ -231,6 +281,9 @@ cut_verticalRef:
 cut_verticalRef_reference:
     job-name: cut_verticalRef_reference
 
+cut_verticalRef_finalMock:
+    job-name: cut_verticalRef_finalMock
+
 create_MasterMatrix_parallel:
     time: 0-12:00:00
     job-name:  create_MasterMatrix_parallel
@@ -243,6 +296,13 @@ create_MasterMatrix_parallel_reference:
     mem-per-cpu: 64000
     nvme: 20
 
+create_MasterMatrix_parallel_finalMock:
+    time: 0-12:00:00
+    job-name:  create_MasterMatrix_parallel_finalMock
+    mem-per-cpu: 64000
+    nvme: 20
+
+
 aggregate_MasterMatrix:
     job-name: aggregate_MasterMatrix
     time: 0-12:00:00
@@ -251,6 +311,12 @@ aggregate_MasterMatrix:
     
 aggregate_MasterMatrix_reference:
     job-name: aggregate_MasterMatrix_reference
+    time: 0-12:00:00
+    mem-per-cpu: 48000
+    nvme: 20
+    
+aggregate_MasterMatrix_finalMock:
+    job-name: aggregate_MasterMatrix_finalMock
     time: 0-12:00:00
     mem-per-cpu: 48000
     nvme: 20
@@ -265,6 +331,11 @@ FilterVariants_reference:
     job-name:  filterVariants_reference
     mem-per-cpu: 30000
     
+FilterVariants_finalMock:
+    time: 1-12:00:00
+    job-name:  filterVariants_finalMock
+    mem-per-cpu: 30000
+ 
 CreateVCF:
     time: 01:00:00
     job-name: CreateVCF
@@ -274,6 +345,22 @@ CreateVCF_reference:
     time: 01:00:00
     job-name:  CreateVCF_reference
     mem-per-cpu: 30000
+
+CreateVCF_finalMock:
+    time: 01:00:00
+    job-name:  CreateVCF_finalMock
+    mem-per-cpu: 30000
+
+ParseMpileup_createCountFiles_finalMock:
+    time: 05:00:00
+    job-name:  createCountFiles_finalmock
+    mem-per-cpu: 16000
+    
+create_verticalRef_finalMock:
+    time: 01:00:00
+    job-name:  create_verticalRef_finalMock
+    mem-per-cpu: 16000
+    nvme: 20
 
 # Module 6 - Postprocessing
 ################################################################################

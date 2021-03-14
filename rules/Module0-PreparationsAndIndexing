@@ -142,3 +142,39 @@ rule IndexClustersSamtools:
     shell:"""
         samtools faidx {input}
   	"""
+  	
+rule IndexFinalMockBWA:
+    """
+    Index the final Mock Reference Genome (BWA).
+    """
+    input:
+        "%s/MockReference/MockReference.fa" % (config["project-folder"])
+    output:
+        "%s/MockReference/MockReference.fa.bwt" % (config["project-folder"])
+    log:
+        "%s/logs/BWA/IndexFinalMock.log" % (config["project-folder"])
+    benchmark:
+        "%s/benchmark/BWA/IndexFinalMock.benchmark.tsv" % (config["project-folder"])
+    conda:"envs/gbs.yaml"
+    singularity: config["singularity"]["gbs"]
+    shell:"""
+        bwa index -a bwtsw {input}
+  	"""
+
+rule IndexFinalMockSamtools:
+    """
+    Index the final Mock Reference Genome Clusters (samtools).
+    """
+    input:
+        "%s/MockReference/MockReference.fa" % (config["project-folder"])
+    output:
+        "%s/MockReference/MockReference.fai" % (config["project-folder"])
+    log:
+        "%s/logs/Samtools/IndexFinalMockSam.log" % (config["project-folder"])
+    benchmark:
+        "%s/benchmark/Samtools/IndexFinalMockSam.benchmark.tsv" % (config["project-folder"])
+    conda:"envs/samtools.yaml"
+    singularity: config["singularity"]["gbs"]
+    shell:"""
+        samtools faidx {input}
+  	"""
