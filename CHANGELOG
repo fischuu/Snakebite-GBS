@@ -4,6 +4,7 @@
 #####                                                                      #####
 ################################################################################
 
+0.7.1 : * Structure of final report adjusted
 0.6   : * Release version for previous additions
 0.5.15: * Report adjusted
 0.5.14: * Bugfix: Rule FinalMockVsRef_alignment didn't have resource allocations

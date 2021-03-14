@@ -681,12 +681,14 @@ plotMQCFeature(x=file.path(projFolder,"QC","CONCATENATED","multiqc_R1"),
                feature="fastqc_per_base_sequence_quality_plot")
 ```
 
-# Preliminary Mock Reference
+# Cluster and Reference genome
 
-## To Add
+## Preliminary Mock Reference
+
+### To Add
  * Get statistics on multi-mapping of the reads.
 
-## Basic stats
+### Basic stats
 ```{r import required files, warning=FALSE, }
 prelimMockReference <- importFA(file.path(projFolder,"FASTQ", "TRIMMED", mockReference.file))
 prelimMockClusters <- importFA(file.path(projFolder,"FASTQ", "TRIMMED", mockClusters.file))
@@ -718,7 +720,7 @@ Total length of the Mock Reference Clusters: `r format(sum(nchar(prelimMockClust
 
 Total length of the Mock Reference (Used as reference): `r format(sum(nchar(prelimMockReference)), big.mark=",")` bp.
 
-## Theoretical coverage of Mock per sample
+### Theoretical coverage of Mock per sample
 Given the length of the mock reference assembly and the total number of sequenced bases per sample, we can estimate the theoretical coverage of the mock for each sample
 
 Currently I hard-code here the paired-end reads and assume equal lengths and reads in both pairs.
@@ -733,7 +735,7 @@ lines(c(-100,10000),c(1,1), lty="dotted")
 lines(c(-100,10000),c(10,10), lty="dotted")
 ```
 
-## Pear Stats
+### Pear Stats
 
 ```{r import pear stats}
 pearIn <- readLines(file.path(projFolder, "FASTQ", "TRIMMED", "Pear.log"))
@@ -845,12 +847,12 @@ kable_styling(out_html, "striped", position = "left")
 barplot(outQual, ylab="Frequency", main="Quality-score distribution")
 ```
 
-## Ratio samles used to length Mock reference
+### Ratio samles used to length Mock reference
 How much were the reads merged down? Length of Mock reference vs the length of all used reads together.
 
-# Mock reference
+## Mock reference
 
-## Basic stats
+### Basic stats
 ```{r import required files mock, warning=FALSE, }
 finalMockClusters <- importFA(file.path(projFolder,"MockReference","MockReference.fa"))
 ```
@@ -862,7 +864,8 @@ Basic information for the final mock reference:
   out_html <- knitr::kable(out, col.names = NULL, "html")
   kable_styling(out_html, "striped", position = "left")
 ```
-## Theoretical coverage of Mock per sample
+
+### Theoretical coverage of Mock per sample
 Given the length of the final mock reference assembly and the total number of sequenced bases per sample, we can estimate the theoretical coverage of the final mock for each sample
 
 ```{r final mock coverage}
@@ -876,10 +879,10 @@ lines(c(-100,10000),c(10,10), lty="dotted")
 ```
 
 
-# Existing Reference
+## Existing Reference
 In case a reference genome was provided, here are a few statistics regarding it
 
-## Basic stats
+### Basic stats
 
 ```{r importRefGenome, warning=FALSE, results="asis"}
 if(refAvail){
