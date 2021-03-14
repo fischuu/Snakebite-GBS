@@ -4,6 +4,7 @@
 #####                                                                      #####
 ################################################################################
 
+0.6   : * Release version for previous additions
 0.5.15: * Report adjusted
 0.5.14: * Bugfix: Rule FinalMockVsRef_alignment didn't have resource allocations
 0.5.13: * Statistics on final mock reference added
@@ -20,7 +21,7 @@
 0.5.2 : * Script to refine the mock reference added
 0.5.1 : * samtools index set to csi instead of bai
 0.4.1 : * Bugfix - Missing outputfile script added
-0.4   : Release version
+0.4   : * Release version
 0.3.16: * Several other small path typos
 0.3.15: * Mixup in samflags anf flagsts solev for final report
 0.3.14: * Path typos in final report fixed
