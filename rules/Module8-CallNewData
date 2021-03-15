@@ -1,5 +1,5 @@
 if config["mockreference"] == "":
-    print(f"No existing mock reference provided")
+    pass
 else:
     rule ExistingMockRefGenome_AlignReads:
         """
@@ -24,7 +24,7 @@ else:
       	"""
 
 if config["mockreference"] == "":
-    print(f"No mock reference genome provided")
+    pass
 else:
     rule ExistingMockRefGenome_SamToSortedBam:
         """
@@ -55,7 +55,7 @@ else:
       	"""
       	
 if config["mockreference"] == "":
-    print(f"No mock reference genome provided, skipping the star indexing step for reference genome")
+    pass
 else:
     rule ExistingMockRefGenome_SortedBamToMpileup:
         """
@@ -82,7 +82,7 @@ else:
       	"""
 
 if config["mockreference"] == "":
-    print(f"No mock reference genome provided, skipping the star indexing step for reference genome")
+    pass
 else:
     rule ExistingMockRefGenome_AlignmentStats:
         """
@@ -108,7 +108,7 @@ else:
       	"""
 
 if config["mockreference"] == "":
-    print(f"No mock reference genome provided")
+    pass
 else:
     rule ParseMpileup_createCountFiles_existingMockreference:
         """
@@ -135,7 +135,7 @@ else:
       	"""
 
 if config["mockreference"] == "":
-    print(f"No mock reference genome provided")
+    pass
 else:
     rule create_verticalRef_existingMockreference:
         """
@@ -162,7 +162,7 @@ else:
         """
         
 if config["mockreference"] == "":
-    print(f"No mock reference genome provided")
+    pass
 else:
     checkpoint cut_verticalRef_existingMockreference:
         """
@@ -181,7 +181,7 @@ else:
         """
         
 if config["mockreference"] == "":
-    print(f"No mock reference genome provided")
+    pass
 else:
     rule create_MasterMatrix_parallel_existingMockreference:
         """
@@ -208,7 +208,7 @@ else:
          """
          
 if config["mockreference"] == "":
-    print(f"No mock reference genome provided")
+    pass
 else:
     def aggregate_inputMasterMatrix_existingMockreference(wildcards):
         """
@@ -220,7 +220,7 @@ else:
                       
 
 if config["mockreference"] == "":
-    print(f"No mock reference genome provided")
+    pass
 else:
     rule aggregate_MasterMatrix_existingMockreference:
         input:
@@ -232,7 +232,7 @@ else:
         """   
         
 if config["mockreference"] == "":
-    print(f"No mock reference genome provided")
+    pass
 else:
     rule FilterVariants_existingMockreference:
         """
@@ -283,7 +283,7 @@ else:
       	"""
        
 if config["mockreference"] == "":
-    print(f"No mock reference genome provided")
+    pass
 else:
     rule CreateVCF_existingMockreference:
         """

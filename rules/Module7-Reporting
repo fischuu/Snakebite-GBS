@@ -21,7 +21,6 @@ rule R_finalReport:
         fsFinal=expand("%s/BAM/alignments_finalMock/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
         fsFinalVsRef="%s/BAM/FinalMockref/mockToRef.sam.flagstat" % (config["project-folder"]),
         finalSetVariants="%s/VCF/FinalSetVariants_finalMock.vcf" % (config["project-folder"]),
-        exMockVariants="%s/VCF/FinalSetVariants_existingMock.vcf" % (config["project-folder"]),
         fsRef=expand("%s/FASTQ/TRIMMED/alignments_reference/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
         cRef=expand("%s/FASTQ/TRIMMED/alignments_reference/{samples}.coverage" % (config["project-folder"]), samples=samples),
         cFinalMock=expand("%s/BAM/alignments_finalMock/{samples}.coverage" % (config["project-folder"]), samples=samples)

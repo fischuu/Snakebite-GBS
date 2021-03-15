@@ -10,8 +10,8 @@ import os
 ##### Natural Resources Institute Finland (Luke)
 ##### This pipeline is build upon the the GBS-SNP-CROP pipeline:
 ##### https://github.com/halelab/GBS-SNP-CROP
-##### Version: 0.7.2
-version = "0.7.2"
+##### Version: 0.7.3
+version = "0.7.3"
 
 ##### set minimum snakemake version #####
 min_version("6.0")
@@ -78,12 +78,17 @@ print("##### Existing Mock index : "+config["mockref-bwa-index"])
 print("##### Adapter file        : "+ config["adapter"])
 print("#################################################################################")
 
+##### Define conditional input/outputs #####
+conditionalOut = list()
+if config["mockreference"] != "":
+        conditionalOut.append("%s/VCF/FinalSetVariants_existingMock.vcf" % (config["project-folder"]))
 
     
 ##### run complete pipeline #####
 
 rule all:
     input:
+        conditionalOut,
       # QC OF RAW AND CONCATENATED FILES
         "%s/QC/RAW/multiqc_R1/" % (config["project-folder"]),
         "%s/QC/CONCATENATED/multiqc_R1/" % (config["project-folder"]),
@@ -119,7 +124,6 @@ rule all:
         expand("%s/BAM/alignments_finalMock/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
         "%s/MockReference/MockReference.fa" % (config["project-folder"]),
         "%s/VCF/FinalSetVariants_finalMock.vcf" % (config["project-folder"]),
-        "%s/VCF/FinalSetVariants_existingMock.vcf" % (config["project-folder"]),
         "%s/finalReport.html" % (config["project-folder"])
 
 
