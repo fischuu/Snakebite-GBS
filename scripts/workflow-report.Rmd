@@ -1404,13 +1404,19 @@ Plot the snp position
 ```{r}
 plot(as.vector(as.matrix(vcf$map[,4])), ylab="Pos. on mock", xlab="SNP index")
 ```
+Distribution of the variant across the cluster
+
+```{r}
+hist(as.vector(as.matrix(vcf$map[,4])), main="SNP loci distribution", xlab="Position")
+```
+
 Missing variant calls per sample
 
 ```{r}
 barplot(apply(vcf$genotypesInfo==".,.",2,sum), las=2, main="Missing variants per sample")
 ```
 ```{r}
-barplot(apply(vcf$genotypesInfo==".,.",2,sum)/noVariants, las=2, main="Missing variants per sample (in %)")
+barplot(apply(vcf$genotypesInfo==".,.",2,sum)/noVariants*100, las=2, main="Missing variants per sample (in %)")
 ```
 
 ## Reference genome
@@ -1444,7 +1450,7 @@ if(refAvail){
 ```
 ```{r}
 if(refAvail){
-  barplot(apply(vcfRef$genotypesInfo==".,.",2,sum)/noVariants.ref, las=2, main="Missing variants per sample (in %)")
+  barplot(apply(vcfRef$genotypesInfo==".,.",2,sum)/noVariants.ref*100, las=2, main="Missing variants per sample (in %)")
 }
 ```
 
