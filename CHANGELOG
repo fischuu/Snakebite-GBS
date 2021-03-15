@@ -4,6 +4,7 @@
 #####                                                                      #####
 ################################################################################
 
+0.7.4 : * Bugfix: Wrong vcf was analysed in final report
 0.7.3 : * Conditional inputs for existing mock added (pipeline recognises now if it should perform that branch of the analysis or not)
 0.7.2 : * Variant calling for existing mock reference added
 0.7.1 : * Structure of final report adjusted

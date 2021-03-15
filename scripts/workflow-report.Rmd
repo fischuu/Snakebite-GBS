@@ -1379,7 +1379,8 @@ Import the Result vcf
 #vcf.fn<-file.path(projFolder, "FASTQ", "TRIMMED", "GSC.vcf")
 #vcf <- read.vcfR(vcf.fn)
 #aa.genlight <- vcfR2genlight(vcf, n.cores=1)
-vcf <- importVCF(file.path(projFolder, "FASTQ", "TRIMMED", "GSC.vcf"))
+vcf <- importVCF(file.path(projFolder, "MPILEUP", "mpileup_finalMock", "GSC.vcf"))
+vcfUnfiltered <- importVCF(file.path(projFolder, "MPILEUP", "mpileup_finalMock", "GSC.unfiltered.vcf"))
 if(refAvail){
   vcfRef <- importVCF(file.path(projFolder, "MPILEUP", "mpileup_reference", "GSC.vcf"))
 }
