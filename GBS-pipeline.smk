@@ -10,8 +10,8 @@ import os
 ##### Natural Resources Institute Finland (Luke)
 ##### This pipeline is build upon the the GBS-SNP-CROP pipeline:
 ##### https://github.com/halelab/GBS-SNP-CROP
-##### Version: 0.7.1
-version = "0.7.1"
+##### Version: 0.7.2
+version = "0.7.2"
 
 ##### set minimum snakemake version #####
 min_version("6.0")
@@ -29,6 +29,7 @@ wildcard_constraints:
 
 ##### Complete the input configuration
 config["genome-bwa-index"] = config["genome"]+".bwt"
+config["mockref-bwa-index"] = config["mockreference"]+".bwt"
 config["genome-star-index"] = config["project-folder"]+"/references/STAR2.7.3a"
 config["report-script"] = config["pipeline-folder"]+"/scripts/workflow-report.Rmd"
 config["refinement-script"] = config["pipeline-folder"]+"/scripts/refineMockReference.R"
@@ -65,14 +66,16 @@ print("#####")
 print("##### Runtime-configurations")
 print("##### --------------------------------")
 print("##### genome         : "+ config["genome"])
+print("##### existing mock  : "+ config["mockreference"])
 print("##### barcodes-file  : "+ config["barcodes"])
 print("##### rawsample file : "+ config["rawsamples"])
 print("#####")
 print("##### Derived runtime parameters")
 print("##### --------------------------------")
-print("##### BWA-Genome index  : "+config["genome-bwa-index"])
-print("##### STAR-Genome index : "+config["genome-star-index"])
-print("##### Adapter file      : "+ config["adapter"])
+print("##### BWA-Genome index    : "+config["genome-bwa-index"])
+print("##### STAR-Genome index   : "+config["genome-star-index"])
+print("##### Existing Mock index : "+config["mockref-bwa-index"])
+print("##### Adapter file        : "+ config["adapter"])
 print("#################################################################################")
 
 
@@ -116,6 +119,7 @@ rule all:
         expand("%s/BAM/alignments_finalMock/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
         "%s/MockReference/MockReference.fa" % (config["project-folder"]),
         "%s/VCF/FinalSetVariants_finalMock.vcf" % (config["project-folder"]),
+        "%s/VCF/FinalSetVariants_existingMock.vcf" % (config["project-folder"]),
         "%s/finalReport.html" % (config["project-folder"])
 
 
@@ -133,3 +137,4 @@ include: "rules/Module4-ReadAlignment"
 include: "rules/Module5-CallVariants"
 include: "rules/Module6-PostProcessing"
 include: "rules/Module7-Reporting"
+include: "rules/Module8-CallNewData"

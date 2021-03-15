@@ -178,3 +178,27 @@ rule IndexFinalMockSamtools:
     shell:"""
         samtools faidx {input}
   	"""
+  	
+if config["mockreference"] == "":
+    print(f"No mock reference genome provided")
+else:  	
+    if os.path.isfile(config["mockref-bwa-index"]):
+        pass
+    else:
+        rule bwa_create_index_existingMock:
+            """
+            Index the Reference Genome (BWA).
+            """
+            input:
+                config["mockreference"]
+            output:
+                config["mockref-bwa-index"]
+            log:
+                "%s/logs/BWA/bwa-fai-IndexMockReferenceGenome.log" % (config["project-folder"])
+            benchmark:
+                "%s/benchmark/BWA/bwaIndexMockReferenceGenome.benchmark.tsv" % (config["project-folder"])
+            singularity: config["singularity"]["gbs"]
+            shell:"""
+                    bwa index -a bwtsw {input} 2> {log}
+                    samtools faidx {input} 2> {log}
+          	"""
