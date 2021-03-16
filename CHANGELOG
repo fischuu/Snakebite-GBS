@@ -4,6 +4,14 @@
 #####                                                                      #####
 ################################################################################
 
+0.7.5 : * Distribution of the bp postion of the variants added
+0.7.4 : * Bugfix: Wrong vcf was analysed in final report
+0.7.3 : * Conditional inputs for existing mock added (pipeline recognises now if it should perform that branch of the analysis or not)
+0.7.2 : * Variant calling for existing mock reference added
+0.7.1 : * Structure of final report adjusted
+0.6   : * Release version for previous additions
+0.5.15: * Report adjusted
+0.5.14: * Bugfix: Rule FinalMockVsRef_alignment didn't have resource allocations
 0.5.13: * Statistics on final mock reference added
 0.5.12: * Coverage for finalMock alignments are now also calculated
 0.5.11: * Input rule all cleaned up a bit to account for temporary output
@@ -18,7 +26,7 @@
 0.5.2 : * Script to refine the mock reference added
 0.5.1 : * samtools index set to csi instead of bai
 0.4.1 : * Bugfix - Missing outputfile script added
-0.4   : Release version
+0.4   : * Release version
 0.3.16: * Several other small path typos
 0.3.15: * Mixup in samflags anf flagsts solev for final report
 0.3.14: * Path typos in final report fixed
@@ -38,3 +46,4 @@
 0.3.2 : * Step0 renamed to Module0 and organised
 0.3.1 : * Step1 renamed to Module1 and organised
         * Changelog introduced 
+        

@@ -47,7 +47,7 @@ rule CreateClusterAndMockReference:
   	"""
 
 if config["genome"] == "":
-    print(f"No reference genome provided, skipping the star indexing step for reference genome")
+    pass
 else:
     rule MockVsRef_alignment:
         """
@@ -70,7 +70,7 @@ else:
         """
 
 if config["genome"] == "":
-    print(f"No reference genome provided, skipping the star indexing step for reference genome")
+    pass
 else:
     rule MockVsRef_samtools_SamToSortedBam:
         """
@@ -97,7 +97,7 @@ else:
 
 
 if config["genome"] == "":
-    print(f"No reference genome provided, skipping the star indexing step for reference genome")
+    pass
 else:  	
     rule MockVsRef_AlignmentStats:
         """
@@ -151,7 +151,7 @@ else:
       	"""
 
 if config["genome"] == "":
-    print(f"No reference genome provided, skipping the star indexing step for reference genome")
+    pass
 else:
     rule MockVsRef_SortedBamToMpileup:
         """
@@ -215,9 +215,9 @@ rule refine_mock_reference:
     """
 
 if config["genome"] == "":
-    print(f"No reference genome provided, skipping the star indexing step for reference genome")
+    pass
 else:
-    rule FinalMockVsRef:
+    rule FinalMockVsRef_alignment:
         """
         Map the mock reference clusters to the genome (minimap2).
         """
@@ -234,11 +234,10 @@ else:
         singularity: config["singularity"]["minimap2"]
         shell:"""
            minimap2 -ax sr {input.refgenome} {input.mockgenome} > {output} 2> {log}
-
         """
 
 if config["genome"] == "":
-    print(f"No reference genome provided, skipping the star indexing step for reference genome")
+    pass
 else:
     rule FinalMockVsRef_samtools_SamToSortedBam:
         """
@@ -264,7 +263,7 @@ else:
 
 
 if config["genome"] == "":
-    print(f"No reference genome provided, skipping the star indexing step for reference genome")
+    pass
 else:  	
     rule FinalMockVsRef_AlignmentStats:
         """

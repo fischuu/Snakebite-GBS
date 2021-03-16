@@ -27,7 +27,7 @@ rule ParseMpileup_createCountFiles:
   	"""
 
 if config["genome"] == "":
-    print(f"No reference genome provided, skipping the star indexing step for reference genome")
+    pass
 else:
     rule ParseMpileup_createCountFiles_reference:
         """
@@ -76,13 +76,13 @@ rule create_verticalRef:
     threads: 1
     shell:"""
         sort -u -m -k2n {input.ref} -o {params.wd}/VerticalRefPos.tmp;
-        sort -k2n {params.wd}/VerticalRefPos.tmp | uniq >{output.vref};
+        sort -k2n {params.wd}/VerticalRefPos.tmp | uniq > {output.vref};
         #ls {params.wd}/*count.txt | xargs -n1 basename > {output.co}
         ls {params.wd}/*count.txt > {output.co}
     """
     
 if config["genome"] == "":
-    print(f"No reference genome provided, skipping the star indexing step for reference genome")
+    pass
 else:
     rule create_verticalRef_reference:
         """
@@ -128,7 +128,7 @@ checkpoint cut_verticalRef:
     """
 
 if config["genome"] == "":
-    print(f"No reference genome provided, skipping the star indexing step for reference genome")
+    pass
 else:
     checkpoint cut_verticalRef_reference:
         """
@@ -174,7 +174,7 @@ rule create_MasterMatrix_parallel:
      """
 
 if config["genome"] == "":
-    print(f"No reference genome provided, skipping the star indexing step for reference genome")
+    pass
 else:
     rule create_MasterMatrix_parallel_reference:
         """
@@ -212,7 +212,7 @@ def aggregate_inputMasterMatrix(wildcards):
                   i=glob_wildcards(os.path.join(checkpoint_outputMM, "VerticalRefPos.{i}")).i)        
 
 if config["genome"] == "":
-    print(f"No reference genome provided, skipping the star indexing step for reference genome")
+    pass
 else:
     def aggregate_inputMasterMatrix_reference(wildcards):
         """
@@ -232,7 +232,7 @@ rule aggregate_MasterMatrix:
     """    
 
 if config["genome"] == "":
-    print(f"No reference genome provided, skipping the star indexing step for reference genome")
+    pass
 else:
     rule aggregate_MasterMatrix_reference:
         input:
@@ -293,7 +293,7 @@ rule FilterVariants:
   	"""
 
 if config["genome"] == "":
-    print(f"No reference genome provided, skipping the star indexing step for reference genome")
+    pass
 else:
     rule FilterVariants_reference:
         """
@@ -384,7 +384,7 @@ rule CreateVCF:
   	"""
 
 if config["genome"] == "":
-    print(f"No reference genome provided, skipping the star indexing step for reference genome")
+    pass
 else:
     rule CreateVCF_reference:
         """
@@ -473,7 +473,7 @@ rule create_verticalRef_finalMock:
     threads: 1
     shell:"""
         sort -u -m -k2n {input.ref} -o {params.wd}/VerticalRefPos.tmp;
-        sort -k2n {params.wd}/VerticalRefPos.tmp | uniq >{output.vref};
+        sort -k2n {params.wd}/VerticalRefPos.tmp | uniq > {output.vref};
         #ls {params.wd}/*count.txt | xargs -n1 basename > {output.co}
         ls {params.wd}/*count.txt > {output.co}
     """
