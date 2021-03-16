@@ -43,6 +43,9 @@ knitr::opts_chunk$set(echo = FALSE,
                       fig.align = 'center', fig.height = 5, fig.width = 8.5)
 mockClusters.file <- "GSC.MR.Clusters.fa"
 mockReference.file <- "GSC.MR.Genome.fa"
+# To run locally on terminal type this command in the pipeline folder:
+# R -e "rmarkdown::render('./scripts/workflow-report.Rmd',output_file='./finalReport.html')"
+
 if(!is.element("snakemake",ls())){
   projFolder <- "/scratch/project_2001746/Whitefish_benchMS"
   pipelineFolder <- "/scratch/project_2001746/Pipeline-GBS/"
@@ -1073,6 +1076,17 @@ points(p[mockPos], rep(200000, length(mockPos)), pch="*", col="red", cex=4)
 barplot(mapStats[1,] / (apply(mapStats,2,sum)), ylim=c(0,1), ylab="Mapping in Percent", col=viridis(20)[8], las=2)
 ```
 
+And the same information in table format.
+
+```{r}
+mappingRates <- mapStats[1,] / apply(mapStats,2,sum)
+out <- as.matrix(mappingRates)
+colnames(out)[1] <- "Mapping rate"
+DT::datatable(out)
+```
+
+The average mapping rate is `r mean(mappingRates)`.
+
 ### Coverage
 
 Data mapped against the clusters and then the reads per cluster visualized
@@ -1183,7 +1197,7 @@ ADD HERE STILL A COMPARISON, HOW THE READS FROM THE MOCK DISTRIBUTE ACROSS THE R
 
 Import the mapping statistics to the Mock reference
 
-```{r import flagstats}
+```{r import final_flagstats}
 flagstatFiles <- list.files(file.path(projFolder,"BAM", "alignments_finalMock"), pattern="*.flagstat")
 flagstats <- list()
 for(i in 1:length(flagstatFiles)){
@@ -1193,7 +1207,7 @@ for(i in 1:length(flagstatFiles)){
 
 Visualization of the alignments, red stars indicate the mock reference samples
 
-```{r vis mapping stats}
+```{r vis final mapping stats}
 par(oma=c(6,3,0,0))
 mapStats <- matrix(0,ncol=length(flagstatFiles), nrow=2)
 
@@ -1216,15 +1230,25 @@ mockPos <- which(is.element(flagstatFiles, mockFiles))
 points(p[mockPos], rep(200000, length(mockPos)), pch="*", col="red", cex=4)
 ```
 
-```{r mapping percentage}
+```{r final mapping percentage}
 barplot(mapStats[1,] / (apply(mapStats,2,sum)), ylim=c(0,1), ylab="Mapping in Percent", col=viridis(20)[8], las=2)
 ```
 
+And the same information in table format.
+
+```{r}
+mappingRates <- mapStats[1,] / apply(mapStats,2,sum)
+out <- as.matrix(mappingRates)
+colnames(out)[1] <- "Mapping rate"
+DT::datatable(out)
+```
+
+The average mapping rate is `r mean(mappingRates)`.
 
 ### Coverage
 
 Data mapped against the clusters and then the reads per cluster visualized
-```{r importClusterCoverage, warning=FALSE}
+```{r importFinalClusterCoverage, warning=FALSE}
 clusterFiles <- list.files(file.path(projFolder, "BAM", "alignments_finalMock"), pattern="*.coverage")
 clusterCoverage <- read.table(file.path(projFolder, "BAM", "alignments_finalMock", clusterFiles[1]))
 names(clusterCoverage)[1:2] <- c("cluster", clusterFiles[1])
@@ -1245,7 +1269,7 @@ clusterCoverage.std <- t(t(clusterCoverage)/apply(clusterCoverage,2,sum))*100000
 ### Lorenz curve
 Concentration measure of reads against clusters
 
-```{r lorenz}
+```{r lorenz final}
 plot(cumsum(sort(clusterCoverage[,2] / sum(clusterCoverage[,2]))), type="l", xlab="Cluster", ylab="Concentration")
 for(i in 3:ncol(clusterCoverage)){
   lines(cumsum(sort(clusterCoverage[,i] / sum(clusterCoverage[,i]))))
@@ -1257,14 +1281,14 @@ for(i in 3:ncol(clusterCoverage)){
 
 These are the amounts of clusters with different samples. 
 
-```{r cluster coverage stats}
+```{r final cluster coverage stats}
 coveredClusters <- apply(clusterCoverage[,-1]>0,1,sum)
 barplot(table(coveredClusters), xlab="No. of different samples aligned to cluster", col=viridis(20)[8])
 ```
 
 Now we have here the number of reads per coverage class. That means, instead of having it binary as in the previous plot, we now count all the reads per coverage group.
 
-```{r reads per coverage group}
+```{r reads per final coverage group}
 readsPerCoverageGroup <- c()
 
 for(i in 1:max(coveredClusters)){
@@ -1277,13 +1301,13 @@ barplot(readsPerCoverageGroup, xlab="Coverage group", ylab="Reads on cluster gro
 ```
 
 
-```{r reads per coverage group in percent}
+```{r reads per final coverage group in percent}
 barplot(readsPerCoverageGroup/sum(readsPerCoverageGroup)*100, xlab="Coverage group", ylab="Reads on cluster group (in %)", ylim=c(0,100), col=viridis(20)[8])
 ```
 
 Then still the number of clusters without coverage per sample
 
-```{r clusters without coverage}
+```{r final clusters without coverage}
 nonHittedClusters <- apply(clusterCoverage[,-1]==0,2,sum)
 names(nonHittedClusters) <- gsub(".coverage", "", names(nonHittedClusters))
 barplot(nonHittedClusters, col=viridis(20)[8], las=2)
@@ -1292,7 +1316,7 @@ lines(c(0,100000), c(nrow(clusterCoverage), nrow(clusterCoverage)), lty="dotted"
 
 And then this still as percentage
 
-```{r clusterhits percentage}
+```{r final clusterhits percentage}
 barplot(nonHittedClusters/nrow(clusterCoverage), ylim=c(0,1), las=2, col=viridis(20)[8])
 lines(c(0,10000),c(0.2,0.2), lty="dotted")
 lines(c(0,10000),c(0.4,0.4), lty="dotted")
@@ -1303,7 +1327,7 @@ lines(c(0,10000),c(0.8,0.8), lty="dotted")
 
 ### Smoothed log-coverage per cluster
 
-```{r vizCusterCoverage}
+```{r vizFinalCusterCoverage}
 plot(smooth.spline(clusterCoverage[,1], log(clusterCoverage[,2]+1), all.knots=FALSE), type="l", xlab="Cluster", ylab="Log-coverage", ylim=c(0, max(log(clusterCoverage))/2))
 
 for(i in 3:ncol(clusterCoverage)){
@@ -1315,7 +1339,7 @@ for(i in 3:ncol(clusterCoverage)){
 
 Now the coverages are divided by the total amount of reads per sample and then multiplied by 10^5.
 
-```{r vizStdCusterCoverage}
+```{r vizFinalStdCusterCoverage}
 # I use here the first column of the other matrix to keep the same coordinates. It does not affect the plot.
 plot(smooth.spline(clusterCoverage[,1], log(clusterCoverage.std[,2]+1), all.knots=FALSE), type="l", xlab="Cluster", ylab="", ylim=c(0, max(log(clusterCoverage.std))/4))
 
@@ -1373,12 +1397,9 @@ barplot(mapStats[1,] / (apply(mapStats,2,sum)), ylim=c(0,1), ylab="Mapping in Pe
 Import the Result vcf
 
 ```{r import vcf, echo=FALSE, message=FALSE, warning=FALSE}
-#vcf.fn<-file.path(projFolder, "FASTQ", "TRIMMED", "GSC.vcf")
-#vcf <- read.vcfR(vcf.fn)
-#aa.genlight <- vcfR2genlight(vcf, n.cores=1)
-vcf <- importVCF(file.path(projFolder, "FASTQ", "TRIMMED", "GSC.vcf"))
+vcf <- importVCF(file.path(projFolder, "VCF", "FinalSetVariants_finalMock.vcf"))
 if(refAvail){
-  vcfRef <- importVCF(file.path(projFolder, "MPILEUP", "mpileup_reference", "GSC.vcf"))
+  vcfRef <- importVCF(file.path(projFolder, "VCF", "FinalSetVariants_referenceGenome.vcf"))
 }
 ```
 
@@ -1400,6 +1421,11 @@ Plot the snp position
 ```{r}
 plot(as.vector(as.matrix(vcf$map[,4])), ylab="Pos. on mock", xlab="SNP index")
 ```
+
+```{r}
+hist(as.matrix(vcf$map[,4]), xlab="SNP pos in bp on Cluster")
+```
+
 Missing variant calls per sample
 
 ```{r}
