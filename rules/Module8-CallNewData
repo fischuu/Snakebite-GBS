@@ -256,7 +256,7 @@ else:
             mnCall=config["params"]["step7"]["mnCall"],
             mnAvgDepth=config["params"]["step7"]["mnAvgDepth"],
             mxAvgDepth=config["params"]["step7"]["mxAvgDepth"],
-            wd="%s/MPILEUP/mpileup_reference" % config["project-folder"],
+            wd="%s/MPILEUP/mpileup_existingMock" % config["project-folder"],
             pipefolder=config["pipeline-folder"]
         log:
             "%s/logs/Perl/FilterVariants_exMockreference.log" % (config["project-folder"])
