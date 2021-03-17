@@ -1,15 +1,6 @@
 # Load required libraries
   library("GenomicTools")
 
-# This script imports the mock reference coverage values, analyses it and then created a final, refined mock reference file
-  if(!is.element("snakemake",ls())){
-    mockClusters.file <- "GSC.MR.Clusters.fa"
-    projFolder <- "/scratch/project_2001746/BSF"
-    minTotalReadCoverage <- 25
-    minSampleCoverage <- 3
-    mockClusters.refined.file <- "/scratch/project_2001746/BSF/MockReference/MockReference.fa"
-  }
-
 # Import the coverage
   clusterFiles <- list.files(file.path(projFolder, "FASTQ", "TRIMMED", "alignments_clusters"), pattern="*.coverage")
   clusterCoverage <- read.table(file.path(projFolder, "FASTQ", "TRIMMED", "alignments_clusters", clusterFiles[1]))

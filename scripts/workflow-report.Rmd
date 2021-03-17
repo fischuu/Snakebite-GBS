@@ -1376,14 +1376,29 @@ barplot(mapStats[1,] / (apply(mapStats,2,sum)), ylim=c(0,1), ylab="Mapping in Pe
 Import the Result vcf
 
 ```{r import vcf, echo=FALSE, message=FALSE, warning=FALSE}
-#vcf.fn<-file.path(projFolder, "FASTQ", "TRIMMED", "GSC.vcf")
-#vcf <- read.vcfR(vcf.fn)
-#aa.genlight <- vcfR2genlight(vcf, n.cores=1)
 vcf <- importVCF(file.path(projFolder, "MPILEUP", "mpileup_finalMock", "GSC.vcf"))
 vcfUnfiltered <- importVCF(file.path(projFolder, "MPILEUP", "mpileup_finalMock", "GSC.unfiltered.vcf"))
 if(refAvail){
   vcfRef <- importVCF(file.path(projFolder, "MPILEUP", "mpileup_reference", "GSC.vcf"))
 }
+```
+
+```{r get alleleCounts}
+gtInfo <- apply(vcfUnfiltered$genotypesInfo,2,strsplit,",")
+refAll <- matrix(-1, nrow=length(gtInfo), ncol=length(gtInfo[[1]]))
+altAll <- matrix(-1, nrow=length(gtInfo), ncol=length(gtInfo[[1]]))
+
+for(i in 1:nrow(refAll)){
+  tmp <- sapply(gtInfo[[i]],"[",1)
+  tmp[tmp=="."] <- NA
+  refAll[i,] <- as.numeric(tmp)
+  
+  tmp <- sapply(gtInfo[[i]],"[",2)
+  tmp[tmp=="."] <- NA
+  altAll[i,] <- as.numeric(tmp)
+}
+
+DP <- refAll+altAll
 ```
 
 ## Mock reference
@@ -1400,24 +1415,55 @@ We give some basic stats on the vcf file
   kable_styling(out_html, "striped", position = "left")
 ```
 
+### SNP position vs snp index
+
 Plot the snp position
 ```{r}
 plot(as.vector(as.matrix(vcf$map[,4])), ylab="Pos. on mock", xlab="SNP index")
 ```
+
+### SNP loci on cluster
+
 Distribution of the variant across the cluster
 
 ```{r}
 hist(as.vector(as.matrix(vcf$map[,4])), main="SNP loci distribution", xlab="Position")
 ```
 
+### Missing variants per samples
+
 Missing variant calls per sample
 
 ```{r}
 barplot(apply(vcf$genotypesInfo==".,.",2,sum), las=2, main="Missing variants per sample")
 ```
+
+### Missingness per bp position
+t.b.a.
+
+### Missing variants per samples
+
 ```{r}
 barplot(apply(vcf$genotypesInfo==".,.",2,sum)/noVariants*100, las=2, main="Missing variants per sample (in %)")
 ```
+
+### Distribution of filtering criterias
+```{r}
+tmp <- cumsum(sort(apply(DP,2,sum)))
+plot(tmp, type="l")
+abline(a=0, b=3*70, col="red")
+abline(a=0, b=200*70, col="red")
+```
+
+```{r}
+tmp <- table(apply(DP>200,2,sum))
+tmp <- rbind(tmp,table(apply(DP>2,2,sum)))
+tmp <- rbind(tmp,table(apply(DP>3,2,sum)))
+tmp <- rbind(tmp,table(apply(DP>4,2,sum)))
+tmp <- rbind(tmp,table(apply(DP>5,2,sum)))
+barplot(tmp,border=0)
+```
+
 
 ## Reference genome
 We give some basic stats on the vcf file
