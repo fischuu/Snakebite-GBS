@@ -43,6 +43,9 @@ knitr::opts_chunk$set(echo = FALSE,
                       fig.align = 'center', fig.height = 5, fig.width = 8.5)
 mockClusters.file <- "GSC.MR.Clusters.fa"
 mockReference.file <- "GSC.MR.Genome.fa"
+# To run locally on terminal type this command in the pipeline folder:
+# R -e "rmarkdown::render('./scripts/workflow-report.Rmd',output_file='./finalReport.html')"
+
 if(!is.element("snakemake",ls())){
   projFolder <- "/scratch/project_2001746/Whitefish_benchMS"
   pipelineFolder <- "/scratch/project_2001746/Pipeline-GBS/"
@@ -1076,6 +1079,17 @@ points(p[mockPos], rep(200000, length(mockPos)), pch="*", col="red", cex=4)
 barplot(mapStats[1,] / (apply(mapStats,2,sum)), ylim=c(0,1), ylab="Mapping in Percent", col=viridis(20)[8], las=2)
 ```
 
+And the same information in table format.
+
+```{r}
+mappingRates <- mapStats[1,] / apply(mapStats,2,sum)
+out <- as.matrix(mappingRates)
+colnames(out)[1] <- "Mapping rate"
+DT::datatable(out)
+```
+
+The average mapping rate is `r mean(mappingRates)`.
+
 ### Coverage
 
 Data mapped against the clusters and then the reads per cluster visualized
@@ -1223,6 +1237,16 @@ points(p[mockPos], rep(200000, length(mockPos)), pch="*", col="red", cex=4)
 barplot(mapStats[1,] / (apply(mapStats,2,sum)), ylim=c(0,1), ylab="Mapping in Percent", col=viridis(20)[8], las=2)
 ```
 
+And the same information in table format.
+
+```{r}
+mappingRates <- mapStats[1,] / apply(mapStats,2,sum)
+out <- as.matrix(mappingRates)
+colnames(out)[1] <- "Mapping rate"
+DT::datatable(out)
+```
+
+The average mapping rate is `r mean(mappingRates)`.
 
 ### Coverage
 
@@ -1379,7 +1403,7 @@ Import the Result vcf
 vcf <- importVCF(file.path(projFolder, "MPILEUP", "mpileup_finalMock", "GSC.vcf"))
 vcfUnfiltered <- importVCF(file.path(projFolder, "MPILEUP", "mpileup_finalMock", "GSC.unfiltered.vcf"))
 if(refAvail){
-  vcfRef <- importVCF(file.path(projFolder, "MPILEUP", "mpileup_reference", "GSC.vcf"))
+  vcfRef <- importVCF(file.path(projFolder, "VCF", "FinalSetVariants_referenceGenome.vcf"))
 }
 ```
 
@@ -1416,14 +1440,13 @@ We give some basic stats on the vcf file
 ```
 
 ### SNP position vs snp index
-
 Plot the snp position
+
 ```{r}
 plot(as.vector(as.matrix(vcf$map[,4])), ylab="Pos. on mock", xlab="SNP index")
 ```
 
 ### SNP loci on cluster
-
 Distribution of the variant across the cluster
 
 ```{r}
