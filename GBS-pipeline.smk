@@ -10,8 +10,8 @@ import os
 ##### Natural Resources Institute Finland (Luke)
 ##### This pipeline is build upon the the GBS-SNP-CROP pipeline:
 ##### https://github.com/halelab/GBS-SNP-CROP
-##### Version: 0.7.7
-version = "0.7.7"
+##### Version: 0.7.8
+version = "0.7.8"
 
 ##### set minimum snakemake version #####
 min_version("6.0")
@@ -116,7 +116,7 @@ rule all:
       # OUTPUT STEP 8  
         "%s/FASTQ/TRIMMED/GSC.vcf" % (config["project-folder"]),
         "%s/FASTQ/TRIMMED/GSC.vcf.fa" % (config["project-folder"]),
-        "%s/MPILEUP/mpileup_reference/GSC.vcf" % (config["project-folder"]),
+        "%s/VCF/FinalSetVariants_referenceGenome.vcf" % (config["project-folder"]),
         "%s/MPILEUP/mpileup_reference/GSC.vcf.fa" % (config["project-folder"]),
       # OUTPUT STEP 9
         "%s/BAM/mockVariantsToReference/mockVariantsToReference.bam" % (config["project-folder"]),

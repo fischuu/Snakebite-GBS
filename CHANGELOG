@@ -4,6 +4,7 @@
 #####                                                                      #####
 ################################################################################
 
+0.7.8 : * Bugfix: Wrong vcf output path for calling variants with reference genome
 0.7.7 : * Bugfix: Wrong vcf output path for calling variants with existing mockref
 0.7.6 : * Bugfix: Wrong path given for filtering existing mock ref variants
 0.7.5 : * Distribution of the bp postion of the variants added
