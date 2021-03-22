@@ -300,7 +300,7 @@ else:
             out=config["params"]["step8"]["out"],
             unfilteredOut=config["params"]["step8"]["unfiltered"],
             format=config["params"]["step8"]["format"],
-            wd="%s/MPILEUP/mpileup_reference" % config["project-folder"],
+            wd="%s/MPILEUP/mpileup_existingMock" % config["project-folder"],
             outdir="%s/VCF" % config["project-folder"],
             pipeout="%s/MPILEUP/mpileup_existingMock/GSC.vcf" % (config["project-folder"]),
             pipefolder=config["pipeline-folder"]
