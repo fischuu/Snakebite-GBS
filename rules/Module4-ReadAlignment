@@ -19,6 +19,7 @@ else:
         threads: lambda cores: cpu_count()
         conda:"envs/gbs.yaml"
         singularity: config["singularity"]["gbs"]
+        group: "Mod4RefGenome"
         shell:"""
             df -h &> {log}
             bwa mem -t {threads} -M {input.reference} {input.R1} {input.R2} > {output} 2> {log}
@@ -47,6 +48,7 @@ else:
             F=config["params"]["step5d"]["F"]
         conda:"envs/samtools.yaml"
         singularity: config["singularity"]["gbs"]
+        group: "Mod4RefGenome"
         shell:"""
             df -h &> {log}
             echo "Number of threads used:" {threads}
@@ -77,6 +79,7 @@ else:
             q=config["params"]["step5d"]["q"]
         conda:"envs/samtools.yaml"
         singularity: config["singularity"]["gbs"]
+        group: "Mod4RefGenome"
         shell:"""
             df -h &> {log}
             echo "Number of threads used:" {threads}
@@ -103,6 +106,7 @@ else:
         threads: lambda cores: cpu_count()
         conda:"envs/samtools.yaml"
         singularity: config["singularity"]["gbs"]
+        group: "Mod4RefGenome"
         shell:"""
             df -h &> {log}
             echo "Number of threads used:" {threads}
@@ -129,6 +133,7 @@ rule MockRef_AlignReads:
         threads=config["params"]["step5b"]["threads"],
     conda:"envs/gbs.yaml"
     singularity: config["singularity"]["gbs"]
+    group: "Mod4MockRef"
     shell:"""
         df -h &> {log}
         bwa mem -t {params.threads} -M {input.reference} {input.R1} {input.R2} > {output} 2> {log}
@@ -153,6 +158,7 @@ rule MockRefClusters_AlignReads:
         threads=config["params"]["step5c"]["threads"],
     conda:"envs/gbs.yaml"
     singularity: config["singularity"]["gbs"]
+    group: "Mod4MockCluster"
     shell:"""
         df -h &> {log}
         bwa mem -t {params.threads} -M {input.reference} {input.R1} {input.R2} > {output} 2> {log}
@@ -178,6 +184,7 @@ rule MockRef_SamToSortedBam:
         F=config["params"]["step5d"]["F"]
     conda:"envs/samtools.yaml"
     singularity: config["singularity"]["gbs"]
+    group: "Mod4MockRef"
     shell:"""
         df -h &> {log}
         samtools view -b -q {params.q} -f {params.f} -F {params.F} {input} > {output.bam}
@@ -205,6 +212,7 @@ rule MockRefClusters_SamToSortedBam:
         F=config["params"]["step5e"]["F"]
     conda:"envs/samtools.yaml"
     singularity: config["singularity"]["gbs"]
+    group: "Mod4MockCluster"
     shell:"""
         df -h &> {log}
         samtools view -b -q {params.q} -f {params.f} -F {params.F} {input} > {output.bam}
@@ -231,6 +239,7 @@ rule MockRef_SortedBamToMpileup:
         q=config["params"]["step5d"]["q"]
     conda:"envs/samtools.yaml"
     singularity: config["singularity"]["gbs"]
+    group: "Mod4MockRef"
     shell:"""
         df -h &> {log}
         samtools mpileup -Q {params.Q} -q {params.q} -B -C 50 -f {input.reference} {input.bam} > {output}
@@ -251,6 +260,7 @@ rule MockRef_AlignmentStats:
         "%s/benchmark/Samtools/MockRef_AlignmentStats.{samples}.benchmark.tsv" % (config["project-folder"])
     conda:"envs/samtools.yaml"
     singularity: config["singularity"]["gbs"]
+    group: "Mod4MockRef"
     shell:"""
         samtools flagstat {input} > {output}
   	"""
@@ -272,6 +282,7 @@ rule MockRefClusters_AlignmentStats:
         "%s/benchmark/Samtools/MockRefClusters_AlignmentStats.{samples}.benchmark.tsv" % (config["project-folder"])
     conda:"envs/samtools.yaml"
     singularity: config["singularity"]["gbs"]
+    group: "Mod4MockCluster"
     shell:"""
         df -h &> {log}
         samtools flagstat {input.sam} > {output.fs}
@@ -301,6 +312,7 @@ rule FinalMockRef_AlignReads:
         threads=config["params"]["step5b"]["threads"],
     conda:"envs/gbs.yaml"
     singularity: config["singularity"]["gbs"]
+    group: "finalMock"
     shell:"""
         df -h &> {log}
         bwa mem -t {params.threads} -M {input.reference} {input.R1} {input.R2} > {output} 2> {log}
@@ -326,6 +338,7 @@ rule FinalMockRef_SamToSortedBam:
         F=config["params"]["step5d"]["F"]
     conda:"envs/samtools.yaml"
     singularity: config["singularity"]["gbs"]
+    group: "finalMock"
     shell:"""
         df -h &> {log}
         samtools view -b -q {params.q} -f {params.f} -F {params.F} {input} > {output.bam}
@@ -352,6 +365,7 @@ rule FinalMockRef_SortedBamToMpileup:
         q=config["params"]["step5d"]["q"]
     conda:"envs/samtools.yaml"
     singularity: config["singularity"]["gbs"]
+    group: "finalMock"
     shell:"""
         df -h &> {log}
         samtools mpileup -Q {params.Q} -q {params.q} -B -C 50 -f {input.reference} {input.bam} > {output}
@@ -374,6 +388,7 @@ rule finalMockRef_AlignmentStats:
         "%s/benchmark/Samtools/FinalMockRef_AlignmentStats.{samples}.benchmark.tsv" % (config["project-folder"])
     conda:"envs/samtools.yaml"
     singularity: config["singularity"]["gbs"]
+    group: "finalMock"
     shell:"""
         samtools flagstat {input.sam} > {output.fs}
         samtools idxstats {input.sbam} | awk '{{print $1\" \"$3}}' > {output.c}
