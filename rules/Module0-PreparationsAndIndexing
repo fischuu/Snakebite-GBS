@@ -39,7 +39,6 @@ rule Concatenate_lanes:
     params:
         infolder="%s/FASTQ/RAW" % (config["project-folder"]),
         outfolder="%s/FASTQ/CONCATENATED" % (config["project-folder"])
-    group: "preprocess"
     shell:"""
         mkdir -p {params.outfolder}
         cat {params.infolder}/{wildcards.samples}*_R1_001.fastq.gz > {output.R1} 2> {log}
