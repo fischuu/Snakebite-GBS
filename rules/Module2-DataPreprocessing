@@ -19,6 +19,7 @@ rule cutadapt_trim_reads:
     threads: 1
     conda:"envs/cutadapt.yaml"
     singularity: config["singularity"]["cutadapt"]
+    group: "preprocess"
     shell:"""
         export TMPDIR={params.tmpdir}
         echo $TMPDIR
@@ -72,6 +73,7 @@ rule TrimBasedOnQuality:
         "%s/benchmark/TRIMMOMATIC/trimmomatic_{samples}.benchmark.tsv" % (config["project-folder"])
     conda:"envs/cutadapt.yaml"
     singularity: config["singularity"]["gbs"]
+    group: "preprocess"
     shell:"""
        java -jar /Trimmomatic-0.38/trimmomatic-0.38.jar PE -phred33 -threads {params.threads} -trimlog {output.trimlog} {input.R1} {input.R2} {output.R1} {output.R1SE} {output.R2} {output.R2SE} MINLEN:{params.minlen} ILLUMINACLIP:{params.ad}:{params.iclip} LEADING:{params.leading} SLIDINGWINDOW:{params.slwin} TRAILING:{params.trail} &>{log}
   	"""
@@ -96,6 +98,7 @@ rule SubstituteLowQualityBases:
         "%s/benchmark/FASTQ_MASKER/Fastq_masker_{samples}.benchmark.tsv" % (config["project-folder"])
     conda:"envs/gbs.yaml"
     singularity: config["singularity"]["gbs"]
+    group: "preprocess"
     shell:"""
     
        mkdir -p {params.outfolder}

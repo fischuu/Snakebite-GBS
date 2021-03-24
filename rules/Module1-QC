@@ -20,6 +20,7 @@ rule fastqc_quality_control_raw_data:
         outfolder="%s/QC/RAW/" % (config["project-folder"])
     conda:"envs/gbs.yaml"
     singularity: config["singularity"]["gbs"]
+    group: "preprocess"
     shell:"""
         mkdir -p {params.outfolder};
         fastqc -t {threads} -o {params.outfolder} --extract {input.R1} &> {log.R1};
@@ -70,6 +71,7 @@ rule qualDist_raw_data:
     params:
         outfolder="%s/QC/RAW/" % (config["project-folder"]),
         pipeFolder=config["pipeline-folder"]
+    group: "preprocess"
     shell:"""
         mkdir -p {params.outfolder};
         {params.pipeFolder}/scripts/getQualDist.sh {input.R1} > {output.R1}
@@ -97,6 +99,7 @@ rule fastqc_quality_control_concatenated_data:
         outfolder="%s/QC/CONCATENATED/" % (config["project-folder"])
     conda:"envs/gbs.yaml"
     singularity: config["singularity"]["gbs"]
+    group: "preprocess"
     shell:"""
         mkdir -p {params.outfolder};
         fastqc -t {threads} -o {params.outfolder} --extract {input.R1} &> {log.R1};
@@ -146,6 +149,7 @@ rule qualDist_concateated_data:
     params:
         outfolder="%s/QC/CONCATENATED/" % (config["project-folder"]),
         pipeFolder=config["pipeline-folder"]
+    group: "preprocess"
     shell:"""
         mkdir -p {params.outfolder};
         {params.pipeFolder}/scripts/getQualDist.sh {input.R1} > {output.R1}
@@ -172,6 +176,7 @@ rule fastqc_quality_control_trimmed_data:
         outfolder="%s/QC/TRIMMED/" % (config["project-folder"])
     conda:"envs/gbs.yaml"
     singularity: config["singularity"]["gbs"]
+    group: "preprocess"
     shell:"""
         mkdir -p {params.outfolder};
         fastqc -t {threads} -o {params.outfolder} --extract {input.R1} &> {log.R1};
@@ -223,6 +228,7 @@ rule qualDist_trimmed_data:
     params:
         outfolder="%s/QC/TRIMMED/" % (config["project-folder"]),
         pipeFolder=config["pipeline-folder"]
+    group: "preprocess"
     shell:"""
         mkdir -p {params.outfolder};
         {params.pipeFolder}/scripts/getQualDist.sh {input.R1} > {output.R1}
