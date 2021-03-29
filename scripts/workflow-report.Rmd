@@ -719,9 +719,9 @@ Basic information on the identified clusters, used as mock reference
 
 Total length of the input fasta to build reference: `r format(sum(nchar(vsearchIN)), big.mark=",")` bp.
 
-Total length of the Mock Reference Clusters: `r format(sum(nchar(prelimMockClusters)), big.mark=",")` bp.
+Total length of the preliminary Mock Reference Clusters: `r format(sum(nchar(prelimMockClusters)), big.mark=",")` bp.
 
-Total length of the Mock Reference (Used as reference): `r format(sum(nchar(prelimMockReference)), big.mark=",")` bp.
+Total length of the preliminary Mock Reference (Used as reference): `r format(sum(nchar(prelimMockReference)), big.mark=",")` bp.
 
 ### Theoretical coverage of Mock per sample
 Given the length of the mock reference assembly and the total number of sequenced bases per sample, we can estimate the theoretical coverage of the mock for each sample
@@ -867,6 +867,8 @@ Basic information for the final mock reference:
   out_html <- knitr::kable(out, col.names = NULL, "html")
   kable_styling(out_html, "striped", position = "left")
 ```
+
+Total length of the Mock Reference Clusters: `r format(sum(nchar(finalMockClusters)), big.mark=",")` bp.
 
 ### Theoretical coverage of Mock per sample
 Given the length of the final mock reference assembly and the total number of sequenced bases per sample, we can estimate the theoretical coverage of the final mock for each sample

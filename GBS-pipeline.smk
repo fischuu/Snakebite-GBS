@@ -10,8 +10,8 @@ import os
 ##### Natural Resources Institute Finland (Luke)
 ##### This pipeline is build upon the the GBS-SNP-CROP pipeline:
 ##### https://github.com/halelab/GBS-SNP-CROP
-##### Version: 0.7.8
-version = "0.7.8"
+##### Version: 0.7.9
+version = "0.7.9"
 
 ##### set minimum snakemake version #####
 min_version("6.0")
