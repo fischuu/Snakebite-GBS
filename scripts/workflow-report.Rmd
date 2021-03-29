@@ -1394,9 +1394,11 @@ points(p[mockPos], rep(200000, length(mockPos)), pch="*", col="red", cex=4)
 ```
 
 ```{r ref mapping percentage}
+refGenome.mappingStats <- mapStats[1,] / (apply(mapStats,2,sum))
 barplot(mapStats[1,] / (apply(mapStats,2,sum)), ylim=c(0,1), ylab="Mapping in Percent", col=viridis(20)[8], las=2)
 ```
 
+The average mapping rate on the reference genome is `r mean(refGenome.mappingStats)`.
 
 # Variants
 Import the Result vcf

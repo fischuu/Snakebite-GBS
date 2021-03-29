@@ -4,6 +4,7 @@
 #####                                                                      #####
 ################################################################################
 
+0.7.10: * Final report: Average mapping rate for reference genome added
 0.7.9 : * Final Report: Length of final mock reference in bases added to the report
 0.7.8 : * Bugfix: Wrong vcf output path for calling variants with reference genome
 0.7.7 : * Bugfix: Wrong vcf output path for calling variants with existing mockref
