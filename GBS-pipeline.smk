@@ -10,8 +10,8 @@ import os
 ##### Natural Resources Institute Finland (Luke)
 ##### This pipeline is build upon the the GBS-SNP-CROP pipeline:
 ##### https://github.com/halelab/GBS-SNP-CROP
-##### Version: 0.7.10
-version = "0.7.10"
+##### Version: 0.7.12
+version = "0.7.12"
 
 ##### set minimum snakemake version #####
 min_version("6.0")
@@ -126,7 +126,17 @@ rule all:
         "%s/VCF/FinalSetVariants_finalMock.vcf" % (config["project-folder"]),
         "%s/finalReport.html" % (config["project-folder"])
 
+rule QC:
+    input:
+        "%s/QC/RAW/multiqc_R1/" % (config["project-folder"]),
+        "%s/QC/CONCATENATED/multiqc_R1/" % (config["project-folder"]),
+        "%s/QC/TRIMMED/multiqc_R1/" % (config["project-folder"]),
 
+rule MockEval:
+    input:
+        "%s/MockReference/MockReference.fa" % (config["project-folder"]),
+        "%s/FASTQ/TRIMMED/GSC.MR.Clusters.fa" % (config["project-folder"]),
+        expand("%s/BAM/alignments_finalMock/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples)
 
 ### setup report #####
 

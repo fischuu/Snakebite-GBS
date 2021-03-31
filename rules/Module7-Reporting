@@ -45,3 +45,11 @@ rule R_finalReport:
              snakemake <- TRUE;\
              rmarkdown::render('{input.script}',output_file='{output}')" &> {log}
     """
+
+rule R_MockEval:
+    """
+    Create the mock evaluation report (R).
+    """
+    input:
+        script=config["report-script"],
+    
