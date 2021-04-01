@@ -158,7 +158,9 @@ MockVsRef_SortedBamToMpileup:
     job-name: MockVsRef_SortedBamToMpileup
 
 refine_mock_reference:
+    time: 05:00:00
     job-name: refine_mock_reference
+    mem-per-cpu: 64000
 
 # Module 4 - Read alignment
 ################################################################################   

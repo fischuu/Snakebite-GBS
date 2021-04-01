@@ -10,8 +10,8 @@ import os
 ##### Natural Resources Institute Finland (Luke)
 ##### This pipeline is build upon the the GBS-SNP-CROP pipeline:
 ##### https://github.com/halelab/GBS-SNP-CROP
-##### Version: 0.7.12
-version = "0.7.12"
+##### Version: 0.7.13
+version = "0.7.13"
 
 ##### set minimum snakemake version #####
 min_version("6.0")
@@ -32,6 +32,7 @@ config["genome-bwa-index"] = config["genome"]+".bwt"
 config["mockref-bwa-index"] = config["mockreference"]+".bwt"
 config["genome-star-index"] = config["project-folder"]+"/references/STAR2.7.3a"
 config["report-script"] = config["pipeline-folder"]+"/scripts/workflow-report.Rmd"
+config["mockeval-script"] = config["pipeline-folder"]+"/scripts/mockeval-report.Rmd"
 config["refinement-script"] = config["pipeline-folder"]+"/scripts/refineMockReference.R"
 config["adapter"]=config["pipeline-folder"]+"/adapter.fa"
 
@@ -134,9 +135,7 @@ rule QC:
 
 rule MockEval:
     input:
-        "%s/MockReference/MockReference.fa" % (config["project-folder"]),
-        "%s/FASTQ/TRIMMED/GSC.MR.Clusters.fa" % (config["project-folder"]),
-        expand("%s/BAM/alignments_finalMock/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples)
+        "%s/mockEvalReport.html" % (config["project-folder"])
 
 ### setup report #####
 
