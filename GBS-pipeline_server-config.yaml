@@ -8,6 +8,9 @@ __default__:
     partition: small
     working-directory: /scratch/project_2001746/logs/
     nvme: 50
+    mail-user: daniel.fischer@luke.fi
+    mail-type: END
+
     
 # Module 0 - PreparationsAndIndexing:
 ################################################################################
