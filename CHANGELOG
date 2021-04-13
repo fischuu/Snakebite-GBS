@@ -4,6 +4,7 @@
 #####                                                                      #####
 ################################################################################
 
+0.7.15: * Removed the NVME disc areas for the default run configuration
 0.7.14: * Email notification for slurm jobs added
 0.7.13: * Mock reference evaluation target rule added (MockEval)
 0.7.12: * New output target rule MockEval added

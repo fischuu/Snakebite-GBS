@@ -43,10 +43,15 @@ export TMPDIR=$local_scratch
 #          --configfile /scratch/project_2001746/Pipeline-GBS/GBS-pipeline_config-example.yaml \
 #          --rulegraph | dot -T png > ./workflow.png
 
+# It seems that not all nodes have nvme drives, so I altered the binding option from
+# --singularity-args "-B /scratch:/scratch,/projappl:/projappl,$TMPDIR:/tmp,/run/nvme:/run/nvme" \
+# to
+# --singularity-args "-B /scratch:/scratch,/projappl:/projappl,$TMPDIR:/tmp" \
+
 snakemake -s /scratch/project_2001746/Pipeline-GBS/GBS-pipeline.smk \
           -j 150 \
           --use-singularity \
-          --singularity-args "-B /scratch:/scratch,/projappl:/projappl,$TMPDIR:/tmp,/run/nvme:/run/nvme" \
+          --singularity-args "-B /scratch:/scratch,/projappl:/projappl,$TMPDIR:/tmp" \
           --configfile /scratch/project_2001746/Pipeline-GBS/GBS-pipeline_config.yaml \
           --latency-wait 60 \
           --cluster-config /scratch/project_2001746/Pipeline-GBS/GBS-pipeline_server-config.yaml \

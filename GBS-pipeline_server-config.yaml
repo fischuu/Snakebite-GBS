@@ -7,10 +7,9 @@ __default__:
     mem-per-cpu: 4000
     partition: small
     working-directory: /scratch/project_2001746/logs/
-    nvme: 50
+    nvme: 0
     mail-user: daniel.fischer@luke.fi
     mail-type: END
-
     
 # Module 0 - PreparationsAndIndexing:
 ################################################################################
