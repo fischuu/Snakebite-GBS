@@ -1,6 +1,9 @@
 # Load required libraries
   library("GenomicTools")
 
+  minTotalReadCoverage <- as.numeric(minTotalReadCoverage)
+  minSampleCoverage <- as.numeric(minSampleCoverage)
+  
 # Import the coverage
   clusterFiles <- list.files(file.path(projFolder, "FASTQ", "TRIMMED", "alignments_clusters"), pattern="*.coverage")
   clusterCoverage <- read.table(file.path(projFolder, "FASTQ", "TRIMMED", "alignments_clusters", clusterFiles[1]))
