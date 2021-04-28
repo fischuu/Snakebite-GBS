@@ -7,7 +7,9 @@ __default__:
     mem-per-cpu: 4000
     partition: small
     working-directory: /scratch/project_2001746/logs/
-    nvme: 50
+    nvme: 0
+    mail-user: daniel.fischer@luke.fi
+    mail-type: END
     
 # Module 0 - PreparationsAndIndexing:
 ################################################################################
@@ -158,7 +160,9 @@ MockVsRef_SortedBamToMpileup:
     job-name: MockVsRef_SortedBamToMpileup
 
 refine_mock_reference:
+    time: 05:00:00
     job-name: refine_mock_reference
+    mem-per-cpu: 64000
 
 # Module 4 - Read alignment
 ################################################################################   
@@ -388,3 +392,62 @@ R_finalReport:
     time: 0-12:00:00
     job-name: Rreport
     mem-per-cpu: 80000
+
+# Module 8 - Call new data
+################################################################################
+ExistingMockRefGenome_AlignReads:
+    job-name: ExistingMockRefGenome_AlignReads
+    time: 01:00:00
+    cpus-per-task: 20
+    mem-per-cpu: 5000
+
+ExistingMockRefGenome_SamToSortedBam:
+    job-name: ExistingMockRefGenome_SamToSortedBam
+    time: 01:00:00
+    cpus-per-task: 20
+    mem-per-cpu: 5000
+
+ExistingMockRefGenome_SortedBamToMpileup:
+    job-name: ExistingMockRefGenome_SortedBamToMpileup
+    time: 01:00:00
+    cpus-per-task: 20
+    mem-per-cpu: 5000
+
+ExistingMockRefGenome_AlignmentStats:
+    job-name: ExistingMockRefGenome_AlignmentStats
+    time: 01:00:00
+    cpus-per-task: 20
+    mem-per-cpu: 5000
+
+ParseMpileup_createCountFiles_existingMockreference:
+    job-name: ParseMpileup_createCountFiles_existingMockreference
+    time: 05:00:00
+    mem-per-cpu: 16000
+
+create_verticalRef_existingMockreference:
+    job-name: create_verticalRef_existingMockreference
+    time: 01:00:00
+    mem-per-cpu: 16000
+    nvme: 20
+    
+create_MasterMatrix_parallel_existingMockreference:
+    job-name: create_MasterMatrix_parallel_existingMockreference
+    time: 0-12:00:00
+    mem-per-cpu: 64000
+    nvme: 20
+
+aggregate_MasterMatrix_existingMockreference:
+    job-name: aggregate_MasterMatrix_existingMockreference
+    time: 0-12:00:00
+    mem-per-cpu: 48000
+    nvme: 20
+
+FilterVariants_existingMockreference:
+    job-name: FilterVariants_existingMockreference
+    time: 1-12:00:00
+    mem-per-cpu: 30000
+
+CreateVCF_existingMockreference:
+    job-name: CreateVCF_existingMockreference
+    time: 01:00:00
+    mem-per-cpu: 30000

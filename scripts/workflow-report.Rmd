@@ -43,6 +43,9 @@ knitr::opts_chunk$set(echo = FALSE,
                       fig.align = 'center', fig.height = 5, fig.width = 8.5)
 mockClusters.file <- "GSC.MR.Clusters.fa"
 mockReference.file <- "GSC.MR.Genome.fa"
+# To run locally on terminal type this command in the pipeline folder:
+# R -e "rmarkdown::render('./scripts/workflow-report.Rmd',output_file='./finalReport.html')"
+
 if(!is.element("snakemake",ls())){
   projFolder <- "/scratch/project_2001746/Whitefish_benchMS"
   pipelineFolder <- "/scratch/project_2001746/Pipeline-GBS/"
@@ -681,12 +684,14 @@ plotMQCFeature(x=file.path(projFolder,"QC","CONCATENATED","multiqc_R1"),
                feature="fastqc_per_base_sequence_quality_plot")
 ```
 
-# Preliminary Mock Reference
+# Cluster and Reference genome
 
-## To Add
+## Preliminary Mock Reference
+
+### To Add
  * Get statistics on multi-mapping of the reads.
 
-## Basic stats
+### Basic stats
 ```{r import required files, warning=FALSE, }
 prelimMockReference <- importFA(file.path(projFolder,"FASTQ", "TRIMMED", mockReference.file))
 prelimMockClusters <- importFA(file.path(projFolder,"FASTQ", "TRIMMED", mockClusters.file))
@@ -714,11 +719,11 @@ Basic information on the identified clusters, used as mock reference
 
 Total length of the input fasta to build reference: `r format(sum(nchar(vsearchIN)), big.mark=",")` bp.
 
-Total length of the Mock Reference Clusters: `r format(sum(nchar(prelimMockClusters)), big.mark=",")` bp.
+Total length of the preliminary Mock Reference Clusters: `r format(sum(nchar(prelimMockClusters)), big.mark=",")` bp.
 
-Total length of the Mock Reference (Used as reference): `r format(sum(nchar(prelimMockReference)), big.mark=",")` bp.
+Total length of the preliminary Mock Reference (Used as reference): `r format(sum(nchar(prelimMockReference)), big.mark=",")` bp.
 
-## Theoretical coverage of Mock per sample
+### Theoretical coverage of Mock per sample
 Given the length of the mock reference assembly and the total number of sequenced bases per sample, we can estimate the theoretical coverage of the mock for each sample
 
 Currently I hard-code here the paired-end reads and assume equal lengths and reads in both pairs.
@@ -733,7 +738,7 @@ lines(c(-100,10000),c(1,1), lty="dotted")
 lines(c(-100,10000),c(10,10), lty="dotted")
 ```
 
-## Pear Stats
+### Pear Stats
 
 ```{r import pear stats}
 pearIn <- readLines(file.path(projFolder, "FASTQ", "TRIMMED", "Pear.log"))
@@ -845,12 +850,12 @@ kable_styling(out_html, "striped", position = "left")
 barplot(outQual, ylab="Frequency", main="Quality-score distribution")
 ```
 
-## Ratio samles used to length Mock reference
+### Ratio samles used to length Mock reference
 How much were the reads merged down? Length of Mock reference vs the length of all used reads together.
 
-# Mock reference
+## Mock reference
 
-## Basic stats
+### Basic stats
 ```{r import required files mock, warning=FALSE, }
 finalMockClusters <- importFA(file.path(projFolder,"MockReference","MockReference.fa"))
 ```
@@ -862,7 +867,10 @@ Basic information for the final mock reference:
   out_html <- knitr::kable(out, col.names = NULL, "html")
   kable_styling(out_html, "striped", position = "left")
 ```
-## Theoretical coverage of Mock per sample
+
+Total length of the Mock Reference Clusters: `r format(sum(nchar(finalMockClusters)), big.mark=",")` bp.
+
+### Theoretical coverage of Mock per sample
 Given the length of the final mock reference assembly and the total number of sequenced bases per sample, we can estimate the theoretical coverage of the final mock for each sample
 
 ```{r final mock coverage}
@@ -876,10 +884,10 @@ lines(c(-100,10000),c(10,10), lty="dotted")
 ```
 
 
-# Existing Reference
+## Existing Reference
 In case a reference genome was provided, here are a few statistics regarding it
 
-## Basic stats
+### Basic stats
 
 ```{r importRefGenome, warning=FALSE, results="asis"}
 if(refAvail){
@@ -1073,6 +1081,17 @@ points(p[mockPos], rep(200000, length(mockPos)), pch="*", col="red", cex=4)
 barplot(mapStats[1,] / (apply(mapStats,2,sum)), ylim=c(0,1), ylab="Mapping in Percent", col=viridis(20)[8], las=2)
 ```
 
+And the same information in table format.
+
+```{r}
+mappingRates <- mapStats[1,] / apply(mapStats,2,sum)
+out <- as.matrix(mappingRates)
+colnames(out)[1] <- "Mapping rate"
+DT::datatable(out)
+```
+
+The average mapping rate is `r mean(mappingRates)`.
+
 ### Coverage
 
 Data mapped against the clusters and then the reads per cluster visualized
@@ -1220,6 +1239,16 @@ points(p[mockPos], rep(200000, length(mockPos)), pch="*", col="red", cex=4)
 barplot(mapStats[1,] / (apply(mapStats,2,sum)), ylim=c(0,1), ylab="Mapping in Percent", col=viridis(20)[8], las=2)
 ```
 
+And the same information in table format.
+
+```{r}
+mappingRates <- mapStats[1,] / apply(mapStats,2,sum)
+out <- as.matrix(mappingRates)
+colnames(out)[1] <- "Mapping rate"
+DT::datatable(out)
+```
+
+The average mapping rate is `r mean(mappingRates)`.
 
 ### Coverage
 
@@ -1365,21 +1394,39 @@ points(p[mockPos], rep(200000, length(mockPos)), pch="*", col="red", cex=4)
 ```
 
 ```{r ref mapping percentage}
+refGenome.mappingStats <- mapStats[1,] / (apply(mapStats,2,sum))
 barplot(mapStats[1,] / (apply(mapStats,2,sum)), ylim=c(0,1), ylab="Mapping in Percent", col=viridis(20)[8], las=2)
 ```
 
+The average mapping rate on the reference genome is `r mean(refGenome.mappingStats)`.
 
 # Variants
 Import the Result vcf
 
 ```{r import vcf, echo=FALSE, message=FALSE, warning=FALSE}
-#vcf.fn<-file.path(projFolder, "FASTQ", "TRIMMED", "GSC.vcf")
-#vcf <- read.vcfR(vcf.fn)
-#aa.genlight <- vcfR2genlight(vcf, n.cores=1)
-vcf <- importVCF(file.path(projFolder, "FASTQ", "TRIMMED", "GSC.vcf"))
+vcf <- importVCF(file.path(projFolder, "MPILEUP", "mpileup_finalMock", "GSC.vcf"))
+vcfUnfiltered <- importVCF(file.path(projFolder, "MPILEUP", "mpileup_finalMock", "GSC.unfiltered.vcf"))
 if(refAvail){
-  vcfRef <- importVCF(file.path(projFolder, "MPILEUP", "mpileup_reference", "GSC.vcf"))
+  vcfRef <- importVCF(file.path(projFolder, "VCF", "FinalSetVariants_referenceGenome.vcf"))
 }
+```
+
+```{r get alleleCounts}
+gtInfo <- apply(vcfUnfiltered$genotypesInfo,2,strsplit,",")
+refAll <- matrix(-1, nrow=length(gtInfo), ncol=length(gtInfo[[1]]))
+altAll <- matrix(-1, nrow=length(gtInfo), ncol=length(gtInfo[[1]]))
+
+for(i in 1:nrow(refAll)){
+  tmp <- sapply(gtInfo[[i]],"[",1)
+  tmp[tmp=="."] <- NA
+  refAll[i,] <- as.numeric(tmp)
+  
+  tmp <- sapply(gtInfo[[i]],"[",2)
+  tmp[tmp=="."] <- NA
+  altAll[i,] <- as.numeric(tmp)
+}
+
+DP <- refAll+altAll
 ```
 
 ## Mock reference
@@ -1396,18 +1443,54 @@ We give some basic stats on the vcf file
   kable_styling(out_html, "striped", position = "left")
 ```
 
+### SNP position vs snp index
 Plot the snp position
+
 ```{r}
 plot(as.vector(as.matrix(vcf$map[,4])), ylab="Pos. on mock", xlab="SNP index")
 ```
+
+### SNP loci on cluster
+Distribution of the variant across the cluster
+
+```{r}
+hist(as.vector(as.matrix(vcf$map[,4])), main="SNP loci distribution", xlab="Position")
+```
+
+### Missing variants per samples
+
 Missing variant calls per sample
 
 ```{r}
 barplot(apply(vcf$genotypesInfo==".,.",2,sum), las=2, main="Missing variants per sample")
 ```
+
+### Missingness per bp position
+t.b.a.
+
+### Missing variants per samples
+
 ```{r}
-barplot(apply(vcf$genotypesInfo==".,.",2,sum)/noVariants, las=2, main="Missing variants per sample (in %)")
+barplot(apply(vcf$genotypesInfo==".,.",2,sum)/noVariants*100, las=2, main="Missing variants per sample (in %)")
 ```
+
+### Distribution of filtering criterias
+```{r}
+tmp <- cumsum(sort(apply(DP,2,sum)))
+plot(tmp, type="l")
+abline(a=0, b=3*70, col="red")
+abline(a=0, b=200*70, col="red")
+```
+
+```{r}
+tmp <- table(apply(DP>200,2,sum))
+tmp <- rbind(tmp,table(apply(DP>2,2,sum)))
+tmp <- rbind(tmp,table(apply(DP>3,2,sum)))
+tmp <- rbind(tmp,table(apply(DP>4,2,sum)))
+tmp <- rbind(tmp,table(apply(DP>5,2,sum)))
+barplot(tmp,border=0)
+```
+
 
 ## Reference genome
 We give some basic stats on the vcf file
@@ -1440,7 +1523,7 @@ if(refAvail){
 ```
 ```{r}
 if(refAvail){
-  barplot(apply(vcfRef$genotypesInfo==".,.",2,sum)/noVariants.ref, las=2, main="Missing variants per sample (in %)")
+  barplot(apply(vcfRef$genotypesInfo==".,.",2,sum)/noVariants.ref*100, las=2, main="Missing variants per sample (in %)")
 }
 ```
 

@@ -1,0 +1,177 @@
+---
+title: "GBS-Pipeline report"
+subtitle: "Mock reference evaluation"
+author: "Daniel Fischer"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 4
+    toc_float:
+      toc_collapsed: true
+    number_sections: true
+    theme: lumen
+    df_print: paged
+    code_folding: show
+---
+
+```{r setup, include=FALSE}
+#.libPaths(c("/projappl/project_2001746/R/libraries", .libPaths()))
+#library("knitr")
+library("GenomicTools")
+library("Luke")
+library("xtable")   # Needed for LaTeX output of the tables
+library("viridis")  # Needed for the colouring of the plots
+library("rjson")    # Needed for multiqc dgsb etail data
+library("adegenet")
+library("vcfR")
+library("DT")
+library("kableExtra")
+library("ICS")
+library("tsne")
+library("lle")
+library("kernlab")
+#library("REPPlab")
+#library("RDRToolbox")
+library("destiny")  
+options(scipen=999,
+        stringsAsFactors=FALSE)
+knitr::opts_chunk$set(echo = FALSE,
+                      cache = FALSE,
+                      cache.lazy = FALSE,
+                      dev = c('png', 'pdf'),
+                      fig.align = 'center', fig.height = 5, fig.width = 8.5)
+mockClusters.file <- "GSC.MR.Clusters.fa"
+mockReference.file <- "GSC.MR.Genome.fa"
+# To run locally on terminal type this command in the pipeline folder:
+# R -e "rmarkdown::render('./scripts/workflow-report.Rmd',output_file='./finalReport.html')"
+
+if(!is.element("snakemake",ls())){
+  projFolder <- "/scratch/project_2001746/Whitefish_benchMS"
+  pipelineFolder <- "/scratch/project_2001746/Pipeline-GBS/"
+  pipelineConfig <- "/scratch/project_2001746/BSF/Pipeline-GBS/GBS-pipeline_config-BSF.yaml"
+}
+```
+
+
+# Preliminary mock reference
+```{r import required files, warning=FALSE, }
+prelimMockClusters <- importFA(file.path(projFolder,"FASTQ", "TRIMMED", mockClusters.file))
+```
+
+Basic information on the identified clusters, used as mock reference
+
+```{r summarise mock reference clusters}
+  out <- summary(prelimMockClusters)
+  out[1,1] <- c("No. of Clusters")
+  out[,2] <- formatC(out[,2],  format="d", big.mark=",")
+  out_html <- knitr::kable(out, col.names = NULL, "html")
+  kable_styling(out_html, "striped", position = "left")
+```
+
+Total length of the preliminary Mock Reference Clusters: `r format(sum(nchar(prelimMockClusters)), big.mark=",")` bp.
+
+## Alignment stats
+```{r}
+flagstatFiles <- list.files(file.path(projFolder,"FASTQ", "TRIMMED", "alignments_clusters"), pattern="*.flagstat")
+flagstats <- list()
+for(i in 1:length(flagstatFiles)){
+  flagstats[[i]] <- readLines(file.path(projFolder,"FASTQ", "TRIMMED", "alignments_clusters",flagstatFiles[i]))
+}
+```
+
+Visualization of the alignments, red stars indicate the mock reference samples
+
+```{r}
+par(oma=c(6,3,0,0))
+mapStats <- matrix(0,ncol=length(flagstatFiles), nrow=2)
+
+sampleNames <- gsub(".sam.flagstat", "", flagstatFiles)
+
+colnames(mapStats) <- sampleNames
+
+tmp <- as.numeric(sapply(strsplit(sapply(flagstats,"[",1), " +"),"[",1))
+mapStats[1,] <- as.numeric(sapply(strsplit(sapply(flagstats,"[",5), " +"),"[",1))
+mapStats[2,] <- tmp - mapStats[1,]
+
+p <- barplot(mapStats, col=c(viridis(20)[8], viridis(20)[16]), las=2)
+
+legend("topleft", pch=c(20,20), col=c(viridis(20)[16], viridis(20)[8]), legend=c("Unmapped", "Mapped"), fill="white")
+
+```
+
+```{r}
+barplot(mapStats[1,] / (apply(mapStats,2,sum)), ylim=c(0,1), ylab="Mapping in Percent", col=viridis(20)[8], las=2)
+```
+
+And the same information in table format.
+
+```{r}
+mappingRates <- mapStats[1,] / apply(mapStats,2,sum)
+out <- as.matrix(mappingRates)
+colnames(out)[1] <- "Mapping rate"
+DT::datatable(out)
+```
+
+The average mapping rate is `r mean(mappingRates)`.
+
+# Final mock reference
+```{r import required files mock, warning=FALSE, }
+finalMockClusters <- importFA(file.path(projFolder,"MockReference","MockReference.fa"))
+```
+
+Basic information for the final mock reference:
+```{r final mock build stats}
+  out <- summary(finalMockClusters)
+  out[,2] <- formatC(out[,2],  format="d", big.mark=",")
+  out_html <- knitr::kable(out, col.names = NULL, "html")
+  kable_styling(out_html, "striped", position = "left")
+```
+
+Total length of the Mock Reference Clusters: `r format(sum(nchar(finalMockClusters)), big.mark=",")` bp.
+
+## Alignment stats
+Import the mapping statistics for the Mock reference
+
+```{r import final flagstats}
+flagstatFiles <- list.files(file.path(projFolder,"BAM", "alignments_finalMock"), pattern="*.flagstat")
+flagstats <- list()
+for(i in 1:length(flagstatFiles)){
+  flagstats[[i]] <- readLines(file.path(projFolder,"BAM", "alignments_finalMock",flagstatFiles[i]))
+}
+```
+
+Visualization of the alignments, red stars indicate the mock reference samples
+
+```{r vis mapping final stats}
+par(oma=c(6,3,0,0))
+mapStats <- matrix(0,ncol=length(flagstatFiles), nrow=2)
+
+sampleNames <- gsub(".sam.flagstat", "", flagstatFiles)
+
+colnames(mapStats) <- sampleNames
+
+tmp <- as.numeric(sapply(strsplit(sapply(flagstats,"[",1), " +"),"[",1))
+mapStats[1,] <- as.numeric(sapply(strsplit(sapply(flagstats,"[",5), " +"),"[",1))
+mapStats[2,] <- tmp - mapStats[1,]
+
+p <- barplot(mapStats, col=c(viridis(20)[8], viridis(20)[16]), las=2)
+
+legend("topleft", pch=c(20,20), col=c(viridis(20)[16], viridis(20)[8]), legend=c("Unmapped", "Mapped"), fill="white")
+
+```
+
+```{r mapping final percentage}
+barplot(mapStats[1,] / (apply(mapStats,2,sum)), ylim=c(0,1), ylab="Mapping in Percent", col=viridis(20)[8], las=2)
+```
+
+And the same information in table format.
+
+```{r}
+mappingRates <- mapStats[1,] / apply(mapStats,2,sum)
+out <- as.matrix(mappingRates)
+colnames(out)[1] <- "Mapping rate"
+DT::datatable(out)
+```
+
+The average mapping rate is `r mean(mappingRates)`.

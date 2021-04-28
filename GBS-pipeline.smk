@@ -10,8 +10,8 @@ import os
 ##### Natural Resources Institute Finland (Luke)
 ##### This pipeline is build upon the the GBS-SNP-CROP pipeline:
 ##### https://github.com/halelab/GBS-SNP-CROP
-##### Version: 0.6
-version = "0.6"
+##### Version: 0.7.16
+version = "0.7.16"
 
 ##### set minimum snakemake version #####
 min_version("6.0")
@@ -29,8 +29,10 @@ wildcard_constraints:
 
 ##### Complete the input configuration
 config["genome-bwa-index"] = config["genome"]+".bwt"
+config["mockref-bwa-index"] = config["mockreference"]+".bwt"
 config["genome-star-index"] = config["project-folder"]+"/references/STAR2.7.3a"
 config["report-script"] = config["pipeline-folder"]+"/scripts/workflow-report.Rmd"
+config["mockeval-script"] = config["pipeline-folder"]+"/scripts/mockeval-report.Rmd"
 config["refinement-script"] = config["pipeline-folder"]+"/scripts/refineMockReference.R"
 config["adapter"]=config["pipeline-folder"]+"/adapter.fa"
 
@@ -65,22 +67,29 @@ print("#####")
 print("##### Runtime-configurations")
 print("##### --------------------------------")
 print("##### genome         : "+ config["genome"])
+print("##### existing mock  : "+ config["mockreference"])
 print("##### barcodes-file  : "+ config["barcodes"])
 print("##### rawsample file : "+ config["rawsamples"])
 print("#####")
 print("##### Derived runtime parameters")
 print("##### --------------------------------")
-print("##### BWA-Genome index  : "+config["genome-bwa-index"])
-print("##### STAR-Genome index : "+config["genome-star-index"])
-print("##### Adapter file      : "+ config["adapter"])
+print("##### BWA-Genome index    : "+config["genome-bwa-index"])
+print("##### STAR-Genome index   : "+config["genome-star-index"])
+print("##### Existing Mock index : "+config["mockref-bwa-index"])
+print("##### Adapter file        : "+ config["adapter"])
 print("#################################################################################")
 
+##### Define conditional input/outputs #####
+conditionalOut = list()
+if config["mockreference"] != "":
+        conditionalOut.append("%s/VCF/FinalSetVariants_existingMock.vcf" % (config["project-folder"]))
 
     
 ##### run complete pipeline #####
 
 rule all:
     input:
+        conditionalOut,
       # QC OF RAW AND CONCATENATED FILES
         "%s/QC/RAW/multiqc_R1/" % (config["project-folder"]),
         "%s/QC/CONCATENATED/multiqc_R1/" % (config["project-folder"]),
@@ -108,7 +117,7 @@ rule all:
       # OUTPUT STEP 8  
         "%s/FASTQ/TRIMMED/GSC.vcf" % (config["project-folder"]),
         "%s/FASTQ/TRIMMED/GSC.vcf.fa" % (config["project-folder"]),
-        "%s/MPILEUP/mpileup_reference/GSC.vcf" % (config["project-folder"]),
+        "%s/VCF/FinalSetVariants_referenceGenome.vcf" % (config["project-folder"]),
         "%s/MPILEUP/mpileup_reference/GSC.vcf.fa" % (config["project-folder"]),
       # OUTPUT STEP 9
         "%s/BAM/mockVariantsToReference/mockVariantsToReference.bam" % (config["project-folder"]),
@@ -118,7 +127,15 @@ rule all:
         "%s/VCF/FinalSetVariants_finalMock.vcf" % (config["project-folder"]),
         "%s/finalReport.html" % (config["project-folder"])
 
+rule QC:
+    input:
+        "%s/QC/RAW/multiqc_R1/" % (config["project-folder"]),
+        "%s/QC/CONCATENATED/multiqc_R1/" % (config["project-folder"]),
+        "%s/QC/TRIMMED/multiqc_R1/" % (config["project-folder"]),
 
+rule MockEval:
+    input:
+        "%s/mockEvalReport.html" % (config["project-folder"])
 
 ### setup report #####
 
@@ -133,3 +150,4 @@ include: "rules/Module4-ReadAlignment"
 include: "rules/Module5-CallVariants"
 include: "rules/Module6-PostProcessing"
 include: "rules/Module7-Reporting"
+include: "rules/Module8-CallNewData"

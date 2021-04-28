@@ -45,3 +45,33 @@ rule R_finalReport:
              snakemake <- TRUE;\
              rmarkdown::render('{input.script}',output_file='{output}')" &> {log}
     """
+
+rule R_MockEval:
+    """
+    Create the mock evaluation report (R).
+    """
+    input:
+        "%s/MockReference/MockReference.fa" % (config["project-folder"]),
+        "%s/FASTQ/TRIMMED/GSC.MR.Clusters.fa" % (config["project-folder"]),
+        expand("%s/BAM/alignments_finalMock/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
+        expand("%s/FASTQ/TRIMMED/alignments_clusters/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
+        script=config["mockeval-script"]
+    output:
+        "%s/mockEvalReport.html" % (config["project-folder"])
+    log:
+        "%s/logs/R/mockEvalReport.log" % (config["project-folder"])
+    benchmark:
+        "%s/benchmark/R/mockEvalReport.benchmark.tsv" % (config["project-folder"])
+    singularity:
+        "docker://fischuu/r-gbs:3.6.3-0.2"
+    params:
+       projFolder=config["project-folder"],
+       pipeFolder=config["pipeline-folder"],
+       pipeConfig=config["pipeline-config"]
+    shell:"""
+       R -e "projFolder <- '{params.projFolder}'; \
+             pipelineFolder <- '{params.pipeFolder}'; \
+             pipelineConfig <- '{params.pipeConfig}'; \
+             snakemake <- TRUE;\
+             rmarkdown::render('{input.script}',output_file='{output}')" &> {log}
+    """
