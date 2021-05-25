@@ -47,7 +47,7 @@ mockReference.file <- "GSC.MR.Genome.fa"
 # R -e "rmarkdown::render('./scripts/workflow-report.Rmd',output_file='./finalReport.html')"
 
 if(!is.element("snakemake",ls())){
-  projFolder <- "/scratch/project_2001746/Whitefish_benchMS"
+  projFolder <- "/scratch/project_2001746/Whitefish_benchMS6"
   pipelineFolder <- "/scratch/project_2001746/Pipeline-GBS/"
   pipelineConfig <- "/scratch/project_2001746/BSF/Pipeline-GBS/GBS-pipeline_config-BSF.yaml"
   refGenome.file <- "GCA_902175075.1_AWG_v1_genomic.fna"
@@ -1567,8 +1567,9 @@ Here, we have Homo. Ref green, Homo. Alt red, hetero blue and missing black
 ```{r image vcf, fig.width=15, fig.height=10, warning=FALSE}
 par(mar=c(10,5,1,1))
 plotThis <- t(apply(as.matrix(vcf$genotypes),1,as.numeric))
-image(plotThis, breaks=c(-1,0,1,2,3), col=c("red","blue","green","black"), xaxt="n", yaxt="n")
-axis(1,at=seq(0,1,length.out=length(rownames(vcf$genotypes))), labels=rownames(vcf$genotypes), las=2)
+dataForBarplot <- apply(plotThis,1,table)
+colnames(dataForBarplot) <- rownames(vcf$genotypes)
+barplot(dataForBarplot, col=c("green", "blue", "red", "black"), las=2)
 ```
 
 ## PCA
