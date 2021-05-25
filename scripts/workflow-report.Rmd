@@ -565,6 +565,11 @@ par(mar=c(10,5,1,1))
 plotFastQCFeature(trimmedFastQC.R1, trimmedFastQC.R2, feature="Total.Sequences")
 ```
 
+```{r}
+totalSequences <- trimmedFastQC.R1[,c(1,5)]
+totalSequences[,1] <- gsub(".R1","",totalSequences[,1])
+```
+
 ### Quality value distribution
 TO BE ADDED: Import the quality distribution reports here and visualize them
 
@@ -1462,7 +1467,18 @@ hist(as.vector(as.matrix(vcf$map[,4])), main="SNP loci distribution", xlab="Posi
 Missing variant calls per sample
 
 ```{r}
-barplot(apply(vcf$genotypesInfo==".,.",2,sum), las=2, main="Missing variants per sample")
+missingnessPerSample <- apply(vcf$genotypesInfo==".,.",2,sum)
+barplot(missingnessPerSample, las=2, main="Missing variants per sample")
+missingnessPerSample <- as.matrix(missingnessPerSample)
+```
+
+### Missigness vs sequencing depths
+
+```{r}
+missSample <- data.frame(Sample=gsub("\\.","_",rownames(missingnessPerSample)),
+                         Missing=missingnessPerSample)
+missVSseq <- merge(totalSequences, missSample, by="Sample")
+plot(missVSseq[,3], missVSseq[,2])
 ```
 
 ### Missingness per bp position

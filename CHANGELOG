@@ -4,6 +4,7 @@
 #####                                                                      #####
 ################################################################################
 
+0.8.3 : * Missingness vs Seq depth added (NOT AS GENERAL CODE!!!)
 0.8.2 : * Improved visualisation of vcf
 0.8.1 : * Bugfix: Flanking site frequencies are now properly merged and counted
 0.8   : * Latest release version
