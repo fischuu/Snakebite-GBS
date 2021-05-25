@@ -4,6 +4,7 @@
 #####                                                                      #####
 ################################################################################
 
+0.8.1 : * Bugfix: Flanking site frequencies are now properly merged and counted
 0.8   : * Latest release version
 0.7.16: * Bugfix: MockReference refinement filtered as character, not numerical
 0.7.15: * Removed the NVME disc areas for the default run configuration

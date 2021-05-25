@@ -127,11 +127,15 @@ else:
         benchmark:
             "%s/benchmark/MockVsRef_AlignmentStats.benchmark.tsv" % (config["project-folder"])
         threads: lambda cores: cpu_count()
+        params: tmpdir=config["tmpdir"]
         conda:"envs/step3.yaml"
         singularity: config["singularity"]["gbs"]
         shell:"""
             df -h &> {log}
             echo "Number of threads used:" {threads}
+            echo "Initial temporary folder": $TMPDIR
+            TMPDIR={params.tmpdir}
+            echo "Used temporary folder": $TMPDIR
             sed '/^@/d' {input.sam} | cut -f2 | sort | uniq -c > {output.samflags}
             samtools flagstat {input.sam} > {output.fs}
             samtools stats {input.sam} > {output.stats}
@@ -143,11 +147,11 @@ else:
             bedtools getfasta -fi {input.ref} -bed {output.leftBed} > {output.leftFA}
             bedtools getfasta -fi {input.ref} -bed {output.rightBed} > {output.rightFA}
             
-            sed '/^>/d' {output.leftFA} | sort | awk '{{ print toupper($0) }}' | uniq -c > {output.leftFACounts}
-            sed '/^>/d' {output.rightFA} | sort | awk '{{ print toupper($0) }}' | uniq -c > {output.rightFACounts}
+            sed '/^>/d' {output.leftFA} | awk '{{ print toupper($0) }}' | sort | uniq -c > {output.leftFACounts}
+            sed '/^>/d' {output.rightFA} | awk '{{ print toupper($0) }}' | sort | uniq -c > {output.rightFACounts}
 
             paste -d '+' {output.leftFA} {output.rightFA} > {output.FA}
-            sed '/^>/d' {output.FA} | sort | awk '{{ print toupper($0) }}' | uniq -c > {output.FACounts}
+            sed '/^>/d' {output.FA} | awk '{{ print toupper($0) }}' | sort | uniq -c > {output.FACounts}
       	"""
 
 if config["genome"] == "":
@@ -293,11 +297,15 @@ else:
         benchmark:
             "%s/benchmark/MockVsRef_AlignmentStats.benchmark.tsv" % (config["project-folder"])
         threads: lambda cores: cpu_count()
+        params: tmpdir=config["tmpdir"]
         conda:"envs/step3.yaml"
         singularity: config["singularity"]["gbs"]
         shell:"""
             df -h &> {log}
             echo "Number of threads used:" {threads}
+            echo "Initial temporary folder": $TMPDIR
+            TMPDIR={params.tmpdir}
+            echo "Used temporary folder": $TMPDIR
             sed '/^@/d' {input.sam} | cut -f2 | sort | uniq -c > {output.samflags}
             samtools flagstat {input.sam} > {output.fs}
             samtools stats {input.sam} > {output.stats}
@@ -309,9 +317,9 @@ else:
             bedtools getfasta -fi {input.ref} -bed {output.leftBed} > {output.leftFA}
             bedtools getfasta -fi {input.ref} -bed {output.rightBed} > {output.rightFA}
             
-            sed '/^>/d' {output.leftFA} | sort | awk '{{ print toupper($0) }}' | uniq -c > {output.leftFACounts}
-            sed '/^>/d' {output.rightFA} | sort | awk '{{ print toupper($0) }}' | uniq -c > {output.rightFACounts}
+            sed '/^>/d' {output.leftFA} | awk '{{ print toupper($0) }}' | sort | uniq -c > {output.leftFACounts}
+            sed '/^>/d' {output.rightFA} | awk '{{ print toupper($0) }}' | sort | uniq -c > {output.rightFACounts}
 
             paste -d '+' {output.leftFA} {output.rightFA} > {output.FA}
-            sed '/^>/d' {output.FA} | sort | awk '{{ print toupper($0) }}' | uniq -c > {output.FACounts}
+            sed '/^>/d' {output.FA} | awk '{{ print toupper($0) }}' | sort | uniq -c > {output.FACounts}
       	"""
