@@ -137,6 +137,14 @@ rule MockEval:
     input:
         "%s/mockEvalReport.html" % (config["project-folder"])
 
+rule FinalReport:
+    input:
+        "%s/finalReport.html" % (config["project-folder"])
+
+rule MockRefVCF:
+    input:
+        "%s/VCF/FinalSetVariants_finalMock.vcf" % (config["project-folder"])
+
 ### setup report #####
 
 report: "report/workflow.rst"
