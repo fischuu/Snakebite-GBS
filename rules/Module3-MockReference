@@ -142,7 +142,7 @@ else:
             samtools idxstats {input.sbam} | awk '{{print $1\" \"$3}}' > {output.c}
             bedtools genomecov -ibam {input.sbam} -bg > {output.bed}
             bedtools merge -i {output.bed} > {output.bedMerged}
-            awk '{{print $1 "\\t" (($2 - 6)<0?0:($2 - 6)) "\\t" $2}}' {output.bedMerged} > {output.leftBed}
+            awk '{{print $1 "\\t" (($2 - 6)<0?0:($2 - 6)) "\\t" ($2==0?6:$2)}}' {output.bedMerged} > {output.leftBed}
             awk '{{print $1 "\\t" $3 "\\t" $3 + 6}}' {output.bedMerged} > {output.rightBed}
             bedtools getfasta -fi {input.ref} -bed {output.leftBed} > {output.leftFA}
             bedtools getfasta -fi {input.ref} -bed {output.rightBed} > {output.rightFA}
@@ -312,7 +312,7 @@ else:
             samtools idxstats {input.sbam} | awk '{{print $1\" \"$3}}' > {output.c}
             bedtools genomecov -ibam {input.sbam} -bg > {output.bed}
             bedtools merge -i {output.bed} > {output.bedMerged}
-            awk '{{print $1 "\\t" (($2 - 6)<0?0:($2 - 6)) "\\t" $2}}' {output.bedMerged} > {output.leftBed}
+            awk '{{print $1 "\\t" (($2 - 6)<0?0:($2 - 6)) "\\t" ($2==0?6:$2)}}' {output.bedMerged} > {output.leftBed}
             awk '{{print $1 "\\t" $3 "\\t" $3 + 6}}' {output.bedMerged} > {output.rightBed}
             bedtools getfasta -fi {input.ref} -bed {output.leftBed} > {output.leftFA}
             bedtools getfasta -fi {input.ref} -bed {output.rightBed} > {output.rightFA}
