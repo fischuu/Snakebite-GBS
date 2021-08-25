@@ -92,7 +92,7 @@ else:
             df -h &> {log}
             samtools view -b {input.sam} > {output.bam}
             samtools sort {output.bam} -o {output.sorted}
-            samtools index {output.sorted}
+            samtools index -c {output.sorted}
       	"""
 
 
@@ -262,7 +262,7 @@ else:
             df -h &> {log}
             samtools view -b {input.sam} > {output.bam}
             samtools sort {output.bam} -o {output.sorted}
-            samtools index {output.sorted}
+            samtools index -c {output.sorted}
       	"""
 
 

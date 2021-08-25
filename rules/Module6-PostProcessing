@@ -107,5 +107,5 @@ else:
             echo "Number of threads used:" {threads}
             samtools view -b -q {params.q} -f {params.f} -F {params.F} {input} > {output.bam}
             samtools sort {output.bam} -o {output.sorted}
-            samtools index {output.sorted}
+            samtools index -c {output.sorted}
       	"""

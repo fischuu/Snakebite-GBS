@@ -289,7 +289,7 @@ rule FilterVariants:
 
         cd {params.wd}
         perl {params.pipefolder}/scripts/GBS-SNP-CROP-7.pl -in {params.input} -out {params.out} -p {params.p} -mnHoDepth0 {params.mnHoDepth0} -mnHoDepth1 {params.mnHoDepth1} -mnHetDepth {params.mnHetDepth} -altStrength {params.altStrength} -mnAlleleRatio {params.mnAlleleRatio} -mnCall {params.mnCall} -mnAvgDepth {params.mnAvgDepth} -mxAvgDepth {params.mxAvgDepth} &> {log}
-        perl {params.pipefolder}/scripts/GBS-SNP-CROP-7.pl -in {params.input} -out {params.unfiltered} -p {params.p} -mnHoDepth0 0 -mnHoDepth1 0 -mnHetDepth 0 -altStrength 0 -mnAlleleRatio 0 -mnCall 0 -mnAvgDepth 0 -mxAvgDepth 1000000 &> {log}
+        perl {params.pipefolder}/scripts/GBS-SNP-CROP-7.pl -in {params.input} -out {params.unfiltered} -p {params.p} -mnHoDepth0 {params.mnHoDepth0} -mnHoDepth1 {params.mnHoDepth1} -mnHetDepth {params.mnHetDepth} -altStrength 0 -mnAlleleRatio 0 -mnCall 0 -mnAvgDepth 0 -mxAvgDepth 1000000 &> {log}
   	"""
 
 if config["genome"] == "":
@@ -341,7 +341,7 @@ else:
     
             cd {params.wd}
             perl {params.pipefolder}/scripts/GBS-SNP-CROP-7.pl -in {params.input} -out {params.out} -p {params.p} -mnHoDepth0 {params.mnHoDepth0} -mnHoDepth1 {params.mnHoDepth1} -mnHetDepth {params.mnHetDepth} -altStrength {params.altStrength} -mnAlleleRatio {params.mnAlleleRatio} -mnCall {params.mnCall} -mnAvgDepth {params.mnAvgDepth} -mxAvgDepth {params.mxAvgDepth} &> {log}
-            perl {params.pipefolder}/scripts/GBS-SNP-CROP-7.pl -in {params.input} -out {params.unfiltered} -p {params.p} -mnHoDepth0 0 -mnHoDepth1 0 -mnHetDepth 0 -altStrength 0 -mnAlleleRatio 0 -mnCall 0 -mnAvgDepth 0 -mxAvgDepth 1000000 &> {log}
+            perl {params.pipefolder}/scripts/GBS-SNP-CROP-7.pl -in {params.input} -out {params.unfiltered} -p {params.p} -mnHoDepth0 {params.mnHoDepth0} -mnHoDepth1 {params.mnHoDepth1} -mnHetDepth {params.mnHetDepth} -altStrength 0 -mnAlleleRatio 0 -mnCall 0 -mnAvgDepth 0 -mxAvgDepth 1000000 &> {log}
       	"""
         
     
@@ -581,7 +581,7 @@ rule FilterVariants_finalMock:
     
         cd {params.wd}
         perl {params.pipefolder}/scripts/GBS-SNP-CROP-7.pl -in {params.input} -out {params.out} -p {params.p} -mnHoDepth0 {params.mnHoDepth0} -mnHoDepth1 {params.mnHoDepth1} -mnHetDepth {params.mnHetDepth} -altStrength {params.altStrength} -mnAlleleRatio {params.mnAlleleRatio} -mnCall {params.mnCall} -mnAvgDepth {params.mnAvgDepth} -mxAvgDepth {params.mxAvgDepth} &> {log}
-        perl {params.pipefolder}/scripts/GBS-SNP-CROP-7.pl -in {params.input} -out {params.unfiltered} -p {params.p} -mnHoDepth0 0 -mnHoDepth1 0 -mnHetDepth 0 -altStrength 0 -mnAlleleRatio 0 -mnCall 0 -mnAvgDepth 0 -mxAvgDepth 1000000 &> {log}
+        perl {params.pipefolder}/scripts/GBS-SNP-CROP-7.pl -in {params.input} -out {params.unfiltered} -p {params.p} -mnHoDepth0 {params.mnHoDepth0} -mnHoDepth1 {params.mnHoDepth1} -mnHetDepth {params.mnHetDepth} -altStrength 0 -mnAlleleRatio 0 -mnCall 0 -mnAvgDepth 0 -mxAvgDepth 1000000 &> {log}
     """
     
 rule CreateVCF_finalMock:
