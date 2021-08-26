@@ -4,7 +4,7 @@
 #####                                                                      #####
 ################################################################################
 
-0.8.7 : * Increased the memory for minimap2 from 4G (default) to 8G. TODO: This could be also an option in the configuration file
+0.8.7 : * Increased the memory for minimap2 from 4G (default) to 8G and added the --split-prefix=tmp option. TODO: This could be also an option in the configuration file
 0.8.6 : * Log files for several rules upgraded
 0.8.5 : * Reaining bai indices changed to csi indices
 0.8.4 : * Bugfix: If flanking site is in the first six bases of a cluster the script threw an error
