@@ -90,9 +90,9 @@ else:
         singularity: config["singularity"]["gbs"]
         shell:"""
             df -h &> {log}
-            samtools view -b {input.sam} > {output.bam}
-            samtools sort {output.bam} -o {output.sorted}
-            samtools index -c {output.sorted}
+            samtools view -b {input.sam} > {output.bam} 2> {log}
+            samtools sort {output.bam} -o {output.sorted} &> {log}
+            samtools index -c {output.sorted} &> {log}
       	"""
 
 
@@ -260,9 +260,9 @@ else:
         singularity: config["singularity"]["gbs"]
         shell:"""
             df -h &> {log}
-            samtools view -b {input.sam} > {output.bam}
-            samtools sort {output.bam} -o {output.sorted}
-            samtools index -c {output.sorted}
+            samtools view -b {input.sam} > {output.bam} 2> {log}
+            samtools sort {output.bam} -o {output.sorted} &> {log}
+            samtools index -c {output.sorted} &> {log}
       	"""
 
 
