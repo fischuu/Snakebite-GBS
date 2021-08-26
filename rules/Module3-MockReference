@@ -89,10 +89,14 @@ else:
         conda:"envs/step3.yaml"
         singularity: config["singularity"]["gbs"]
         shell:"""
-            df -h &> {log}
-            samtools view -b {input.sam} > {output.bam} 2> {log}
-            samtools sort {output.bam} -o {output.sorted} &> {log}
-            samtools index -c {output.sorted} &> {log}
+	    echo "df -h output:\n----------------------------\n" &>> {log}
+            df -h &>> {log}
+	    echo "samtools view (sam to bam)\n----------------------------\n" &>> {log}
+            samtools view -b {input.sam} > {output.bam} 2>> {log}
+	    echo "samtools sort:\n----------------------------\n" &>> {log}
+            samtools sort {output.bam} -o {output.sorted} &>> {log}
+	    echo "samtools index:\n----------------------------\n" &>> {log}
+            samtools index -c {output.sorted} &>> {log}
       	"""
 
 
@@ -260,9 +264,9 @@ else:
         singularity: config["singularity"]["gbs"]
         shell:"""
             df -h &> {log}
-            samtools view -b {input.sam} > {output.bam} 2> {log}
-            samtools sort {output.bam} -o {output.sorted} &> {log}
-            samtools index -c {output.sorted} &> {log}
+            samtools view -b {input.sam} > {output.bam} 2>> {log}
+            samtools sort {output.bam} -o {output.sorted} &>> {log}
+            samtools index -c {output.sorted} &>> {log}
       	"""
 
 
