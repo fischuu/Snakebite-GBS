@@ -4,6 +4,7 @@
 #####                                                                      #####
 ################################################################################
 
+0.8.6 : * Log files for several rules upgraded
 0.8.5 : * Reaining bai indices changed to csi indices
 0.8.4 : * Bugfix: If flanking site is in the first six bases of a cluster the script threw an error
 0.8.3 : * Missingness vs Seq depth added (NOT AS GENERAL CODE!!!)
