@@ -51,7 +51,7 @@ source activate Snakemake
 snakemake -s /scratch/project_2001746/Pipeline-GBS/GBS-pipeline.smk \
           -j 150 \
           --use-singularity \
-          --singularity-args "-B /scratch,/projappl,/scratch/myProject/tmp:/tmp" \
+          --singularity-args "-B /scratch,/projappl,/dev/shm:/tmp" \
           --configfile /scratch/project_2001746/Pipeline-GBS/GBS-pipeline_config.yaml \
           --latency-wait 60 \
           --cluster-config /scratch/project_2001746/Pipeline-GBS/GBS-pipeline_server-config.yaml \
