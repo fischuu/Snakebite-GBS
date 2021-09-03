@@ -1631,15 +1631,15 @@ for(i in 2:ncol(sampleInfo)){
 ## Other methods
 
 ### ICS
-```{r, eval=FALSE}
+```{r}
 cols <- min(ncol(vcf.PCA$x),10)
 FOBI <- ics(vcf.PCA$x[,1:cols])
 if(ncol(sampleInfo)>1){
 for(i in 2:ncol(sampleInfo)){
-  plot(FOBI, col=as.numeric(as.factor(sampleInfo[,i])), pch=20)
+  plot(FOBI@Scores, col=as.numeric(as.factor(sampleInfo[,i])), pch=20)
 }  
 } else {
-   plot(FOBI, pch=20)
+   plot(FOBI@Scores, pch=20)
 }
 
 ```
