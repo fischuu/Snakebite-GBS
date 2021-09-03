@@ -1589,8 +1589,9 @@ Here, we have Homo. Ref green, Homo. Alt red, hetero blue and missing black
 par(mar=c(10,5,1,1))
 plotThis <- t(apply(as.matrix(vcf$genotypes),1,as.numeric))
 dataForBarplot <- apply(plotThis,1,table)
-colnames(dataForBarplot) <- rownames(vcf$genotypes)
-barplot(dataForBarplot, col=c("green", "blue", "red", "black"), las=2)
+df <- data.frame(matrix(unlist(dataForBarplot), nrow=length(dataForBarplot), byrow=TRUE))
+rownames(df) <- rownames(vcf$genotypes)
+barplot(df, col=c("green", "blue", "red", "black"), las=2)
 ```
 
 ## PCA
