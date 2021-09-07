@@ -4,6 +4,7 @@
 #####                                                                      #####
 ################################################################################
 
+0.8.10: * Critical bugfix: vcf-barplot in finalReport.Rmd threw an error for larger datasets
 0.8.9 : * ICS visualisation uses now the Scores S4 object to plot.
 0.8.8 : * "final reads per coverage group"-rule handles now also empty groups
 0.8.7 : * Increased the memory for minimap2 from 4G (default) to 8G and added the --split-prefix=tmp option. TODO: This could be also an option in the configuration file
