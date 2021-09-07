@@ -1551,10 +1551,6 @@ if(refAvail){
 
 # Homology comparison
 ```{r homology search}
-# Import the VCF
-#  vcf <- importVCF(file.path(projFolder, "FASTQ", "TRIMMED", "GSC.vcf"))
-  #vcf <- importVCF(file.path(projFolder, "MPILEUP", "mpileup_reference", "GSC.vcf"))
-
 # Get the group vectors
   rownames.vcf <- rownames(vcf$genotypes)
 
@@ -1589,9 +1585,9 @@ Here, we have Homo. Ref green, Homo. Alt red, hetero blue and missing black
 par(mar=c(10,5,1,1))
 plotThis <- t(apply(as.matrix(vcf$genotypes),1,as.numeric))
 dataForBarplot <- apply(plotThis,1,table)
-df <- data.frame(matrix(unlist(dataForBarplot), nrow=length(dataForBarplot), byrow=TRUE))
+df <- matrix(unlist(dataForBarplot), nrow=length(dataForBarplot), byrow=TRUE)
 rownames(df) <- rownames(vcf$genotypes)
-barplot(df, col=c("green", "blue", "red", "black"), las=2)
+barplot(t(df), col=c("green", "blue", "red", "black"), las=2)
 ```
 
 ## PCA
