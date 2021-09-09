@@ -1704,11 +1704,11 @@ cols <- min(ncol(vcf.PCA$x),10)
  
 if(ncol(sampleInfo)>1){
  for(i in 2:ncol(sampleInfo)){
-     pairs(lleres$Y[,1:5], col=as.numeric(as.factor(sampleInfo[,i])), pch=20)
+     pairs(lleres$Y[,1:(min(ncol(lleres$Y),5))], col=as.numeric(as.factor(sampleInfo[,i])), pch=20)
   }
 
 } else {
-   plot(lleres$Y[,1:5], pch=20)
+   plot(lleres$Y[,1:(min(ncol(lleres$Y),5))], pch=20)
 }
 ```
 
