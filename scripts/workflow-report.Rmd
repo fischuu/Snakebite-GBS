@@ -1700,7 +1700,7 @@ if(ncol(sampleInfo)>1){
 # LLE
 cols <- min(ncol(vcf.PCA$x),10)
 
-  lleres <- lle(vcf.PCA$x[,1:cols], m=7, k=17, v=0.99)
+  lleres <- lle(vcf.PCA$x[,1:cols], m=min(nrow(vcf$genotypes), 7), k=17, v=0.99)
  
 if(ncol(sampleInfo)>1){
  for(i in 2:ncol(sampleInfo)){
