@@ -57,6 +57,19 @@ ifelse(refGenome.file == "", refAvail <- FALSE, refAvail <- TRUE)
 ```
 
 ```{r help functions}
+class.table <- function(x, classes=NULL){
+  if(is.null(classes)){
+    out <- table(x)
+  } else {
+    out <- rep(0, length(classes))
+    for(i in 1:length(classes)){
+      out[i] <- sum(x==classes[i])
+    }
+    names(out) <- classes
+  }
+  out
+}
+
 plotFastQCFeature <- function(x,y, labels=c("R1", "R2"), col=c(viridis(20)[8], viridis(20)[16]), feature="total_deduplicated_percentage", axes=TRUE){
   x.values <- as.vector(as.matrix(x[feature]))
   y.values <- as.vector(as.matrix(y[feature]))
@@ -1584,10 +1597,9 @@ Here, we have Homo. Ref green, Homo. Alt red, hetero blue and missing black
 ```{r image vcf, fig.width=15, fig.height=10, warning=FALSE}
 par(mar=c(10,5,1,1))
 plotThis <- t(apply(as.matrix(vcf$genotypes),1,as.numeric))
-dataForBarplot <- apply(plotThis,1,table)
-df <- matrix(unlist(dataForBarplot), nrow=length(dataForBarplot), byrow=TRUE)
-rownames(df) <- rownames(vcf$genotypes)
-barplot(t(df), col=c("green", "blue", "red", "black"), las=2)
+dataForBarplot <- apply(plotThis,1,class.table, classes=c(0,1,2,3))
+colnames(dataForBarplot) <- rownames(vcf$genotypes)
+barplot(dataForBarplot, col=c("green", "blue", "red", "black"), las=2)
 ```
 
 ## PCA
