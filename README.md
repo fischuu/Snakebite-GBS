@@ -26,5 +26,11 @@ You can initiate a dry-run by running
 
 `bash runGBSPipeline-example.sh -np`
 
+# More information
+For further information, please visit the wiki page here:
+https://github.com/fischuu/Pipeline-GBS/wiki
+
 # Current state
-The pipeline is currently under active development and may not be stable for production.
+The pipeline is currently under active development, unstable development versions with the latest features
+can be found in the `dev` branch (odd version numbers), the `main` branch should be stable (even version numbers).
+
