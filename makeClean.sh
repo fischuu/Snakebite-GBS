@@ -1,5 +1,6 @@
 rm -rf BAM/
 rm -rf benchmark/
+rm -rf BWA/
 rm -rf finalReport*
 rm -rf MockReference/
 rm -rf MPILEUP/
