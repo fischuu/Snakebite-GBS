@@ -4,6 +4,7 @@
 #####                                                                      #####
 ################################################################################
 
+0.8.13: * DOS encoding does not affect the GBS-perl script 4 anymore
 0.8.12: * The minimum sample size can now be smaller than 6 for the final report
 0.8.11: * The visualisation of the vcf work now smoothly, also if not all alleles for a genotypes are present
 0.8.10: * Critical bugfix: vcf-barplot in finalReport.Rmd threw an error for larger datasets

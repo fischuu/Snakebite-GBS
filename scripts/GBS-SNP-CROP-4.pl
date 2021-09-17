@@ -98,7 +98,7 @@ while ( <$BAR> ) {
 	my $TaxaNames = $barcode[1];
 	my $MR_geno = $barcode[2];
 
-	if ($MR_geno eq "YES") {
+	if (index($MR_geno, "YES") != -1) {
 		push @MR_taxa_files, $TaxaNames;
 	}
 }
