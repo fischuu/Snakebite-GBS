@@ -1156,7 +1156,11 @@ Now we have here the number of reads per coverage class. That means, instead of 
 readsPerCoverageGroup <- c()
 
 for(i in 1:max(coveredClusters)){
- readsPerCoverageGroup[i] <-  sum(clusterCoverage[coveredClusters==i,-1])
+  if(sum(coveredClusters==i)>0){
+    readsPerCoverageGroup[i] <-  sum(clusterCoverage[coveredClusters==i,-1])
+  } else {
+    readsPerCoverageGroup[i] <- 0
+  }
 }
 
 names(readsPerCoverageGroup) <- 1:max(coveredClusters)
