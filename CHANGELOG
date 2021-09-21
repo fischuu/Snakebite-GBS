@@ -4,6 +4,7 @@
 #####                                                                      #####
 ################################################################################
 
+0.8.15: * Case handling when some samples hardly have any variants called
 0.8.14: * Error handling for the case that some mock clusters have no reads aligned to
 0.8.13: * DOS encoding does not affect the GBS-perl script 4 anymore
 0.8.12: * The minimum sample size can now be smaller than 6 for the final report
