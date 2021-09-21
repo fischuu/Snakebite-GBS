@@ -1514,7 +1514,7 @@ barplot(apply(vcf$genotypesInfo==".,.",2,sum)/noVariants*100, las=2, main="Missi
 
 ### Distribution of filtering criterias
 ```{r}
-tmp <- cumsum(sort(apply(DP,2,sum)))
+tmp <- cumsum(sort(apply(DP,2,sum, na.rm=TRUE)))
 plot(tmp, type="l")
 abline(a=0, b=3*70, col="red")
 abline(a=0, b=200*70, col="red")
