@@ -1609,7 +1609,7 @@ barplot(dataForBarplot, col=c("green", "blue", "red", "black"), las=2)
 ## PCA
 
 ```{r, warning=FALSE}
- vcf2 <- importVCF(file.path(projFolder, "FASTQ", "TRIMMED", "GSC.vcf"))
+ vcf2 <- importVCF(file.path(projFolder, "VCF", "FinalSetVariants_finalMock.vcf"))
 #vcf2 <- importVCF(file.path(projFolder, "MPILEUP", "mpileup_reference", "GSC.vcf"))
 
 tmp <- as.matrix(vcf2$genotypes)
