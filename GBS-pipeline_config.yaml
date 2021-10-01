@@ -9,7 +9,8 @@ pipeline-config: "/scratch/project_2001746/Pipeline-GBS/GBS-pipeline_config-exam
 barcodes: "/scratch/project_2001746/Example/barcodesID.txt"                                                         # Absolute path to the barcodes file (MAKE THIS OPTIONAL)
 rawsamples: "/scratch/project_2001746/Example/rawsamples"                                                           # Absolute path to the raw samples file (MAKE THIS OPTIONAL)
 genome: "/scratch/project_2001746/Example/references/Vulpes_vulpes.VulVul2.2.dna.toplevel.fa"                       # Absolute path to an existing reference genome, leave empty "" if not available
-mockreference: ""                                                                                                         # Use an existing mock reference for variant calling
+mockreference: ""                                                                                                   # Use an existing mock reference for variant calling
+existingvariants: ""                                                                                                # A vcf file with existing variants
 refsample: ""                                                                                                       # Id of ref sample used to build mock reference (NOT SURE, IF USED, CHECK THIS)
 local-scratch: "/scratch/project_2001746/tmp"                                                                                       # Path for fast local storage for tmp files (Here, a system variable is used. Check with your server configs)
 tmpdir: "/scratch/project_2001746/tmp"

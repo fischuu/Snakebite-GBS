@@ -10,8 +10,8 @@ import os
 ##### Natural Resources Institute Finland (Luke)
 ##### This pipeline is build upon the the GBS-SNP-CROP pipeline:
 ##### https://github.com/halelab/GBS-SNP-CROP
-##### Version: 0.8.15
-version = "0.8.15"
+##### Version: 0.8.16
+version = "0.8.16"
 
 ##### set minimum snakemake version #####
 min_version("6.0")
@@ -42,6 +42,7 @@ config["singularity"]["star"] = "docker://fischuu/star:2.7.3a-0.1"
 config["singularity"]["gbs"] = "docker://fischuu/gbs:0.2"
 config["singularity"]["cutadapt"] = "docker://fischuu/cutadapt:2.8-0.3"
 config["singularity"]["minimap2"] = "docker://fischuu/minimap2:2.17-0.2"
+config["singularity"]["samtools"] = "docker://fischuu/samtools:1.9-0.2"
 config["singularity"]["r-gbs"] = "docker://fischuu/r-gbs:3.6.3-0.2"
 
 ##### Print the welcome screen #####
@@ -143,6 +144,8 @@ rule FinalReport:
 
 rule MockRefVCF:
     input:
+        expand("%s/MPILEUP/mpileup_existingMock/{samples}.vcf" % (config["project-folder"]), samples=samples),
+        expand("%s/BAM/alignments_existingMock/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
         "%s/VCF/FinalSetVariants_finalMock.vcf" % (config["project-folder"])
 
 ### setup report #####

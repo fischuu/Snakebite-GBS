@@ -4,6 +4,7 @@
 #####                                                                      #####
 ################################################################################
 
+0.8.16: * Added a docker samtools container for the variant calling for existing mock and variant loci
 0.8.15: * Case handling when some samples hardly have any variants called
 0.8.14: * Error handling for the case that some mock clusters have no reads aligned to
 0.8.13: * DOS encoding does not affect the GBS-perl script 4 anymore
