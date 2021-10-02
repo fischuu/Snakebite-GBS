@@ -413,6 +413,12 @@ ExistingMockRefGenome_SortedBamToMpileup:
     cpus-per-task: 20
     mem-per-cpu: 5000
 
+ExistingMockRefGenome_mergeVCFs:
+    job-name: ExistingMockRefGenome_mergeVCFs
+    time: 01:00:00
+    cpus-per-task: 5
+    mem-per-cpu: 50000
+    
 ExistingMockRefGenome_AlignmentStats:
     job-name: ExistingMockRefGenome_AlignmentStats
     time: 01:00:00

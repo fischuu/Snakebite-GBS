@@ -144,9 +144,10 @@ rule FinalReport:
 
 rule MockRefVCF:
     input:
-        expand("%s/MPILEUP/mpileup_existingMock/{samples}.vcf" % (config["project-folder"]), samples=samples),
+        expand("%s/MPILEUP/mpileup_existingMock/{samples}.vcf.gz" % (config["project-folder"]), samples=samples),
         expand("%s/BAM/alignments_existingMock/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
-        "%s/VCF/FinalSetVariants_finalMock.vcf" % (config["project-folder"])
+    #    "%s/VCF/FinalSetVariants_finalMock.vcf" % (config["project-folder"]),
+                    "%s/VCF/variants_existingMock.vcf" % (config["project-folder"])
 
 ### setup report #####
 

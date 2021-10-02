@@ -112,12 +112,33 @@ else:
             reference="%s" % (config["mockreference"]),
             bed="%s/references/existing_variants.bed" % (config["project-folder"])
         output:
-            "%s/MPILEUP/mpileup_existingMock/{samples}.vcf" % (config["project-folder"])
+            vcf="%s/MPILEUP/mpileup_existingMock/{samples}.vcf.gz" % (config["project-folder"]),
+            index="%s/MPILEUP/mpileup_existingMock/{samples}.vcf.gz.csi" % (config["project-folder"])
         log:
             "%s/logs/Samtools/ExMockRefGenome_SortedBamToMpileup.{samples}.log" % (config["project-folder"])
         benchmark:
             "%s/benchmark/Samtools/ExMockRefGenome_SortedBamToMpileup.{samples}.benchmark.tsv" % (config["project-folder"])
         singularity: config["singularity"]["samtools"]
         shell:"""
-            samtools mpileup --positions {input.bed} -B -g -f {input.reference} {input.bam} |bcftools call -c -Ov | grep -v '##contig=<ID=' > {output}
+            samtools mpileup --positions {input.bed} -B -g -f {input.reference} {input.bam} | bcftools call -c -Ob > {output.vcf}
+            sleep 10
+            bcftools index {output.vcf}
+      	"""
+      	
+if config["mockreference"] == "":
+    pass
+else:
+    rule ExistingMockRefGenome_mergeVCFs:
+        """
+        Merge the vcf files.
+        """
+        input:
+            expand("%s/MPILEUP/mpileup_existingMock/{samples}.vcf.gz" % (config["project-folder"]), samples=samples)
+        output:
+            "%s/VCF/variants_existingMock.vcf" % (config["project-folder"])
+        log:
+            "%s/logs/bcftools/ExMockRefGenome_mergeVCF.log" % (config["project-folder"])
+        singularity: config["singularity"]["samtools"]
+        shell:"""
+            bcftools merge {input} --threads 5 -Ov | grep -v '##contig=<ID=' > {output} 2> {log}
       	"""
