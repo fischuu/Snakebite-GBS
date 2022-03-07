@@ -10,8 +10,8 @@ import os
 ##### Natural Resources Institute Finland (Luke)
 ##### This pipeline is build upon the the GBS-SNP-CROP pipeline:
 ##### https://github.com/halelab/GBS-SNP-CROP
-##### Version: 0.10
-version = "0.10"
+##### Version: 0.11.1
+version = "0.11.1"
 
 ##### set minimum snakemake version #####
 min_version("6.0")
@@ -44,6 +44,8 @@ config["singularity"]["cutadapt"] = "docker://fischuu/cutadapt:2.8-0.3"
 config["singularity"]["minimap2"] = "docker://fischuu/minimap2:2.17-0.2"
 config["singularity"]["samtools"] = "docker://fischuu/samtools:1.9-0.2"
 config["singularity"]["r-gbs"] = "docker://fischuu/r-gbs:3.6.3-0.2"
+config["singularity"]["stringtie"] = "docker://fischuu/stringtie:2.2.1-0.1"
+config["singularity"]["subread"] = "docker://fischuu/subread:2.0.1-0.1"
 
 ##### Print the welcome screen #####
 print("#################################################################################")
@@ -59,12 +61,14 @@ print("##### pipeline-config (NOT NECESSARILY THE USED ONE!!!): "+config["pipeli
 print("#####")
 print("##### Singularity configuration")
 print("##### --------------------------------")
-print("##### star     : "+config["singularity"]["star"])
-print("##### gbs      : "+config["singularity"]["gbs"])
-print("##### cutadapt : "+config["singularity"]["cutadapt"])
-print("##### minimap2 : "+config["singularity"]["minimap2"])
-print("##### r-gbs    : "+config["singularity"]["r-gbs"])
-print("##### samtools : "+config["singularity"]["samtools"])
+print("##### star      : "+config["singularity"]["star"])
+print("##### gbs       : "+config["singularity"]["gbs"])
+print("##### cutadapt  : "+config["singularity"]["cutadapt"])
+print("##### minimap2  : "+config["singularity"]["minimap2"])
+print("##### r-gbs     : "+config["singularity"]["r-gbs"])
+print("##### samtools  : "+config["singularity"]["samtools"])
+print("##### subread   : "+config["singularity"]["subread"])
+print("##### stringtie : "+config["singularity"]["stringtie"])
 print("#####")
 print("##### Runtime-configurations")
 print("##### --------------------------------")
@@ -127,8 +131,10 @@ rule all:
         expand("%s/BAM/alignments_finalMock/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
         "%s/MockReference/MockReference.fa" % (config["project-folder"]),
         "%s/VCF/FinalSetVariants_finalMock.vcf" % (config["project-folder"]),
-        "%s/finalReport.html" % (config["project-folder"])
-
+        "%s/finalReport.html" % (config["project-folder"]),
+      # Reference Genome and mock related
+        "%s/Stringtie/merged_STRG.gtf" % (config["project-folder"]),
+        expand("%s/QUANTIFICATION/Reference_contigs/{samples}_reference_contigs_fc.txt" % (config["project-folder"]), samples=samples)
 rule QC:
     input:
         "%s/QC/RAW/multiqc_R1/" % (config["project-folder"]),
@@ -164,3 +170,4 @@ include: "rules/Module5-CallVariants"
 include: "rules/Module6-PostProcessing"
 include: "rules/Module7-Reporting"
 include: "rules/Module8-CallNewData"
+include: "rules/Module9-ReferenceGenome"

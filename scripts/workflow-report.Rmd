@@ -1644,7 +1644,7 @@ for(i in 2:ncol(sampleInfo)){
 ## Other methods
 
 ### ICS
-```{r}
+```{r, eval=FALSE}
 cols <- min(ncol(vcf.PCA$x),10)
 FOBI <- ics(vcf.PCA$x[,1:cols])
 if(ncol(sampleInfo)>1){

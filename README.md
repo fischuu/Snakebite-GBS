@@ -34,3 +34,16 @@ https://github.com/fischuu/Pipeline-GBS/wiki
 The pipeline is currently under active development, unstable development versions with the latest features
 can be found in the `dev` branch (odd version numbers), the `main` branch should be stable (even version numbers).
 
+# Possible use-cases
+
+## Complete de-novo approach
+No previous information available, just a set of FASTQ-files as input
+
+## Reference genome available
+Here, we have the FASTQ files and an existing reference genome in FASTA format
+
+## Mock reference anmd variant set available
+Here, we ran a previous de-novo approach and obtained from there a set of variants in VCF format and also a mock reference in fasta format
+
+## Reference genome and variant set available
+A reference genome as well as a set of variants is available.

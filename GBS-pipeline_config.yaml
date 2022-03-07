@@ -110,4 +110,6 @@ params:
     format: "V"
   step9:
     flanking: 25
+  stringtie:
+    tpm: 3
   

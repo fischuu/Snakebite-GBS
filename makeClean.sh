@@ -10,3 +10,4 @@ rm -rf FASTQ/CONCATENATED/
 rm -rf FASTQ/TRIMMED/
 rm -rf VCF/
 rm -rf .snakemake/
+rm mockEvalReport.html

@@ -457,3 +457,10 @@ CreateVCF_existingMockreference:
     job-name: CreateVCF_existingMockreference
     time: 01:00:00
     mem-per-cpu: 30000
+
+# Module 9:
+###############################################################################
+featureCounts_quantify_ReferenceAlignments:
+    job-name: featureCounts_quantify_ReferenceAlignments
+    time: 01:00:00
+    mem-per-cpu: 30000

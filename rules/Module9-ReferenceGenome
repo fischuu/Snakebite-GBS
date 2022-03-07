@@ -1,0 +1,91 @@
+if config["genome"] == "":
+    pass
+else:
+    rule RefGenome_AssembleTranscripts:
+        """
+        Transcript assembly (StringTie).
+        """
+        input:
+            "%s/FASTQ/TRIMMED/alignments_reference/{samples}.sorted.bam" % (config["project-folder"])
+        output:
+           "%s/Stringtie/{samples}.stringtie.gtf" % (config["project-folder"])
+        log:
+           "%s/logs/Stringtie/stringtie.{samples}.log" % (config["project-folder"])
+        benchmark:
+           "%s/benchmark/stringtie.{samples}.benchmark.tsv" % (config["project-folder"])
+        singularity: config["singularity"]["stringtie"]
+        threads: 20
+        shell:"""
+            stringtie {input} -p {threads} -v -o {output} 2> {log};
+      	"""
+
+if config["genome"] == "":
+    pass
+else: 	
+    rule compose_merge:
+        """
+        collect gtf files of all samples in one text file
+        """
+        input:
+           files=expand("%s/Stringtie/{sample}.stringtie.gtf" % (config["project-folder"]), sample=samples)
+        output:
+           txt="%s/Stringtie/stringtie_gtfs.txt" % (config["project-folder"])
+        params:
+           folder="%s/Stringtie/" % (config["project-folder"]),
+           pipefolder=config["pipeline-folder"]
+        shell:"""
+           bash {params.pipefolder}/scripts/composeMerge.sh {params.folder} {output.txt}
+        """
+        
+if config["genome"] == "":
+    pass
+else: 
+    rule stringtie_merge:
+        """
+        Merge the gtf files (stringtie merge).
+        """
+        input:
+            gtfs="%s/Stringtie/stringtie_gtfs.txt" % (config["project-folder"])
+        output:
+            "%s/Stringtie/merged_STRG.gtf" % (config["project-folder"])
+        params:
+            tpm=config["params"]["stringtie"]["tpm"]
+        log:
+            "%s/logs/stringtiemerge.log" % (config["project-folder"])
+        benchmark:
+            "%s/benchmark/stringtiemerge.benchmark.tsv" % (config["project-folder"])
+        threads: 20
+        singularity: config["singularity"]["stringtie"]
+        shell:"""
+            stringtie --merge -F 0 -T {params.tpm} -o {output} {input.gtfs} 2> {log};
+        """
+
+if config["genome"] == "":
+    pass
+else: 
+    rule featureCounts_quantify_ReferenceAlignments:
+        """
+        Quantify the STAR aligned reads to stringetie novel (featureCounts).
+        """
+        input:
+            bam="%s/FASTQ/TRIMMED/alignments_reference/{samples}.sorted.bam" % (config["project-folder"]),
+            annot="%s/Stringtie/merged_STRG.gtf" % (config["project-folder"])
+        output:
+            file="%s/QUANTIFICATION/Reference_contigs/{samples}_reference_contigs_fc.txt" % (config["project-folder"])
+        log:
+            "%s/logs/FC/featureCounts_reference_contigs.{samples}.log" % (config["project-folder"])
+        benchmark:
+            "%s/benchmark/FC/featureCounts_reference_contigs.{samples}.benchmark.tsv" % (config["project-folder"])
+        threads: 20
+        singularity: config["singularity"]["subread"]
+        shell:"""
+            featureCounts --primary -M \
+                          -T {threads} \
+                          -a {input.annot} \
+                          -t transcript \
+                          -g gene_id \
+                          -o {output.file} \
+                      {input.bam} 2> {log}
+        """
+        
+        
