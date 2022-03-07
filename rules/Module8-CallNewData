@@ -62,7 +62,7 @@ else:
         Get the mapping stats for the existing mock reference.
         """
         input:
-            sam="%s/BAM/alignments_existingMock/{samples}.sam" % (config["project-folder"]),
+            sam="%s/SAM/alignments_existingMock/{samples}.sam" % (config["project-folder"]),
             sbam="%s/BAM/alignments_existingMock/{samples}.sorted.bam" % (config["project-folder"])
         output:
             fs="%s/BAM/alignments_existingMock/{samples}.sam.flagstat" % (config["project-folder"]),
@@ -103,7 +103,7 @@ else:
 if config["mockreference"] == "":
     pass
 else:
-    rule ExistingMockRefGenome_SortedBamToMpileupVCF:
+    rule ExistingMockRefGenome_SortedBamToVCF:
         """
         Get Mpileup for existing mock Reference Genome.
         """
