@@ -33,8 +33,7 @@ library("lle")
 library("kernlab")
 #library("REPPlab")
 #library("RDRToolbox")
-library("destiny")
-library("ggplot2")
+library("destiny")  
 options(scipen=999,
         stringsAsFactors=FALSE)
 knitr::opts_chunk$set(echo = FALSE,
@@ -48,10 +47,10 @@ mockReference.file <- "GSC.MR.Genome.fa"
 # R -e "rmarkdown::render('./scripts/workflow-report.Rmd',output_file='./finalReport.html')"
 
 if(!is.element("snakemake",ls())){
-  projFolder <- "/scratch/project_2001746/BSF"
+  projFolder <- "/scratch/project_2001746/Whitefish"
   pipelineFolder <- "/scratch/project_2001746/Pipeline-GBS/"
-  pipelineConfig.file <- "/scratch/project_2001746/BSF/GBS-pipeline_config-BSF.yaml"
-  refGenome.file <- "GCA_009835165.1_ASM983516v1_genomic.fna"
+  pipelineConfig <- "/scratch/project_2001746/Whitefish/GBS-pipeline_config-whitefish.yaml"
+  refGenome.file <- "GCA_902175075.1_AWG_v1_genomic.fna"
 }
 refGenome.file <- basename(refGenome.file)
 ifelse(refGenome.file == "", refAvail <- FALSE, refAvail <- TRUE)
@@ -195,12 +194,6 @@ pipeVersion <- gsub("##### Version: ","",pipeSMK[grep("##### Version:", pipeSMK)
 barcodes <- read.table(file.path(projFolder, "barcodesID.txt"))
 rawsamples <- read.table(file.path(projFolder, "rawsamples"))
 sampleInfo <- read.table(file.path(projFolder, "sampleInfo.txt"), header=TRUE)
-pipelineConfig <- readLines(pipelineConfig.file)
-
-projectFolder.info <- trimws(gsub("project-folder:","", pipelineConfig[grep("project-folder:", pipelineConfig)]))
-pipelineFolder.info <- trimws(gsub("pipeline-folder:","", pipelineConfig[grep("pipeline-folder:", pipelineConfig)]))
-pipelineConfig.info <- trimws(gsub("pipeline-config:","", pipelineConfig[grep("pipeline-config:", pipelineConfig)]))
-
 
 out <- data.frame(c("Number of raw-samples",
                     "Number of samples (after concatenating)",
@@ -208,20 +201,14 @@ out <- data.frame(c("Number of raw-samples",
                     "Grouping names",
                     "Samples used for mock reference",
                     "Used reference genome",
-                    "Pipeline version",
-                    "Project folder",
-                    "Pipeline folder",
-                    "Pipeline config"),
+                    "Pipeline version"),
                   c(nrow(rawsamples),
                     nrow(barcodes),
                     ncol(sampleInfo)-1,
                     paste(colnames(sampleInfo)[-1],collapse=", "),
                     sum(barcodes[,3]=="YES"),
                     basename(refGenome.file),
-                    pipeVersion,
-                    projectFolder.info,
-                    pipelineFolder.info,
-                    pipelineConfig.info))
+                    pipeVersion))
 
 out_html <- knitr::kable(out, col.names = NULL, "html")
 kable_styling(out_html, "striped", position = "left")
@@ -248,7 +235,6 @@ par(oma=c(6,5,0,0))
 labels <- gsub(".merged.fastq.gz.report","",conc.reports.files)
 barplot(sapply(conc.reports,nrow), ylab="Concatenated files", names=labels, las=2)
 ```
-
 
 # FastQC quality checks
 
@@ -359,27 +345,7 @@ plotFastQCFeature(rawFastQC.R1, rawFastQC.R2, feature="Total.Sequences", axes=FA
 ```
 
 ### Quality value distribution
-```{r}
-qcFiles.raw <- list.files(file.path(projFolder,"QC", "RAW"), pattern="*qualdist.txt")
-qcQual.raw <- fread(file.path(projFolder,"QC", "RAW", qcFiles.raw[1]), skip=1)
-colnames(qcQual.raw) <- c(gsub("_qualdist.txt","", qcFiles.raw[1]), "Quality")
-
-for(i in 2:length(qcFiles.raw)){
-    tmp <- fread(file.path(projFolder,"QC", "RAW", qcFiles.raw[i]), skip=1)
-    colnames(tmp) <- c(gsub("_qualdist.txt","", qcFiles.raw[i]), "Quality")
-    qcQual.raw <- merge(qcQual.raw, tmp, all=TRUE)
-}
-qcQual.raw[is.na(qcQual.raw)] <- 0
-
-```
-
-```{r}
-plotThis <- as.matrix(qcQual.raw[,-1])
-rownames(plotThis) <- as.vector(as.matrix(qcQual.raw[,1]))
-par(mar=c(15,5,2,8), xpd=TRUE)
-barplot(plotThis, las=2, col=1:nrow(plotThis))
-legend("topright", inset=c(-0.2,0), legend=rownames(plotThis)[(nrow(plotThis)):1], fill=nrow(plotThis):1)
-```
+TO BE ADDED: Import the quality distribution reports here and visualize them
 
 ### Summary
 ```{r raw data summary stats}
@@ -486,27 +452,7 @@ plotFastQCFeature(conFastQC.R1, conFastQC.R2, feature="Total.Sequences")
 ```
 
 ### Quality value distribution
-```{r}
-qcFiles.conc <- list.files(file.path(projFolder,"QC", "CONCATENATED"), pattern="*qualdist.txt")
-qcQual.conc <- fread(file.path(projFolder,"QC", "CONCATENATED", qcFiles.conc[1]), skip=1)
-colnames(qcQual.conc) <- c(gsub("_qualdist.txt","", qcFiles.conc[1]), "Quality")
-
-for(i in 2:length(qcFiles.conc)){
-    tmp <- fread(file.path(projFolder,"QC", "CONCATENATED", qcFiles.conc[i]), skip=1)
-    colnames(tmp) <- c(gsub("_qualdist.txt","", qcFiles.conc[i]), "Quality")
-    qcQual.conc <- merge(qcQual.conc, tmp, all=TRUE)
-}
-qcQual.conc[is.na(qcQual.conc)] <- 0
-
-```
-
-```{r}
-plotThis <- as.matrix(qcQual.conc[,-1])
-rownames(plotThis) <- as.vector(as.matrix(qcQual.conc[,1]))
-par(mar=c(15,5,2,8), xpd=TRUE)
-barplot(plotThis, las=2, col=1:nrow(plotThis))
-legend("topright", inset=c(-0.2,0), legend=rownames(plotThis)[(nrow(plotThis)):1], fill=nrow(plotThis):1)
-```
+TO BE ADDED: Import the quality distribution reports here and visualize them
 
 ### Per base N content (left: R1, right: R2)
 
@@ -638,26 +584,7 @@ totalSequences[,1] <- gsub(".R1","",totalSequences[,1])
 ```
 
 ### Quality value distribution
-```{r}
-qcFiles.trimmed <- list.files(file.path(projFolder,"QC", "TRIMMED"), pattern="*qualdist.txt")
-qcQual.trimmed <- fread(file.path(projFolder,"QC", "TRIMMED", qcFiles.trimmed[1]), skip=1)
-colnames(qcQual.trimmed) <- c(gsub("_qualdist.txt","", qcFiles.trimmed[1]), "Quality")
-
-for(i in 2:length(qcFiles.trimmed)){
-    tmp <- fread(file.path(projFolder,"QC", "TRIMMED", qcFiles.trimmed[i]), skip=1)
-    colnames(tmp) <- c(gsub("_qualdist.txt","", qcFiles.raw[i]), "Quality")
-    qcQual.trimmed <- merge(qcQual.trimmed, tmp, all=TRUE)
-}
-qcQual.trimmed[is.na(qcQual.trimmed)] <- 0
-```
-
-```{r}
-plotThis <- as.matrix(qcQual.trimmed[,-1])
-rownames(plotThis) <- as.vector(as.matrix(qcQual.trimmed[,1]))
-par(mar=c(15,5,2,8), xpd=TRUE)
-barplot(plotThis, las=2, col=1:nrow(plotThis))
-legend("topright", inset=c(-0.2,0), legend=rownames(plotThis)[(nrow(plotThis)):1], fill=nrow(plotThis):1)
-```
+TO BE ADDED: Import the quality distribution reports here and visualize them
 
 ### Per base N content
 
@@ -684,31 +611,7 @@ plotMQCFeature(x=file.path(projFolder,"QC","TRIMMED","multiqc_R1"),
 ### Length distribution trimmed reads
 From the trimlog we get more statistics on the output of the trimming. Include the trimlog data also here as density plots.
 
-```{r}
-cutLogs.files <- list.files(file.path(projFolder, "logs"), pattern="cutadapt*")
-cutLogs <- fread(file.path(projFolder, "logs", cutLogs.files[1]), skip="Overview of removed sequences")
-cutLogs <- cutLogs[,1:2]
-colnames(cutLogs) <- c("length", gsub(".log", "",cutLogs.files[1]))
-
-for(i in 2:length(cutLogs.files)){
-  tmp <- fread(file.path(projFolder, "logs", cutLogs.files[i]), skip="Overview of removed sequences")
-  tmp <- tmp[,1:2]
-  colnames(tmp) <- c("length", gsub(".log", "", cutLogs.files[i]))
-  
-  cutLogs <- merge(cutLogs, tmp, all=TRUE)
-}
-
-cutLogs[is.na(cutLogs)] <- 0
-```
-
-```{r}
-tmp <- apply(cutLogs[,-1],1,mean)
-names(tmp) <- as.vector(as.matrix(cutLogs[,1]))
-tmp <- sort(tmp, decreasing=TRUE)[1:10]
-tmp2 <- data.frame(names(tmp), tmp)
-out_html <- knitr::kable(tmp2, col.names = c("Trimmed bases", "Avg. freq"), row.names = FALSE, "html")
-kable_styling(out_html, "striped", position = "left")
-```
+THESE COME FROM THE FILES: ./logs/cutadapt*
 
 ### Summary
 ```{r trimmed data summary stats}
@@ -841,16 +744,15 @@ Total length of the preliminary Mock Reference (Used as reference): `r format(su
 ### Theoretical coverage of Mock per sample
 Given the length of the mock reference assembly and the total number of sequenced bases per sample, we can estimate the theoretical coverage of the mock for each sample
 
-Currently I hard-code here the paired-end reads and assume equal lengths and reads in both pairs, but it should be a good estimate.
+Currently I hard-code here the paired-end reads and assume equal lengths and reads in both pairs.
 
 ```{r mock coverage}
 par(mar=c(10,5,1,1))
 mockLength <- sum(nchar(prelimMockReference))
-mockCov <- (2*mqcStats.trim[,10] * mqcStats.trim[,5])/mockLength
+mockCov <- 2*mqcStats.trim[,10] * mqcStats.trim[,5]/mockLength
 names(mockCov) <- mqcStats.trim[,1]
 barplot(mockCov, ylab="'x'-fold Coverage", col=viridis(20)[8], las=2)
 lines(c(-100,10000),c(1,1), lty="dotted")
-lines(c(-100,10000),c(5,5), lty="dotted")
 lines(c(-100,10000),c(10,10), lty="dotted")
 ```
 
@@ -1058,10 +960,12 @@ totalBases <- sum(abs(mergedLoci$V3 - mergedLoci$V2))
 }
 ```
 
-However, in total we have `r formatC(nrow(unmergedLoci),  format="d", big.mark=",")` mapping loci that can be merged down (by intersection of the bed) to `r formatC(nrow(mergedLoci),  format="d", big.mark=",")` if their chromosomal location is intersected.
+However, in total we have `r nrow(unmergedLoci)` mapping loci that can be merged down (by intersection of the bed) to `r nrow(mergedLoci)` if their chromosomal location is intersected.
 Please note, if the difference between these two numbers is too large, it indicates that the mock reference needs to be merged more strict.
 
 In total `r formatC(totalBases, big.mark=",")` bases are covered in the reference genome from mock cluster sequences.
+
+
 
 A visualisation of the alignments of the mock clusters to the reference genome
 
@@ -1211,13 +1115,16 @@ The average mapping rate is `r mean(mappingRates)`.
 Data mapped against the clusters and then the reads per cluster visualized
 ```{r importClusterCoverage, warning=FALSE}
 clusterFiles <- list.files(file.path(projFolder, "FASTQ", "TRIMMED", "alignments_clusters"), pattern="*.coverage")
-clusterCoverage <- read.table(file.path(projFolder, "FASTQ", "TRIMMED", "alignments_clusters", clusterFiles[1]))
+#clusterCoverage <- read.table(file.path(projFolder, "FASTQ", "TRIMMED", "alignments_clusters", clusterFiles[1]))
+clusterCoverage <- fread(file.path(projFolder, "FASTQ", "TRIMMED", "alignments_clusters", clusterFiles[1]))
 names(clusterCoverage)[1:2] <- c("cluster", clusterFiles[1])
 
 for(i in 2:length(clusterFiles)){
-  tmp <- read.table(file.path(projFolder, "FASTQ", "TRIMMED", "alignments_clusters", clusterFiles[i]))
+  #tmp <- read.table(file.path(projFolder, "FASTQ", "TRIMMED", "alignments_clusters", clusterFiles[i]))
+  tmp <- fread(file.path(projFolder, "FASTQ", "TRIMMED", "alignments_clusters", clusterFiles[i]))
   names(tmp)[1:2] <- c("cluster", clusterFiles[i])
   clusterCoverage <- merge(clusterCoverage, tmp, by="cluster")
+  cat("Loop",i,"ended at", date(), "\n")
 }
 names(clusterCoverage)[2:(length(clusterFiles)+1)] <- clusterFiles
 clusterCoverage[,1] <- as.numeric(gsub("Cluster", "", clusterCoverage[,1]))
@@ -1523,22 +1430,6 @@ barplot(mapStats[1,] / (apply(mapStats,2,sum)), ylim=c(0,1), ylab="Mapping in Pe
 
 The average mapping rate on the reference genome is `r mean(refGenome.mappingStats)`.
 
-### Read alignments
-The aligned reads are interpreted as "transcripts" and via Stringtie novel transcripts are detected to identify the common alignments via stringtie merge
-
-```{r}
-string.merge <- importGTF(file.path(projFolder, "Stringtie", "merged_STRG.gtf"), level="transcript")
-```
-
-Distribution of identifed contigs across the reference genome
-
-```{r}
-  tmp <- summary(abs(string.merge$V5 - string.merge$V4))
-  out <- data.frame(names(tmp), tmp)
-  out_html <- knitr::kable(out, col.names = NULL, "html")
-  kable_styling(out_html, "striped", position = "left")
-```
-
 # Variants
 Import the Result vcf
 
@@ -1756,7 +1647,7 @@ for(i in 2:ncol(sampleInfo)){
 ## Other methods
 
 ### ICS
-```{r, eval=FALSE}
+```{r}
 cols <- min(ncol(vcf.PCA$x),10)
 FOBI <- ics(vcf.PCA$x[,1:cols])
 if(ncol(sampleInfo)>1){
@@ -1960,7 +1851,7 @@ datatable(barcodesID)
 This is the configuration file that is used for the project:
 
 ```{r import config file}
-pipelineConfig <- readLines(pipelineConfig.file)
+configFile <- readLines(pipelineConfig)
 ```
 
 ```{r print configuration}

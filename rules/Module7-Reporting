@@ -31,7 +31,7 @@ rule R_finalReport:
     benchmark:
         "%s/benchmark/R/finalReport.benchmark.tsv" % (config["project-folder"])
     singularity:
-        "docker://fischuu/r-gbs:3.6.3-0.2"
+        config["singularity"]["r-gbs"]
     params:
        projFolder=config["project-folder"],
        pipeFolder=config["pipeline-folder"],
@@ -41,7 +41,7 @@ rule R_finalReport:
        R -e "projFolder <- '{params.projFolder}'; \
              pipelineFolder <- '{params.pipeFolder}'; \
              refGenome.file <- '{params.refGenome}'; \
-             pipelineConfig <- '{params.pipeConfig}'; \
+             pipelineConfig.file <- '{params.pipeConfig}'; \
              snakemake <- TRUE;\
              rmarkdown::render('{input.script}',output_file='{output}')" &> {log}
     """
@@ -63,7 +63,7 @@ rule R_MockEval:
     benchmark:
         "%s/benchmark/R/mockEvalReport.benchmark.tsv" % (config["project-folder"])
     singularity:
-        "docker://fischuu/r-gbs:3.6.3-0.2"
+        config["singularity"]["r-gbs"]
     params:
        projFolder=config["project-folder"],
        pipeFolder=config["pipeline-folder"],
@@ -71,7 +71,7 @@ rule R_MockEval:
     shell:"""
        R -e "projFolder <- '{params.projFolder}'; \
              pipelineFolder <- '{params.pipeFolder}'; \
-             pipelineConfig <- '{params.pipeConfig}'; \
+             pipelineConfig.file <- '{params.pipeConfig}'; \
              snakemake <- TRUE;\
              rmarkdown::render('{input.script}',output_file='{output}')" &> {log}
     """

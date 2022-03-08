@@ -4,6 +4,8 @@
 #####                                                                      #####
 ################################################################################
 
+0.11.2: * Quality value distribution added to the final report.
+0.11.1: * Minor bugfixes
 0.10  : * Stable release version that sumarises provious fixes in last stable release
 0.8.16: * Added a docker samtools container for the variant calling for existing mock and variant loci
 0.8.15: * Case handling when some samples hardly have any variants called
