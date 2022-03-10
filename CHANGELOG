@@ -4,6 +4,7 @@
 #####                                                                      #####
 ################################################################################
 
+0.11.3: * Bugfix in CountFileList.txt - it assumed same order as in barcodesID.txt
 0.11.2: * Quality value distribution added to the final report.
 0.11.1: * Minor bugfixes
 0.10  : * Stable release version that sumarises provious fixes in last stable release

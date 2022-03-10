@@ -73,12 +73,17 @@ rule create_verticalRef:
         "%s/benchmark/BASH/create_verticalRef.benchmark.tsv" % (config["project-folder"])
     params:
         wd="%s/FASTQ/TRIMMED" % config["project-folder"],
+        barcodes=config["barcodes"],
+        countfolder="%s/FASTQ/TRIMMED" % (config["project-folder"]),
+        pipefolder=config["pipeline-folder"]
     threads: 1
     shell:"""
         sort -u -m -k2n {input.ref} -o {params.wd}/VerticalRefPos.tmp;
         sort -k2n {params.wd}/VerticalRefPos.tmp | uniq > {output.vref};
         #ls {params.wd}/*count.txt | xargs -n1 basename > {output.co}
-        ls {params.wd}/*count.txt > {output.co}
+        #ls {params.wd}/*count.txt > {output.co}
+        
+        {params.pipefolder}/scripts/getCountFileList.sh {params.barcodes} {params.countfolder} > {output.co}
     """
     
 if config["genome"] == "":
@@ -91,6 +96,7 @@ else:
         input:
             co=expand("%s/MPILEUP/mpileup_reference/{samples}.count.txt" % (config["project-folder"]), samples=samples),
             ref=expand("%s/MPILEUP/mpileup_reference/{samples}.ref.txt" % (config["project-folder"]), samples=samples),
+            bar=config["barcodes"]
         output:
            vref="%s/MPILEUP/mpileup_reference/VerticalRefPos.txt" % (config["project-folder"]),
            co="%s/MPILEUP/mpileup_reference/CountFileList.txt" % (config["project-folder"])
@@ -100,12 +106,16 @@ else:
             "%s/benchmark/BASH/create_verticalRef_reference.benchmark.tsv" % (config["project-folder"])
         params:
             wd="%s/MPILEUP/mpileup_reference" % config["project-folder"],
+            pipefolder=config["pipeline-folder"],
+            countfolder="%s/MPILEUP/mpileup_reference" % (config["project-folder"])
         threads: 1
         shell:"""
             sort -u -m -k2n {input.ref} -o {params.wd}/VerticalRefPos.tmp;
             sort -k2n {params.wd}/VerticalRefPos.tmp | uniq > {output.vref};
+           # DO not do it that way, it is the wrong order!!!!
            # ls {params.wd}/*count.txt | xargs -n1 basename > {output.co}
-            ls {params.wd}/*count.txt > {output.co}
+           # ls {params.wd}/*count.txt > {output.co}
+            {params.pipefolder}/scripts/getCountFileList.sh {input.bar} {params.countfolder} > {output.co}
         """
     
 # Create the checkpoints to break out into parallel job
@@ -470,12 +480,17 @@ rule create_verticalRef_finalMock:
         "%s/benchmark/BASH/create_verticalRef_finalMock.benchmark.tsv" % (config["project-folder"])
     params:
         wd="%s/MPILEUP/mpileup_finalMock" % config["project-folder"],
+        barcodes=config["barcodes"],
+        countfolder="%s/MPILEUP/mpileup_finalMock" % (config["project-folder"]),
+        pipefolder=config["pipeline-folder"]
     threads: 1
     shell:"""
         sort -u -m -k2n {input.ref} -o {params.wd}/VerticalRefPos.tmp;
         sort -k2n {params.wd}/VerticalRefPos.tmp | uniq > {output.vref};
         #ls {params.wd}/*count.txt | xargs -n1 basename > {output.co}
-        ls {params.wd}/*count.txt > {output.co}
+        #ls {params.wd}/*count.txt > {output.co}
+        
+        {params.pipefolder}/scripts/getCountFileList.sh {params.barcodes} {params.countfolder} > {output.co}
     """
 
 checkpoint cut_verticalRef_finalMock:
