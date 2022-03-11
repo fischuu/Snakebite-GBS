@@ -271,13 +271,11 @@ create_verticalRef:
     time: 01:00:00
     job-name:  create_verticalRef
     mem-per-cpu: 16000
-    nvme: 20
 
 create_verticalRef_reference:
     time: 01:00:00
     job-name:  create_verticalRef_reference
     mem-per-cpu: 16000
-    nvme: 20
 
 cut_verticalRef:
     job-name: cut_verticalRef
@@ -292,38 +290,32 @@ create_MasterMatrix_parallel:
     time: 0-12:00:00
     job-name:  create_MasterMatrix_parallel
     mem-per-cpu: 64000
-    nvme: 20
 
 create_MasterMatrix_parallel_reference:
     time: 0-12:00:00
     job-name:  create_MasterMatrix_parallel_reference
     mem-per-cpu: 64000
-    nvme: 20
 
 create_MasterMatrix_parallel_finalMock:
     time: 0-12:00:00
     job-name:  create_MasterMatrix_parallel_finalMock
     mem-per-cpu: 64000
-    nvme: 20
 
 
 aggregate_MasterMatrix:
     job-name: aggregate_MasterMatrix
     time: 0-12:00:00
     mem-per-cpu: 48000
-    nvme: 20
     
 aggregate_MasterMatrix_reference:
     job-name: aggregate_MasterMatrix_reference
     time: 0-12:00:00
     mem-per-cpu: 48000
-    nvme: 20
     
 aggregate_MasterMatrix_finalMock:
     job-name: aggregate_MasterMatrix_finalMock
     time: 0-12:00:00
     mem-per-cpu: 48000
-    nvme: 20
 
 FilterVariants:
     time: 1-12:00:00
@@ -364,7 +356,6 @@ create_verticalRef_finalMock:
     time: 01:00:00
     job-name:  create_verticalRef_finalMock
     mem-per-cpu: 16000
-    nvme: 20
 
 # Module 6 - Postprocessing
 ################################################################################
