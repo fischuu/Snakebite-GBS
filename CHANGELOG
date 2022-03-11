@@ -4,6 +4,7 @@
 #####                                                                      #####
 ################################################################################
 
+0.12  : * Stable release after bugfixes and added features
 0.11.5: *  Mock reference contig alignemtns against reference genome coverage plot added
 0.11.4: * StringMerge stats removed from the FinalReport and Cleaning scripts adjusted
 0.11.3: * Bugfix in CountFileList.txt - it assumed same order as in barcodesID.txt
