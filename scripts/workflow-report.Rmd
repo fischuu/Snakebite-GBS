@@ -1532,7 +1532,7 @@ string.merge <- importGTF(file.path(projFolder, "Stringtie", "merged_STRG.gtf"),
 
 Distribution of identifed contigs across the reference genome
 
-```{r}
+```{r, eval=FALSE}
   tmp <- summary(abs(string.merge$V5 - string.merge$V4))
   out <- data.frame(names(tmp), tmp)
   out_html <- knitr::kable(out, col.names = NULL, "html")
