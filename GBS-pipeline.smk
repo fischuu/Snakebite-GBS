@@ -50,13 +50,13 @@ def get_raw_input_fastqs(wildcards):
 def get_raw_input_read1(wildcards):
     reads = samplesheet.loc[wildcards.rawsamples][["read1"]]
     path = config["rawdata-folder"]
-    output = [path + x for x in reads]
+    output = [path + "/" + x for x in reads]
     return output
 
 def get_raw_input_read2(wildcards):
     reads = samplesheet.loc[wildcards.rawsamples][["read2"]]
     path = config["rawdata-folder"]
-    output = [path + x for x in reads]
+    output = [path + "/" + x for x in reads]
     return output
     
 def get_fastq_for_concatenating_read1(wildcards):
@@ -82,7 +82,7 @@ config["adapter"]=config["pipeline-folder"]+"/adapter.fa"
 
 ##### Singularity container #####
 config["singularity"] = {}
-config["singularity"]["star"] = "docker://fischuu/star:2.7.3a-0.1"
+config["singularity"]["star"] = "docker://fischuu/star:2.7.5a"
 config["singularity"]["gbs"] = "docker://fischuu/gbs:0.2"
 config["singularity"]["cutadapt"] = "docker://fischuu/cutadapt:2.8-0.3"
 config["singularity"]["minimap2"] = "docker://fischuu/minimap2:2.17-0.2"
@@ -179,17 +179,28 @@ rule all:
       # Reference Genome and mock related
         "%s/Stringtie/merged_STRG.gtf" % (config["project-folder"]),
         expand("%s/QUANTIFICATION/Reference_contigs/{samples}_reference_contigs_fc.txt" % (config["project-folder"]), samples=samples)
-rule QC:
-    input:
-        "%s/QC/RAW/multiqc_R1/" % (config["project-folder"]),
-        "%s/QC/CONCATENATED/multiqc_R1/" % (config["project-folder"]),
-        "%s/QC/TRIMMED/multiqc_R1/" % (config["project-folder"]),
 
 rule preparations:
     input:
         "%s/chrName.txt" % (config["genome-star-index"]),
         expand("%s/FASTQ/CONCATENATED/{samples}_R1_001.merged.fastq.gz" % (config["project-folder"]), samples=samples),
+        expand("%s/FASTQ/CONCATENATED/{samples}_R2_001.merged.fastq.gz" % (config["project-folder"]), samples=samples),
         config["genome-bwa-index"]
+
+rule QC:
+    input:
+        "%s/QC/RAW/multiqc_R1/" % (config["project-folder"]),
+        "%s/QC/CONCATENATED/multiqc_R1/" % (config["project-folder"]),
+        "%s/QC/TRIMMED/multiqc_R1/" % (config["project-folder"]),
+        expand("%s/QC/RAW/{rawsamples}_R1_qualdist.txt" % (config["project-folder"]), rawsamples=rawsamples),
+        expand("%s/QC/RAW/{rawsamples}_R2_qualdist.txt" % (config["project-folder"]), rawsamples=rawsamples),
+        expand("%s/QC/CONCATENATED/{samples}_R1_qualdist.txt" % (config["project-folder"]), samples=samples),
+        expand("%s/QC/CONCATENATED/{samples}_R2_qualdist.txt" % (config["project-folder"]), samples=samples)
+
+rule preprocessing:
+    input:
+        expand("%s/FASTQ/TRIMMED/{samples}.R1.fq.gz" % (config["project-folder"]), samples=samples),
+        expand("%s/FASTQ/TRIMMED/{samples}.R2.fq.gz" % (config["project-folder"]), samples=samples),
 
 rule MockEval:
     input:
@@ -212,8 +223,8 @@ report: "report/workflow.rst"
 
 ##### load rules #####
 include: "rules/Module0-PreparationsAndIndexing"
-#include: "rules/Module1-QC"
-#include: "rules/Module2-DataPreprocessing"
+include: "rules/Module1-QC"
+include: "rules/Module2-DataPreprocessing"
 #include: "rules/Module3-MockReference"
 #include: "rules/Module4-ReadAlignment"
 #include: "rules/Module5-CallVariants"
