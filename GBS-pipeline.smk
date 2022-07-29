@@ -10,22 +10,66 @@ import os
 ##### Natural Resources Institute Finland (Luke)
 ##### This pipeline is build upon the the GBS-SNP-CROP pipeline:
 ##### https://github.com/halelab/GBS-SNP-CROP
-##### Version: 0.12.0
-version = "0.12.0"
+##### Version: 0.13.0
+version = "0.13.0"
 
 ##### set minimum snakemake version #####
 min_version("6.0")
 
 ##### Sample sheets #####
 
-rawsamples = pd.read_table(config["rawsamples"], header=None, sep='\t')[0].tolist()
-samples = pd.read_table(config["barcodes"], header=None, sep='\t')[1].tolist()
+##### load config and sample sheets #####
+
+samplesheet = pd.read_table(config["samplesheet"]).set_index("rawsample", drop=False)
+rawsamples=list(samplesheet.rawsample)
+samples=list(samplesheet.sample_name)
+lane=list(samplesheet.lane)
 
 workdir: config["project-folder"]
 
 wildcard_constraints:
     rawsamples="|".join(rawsamples),
     samples="|".join(samples)
+
+##### input function definitions ######
+
+def get_lane(wildcards):
+    output = samplesheet.loc[wildcards.rawsamples][["lane"]]
+    return output.tolist()
+
+def get_sample(wildcards):
+    output = samplesheet.loc[wildcards.rawsamples][["sample_name"]]
+    return output.tolist()
+
+def get_raw_input_fastqs(wildcards):
+    reads = samplesheet.loc[wildcards.rawsamples][["read1", "read2"]]
+    path = config["rawdata-folder"]
+    output = [path + x for x in reads]
+    return output
+
+def get_raw_input_read1(wildcards):
+    reads = samplesheet.loc[wildcards.rawsamples][["read1"]]
+    path = config["rawdata-folder"]
+    output = [path + x for x in reads]
+    return output
+
+def get_raw_input_read2(wildcards):
+    reads = samplesheet.loc[wildcards.rawsamples][["read2"]]
+    path = config["rawdata-folder"]
+    output = [path + x for x in reads]
+    return output
+    
+def get_fastq_for_concatenating_read1(wildcards):
+    r1 = samplesheet.loc[samplesheet["sample_name"] == wildcards.samples]["read1"]
+    path = config["rawdata-folder"] + "/"
+    output = [path + x for x in r1]
+    return output   
+
+def get_fastq_for_concatenating_read2(wildcards):
+    r1 = samplesheet.loc[samplesheet["sample_name"] == wildcards.samples]["read2"]
+    path = config["rawdata-folder"] + "/"
+    output = [path + x for x in r1]
+    return output   
 
 ##### Complete the input configuration
 config["genome-bwa-index"] = config["genome"]+".bwt"
@@ -72,10 +116,10 @@ print("##### stringtie : "+config["singularity"]["stringtie"])
 print("#####")
 print("##### Runtime-configurations")
 print("##### --------------------------------")
-print("##### genome         : "+ config["genome"])
-print("##### existing mock  : "+ config["mockreference"])
-print("##### barcodes-file  : "+ config["barcodes"])
-print("##### rawsample file : "+ config["rawsamples"])
+print("##### genome           : "+ config["genome"])
+print("##### existing mock    : "+ config["mockreference"])
+print("##### Sample sheet     : "+ config["samplesheet"])
+print("##### Rawdata folder   : "+ config["rawdata-folder"])
 print("#####")
 print("##### Derived runtime parameters")
 print("##### --------------------------------")
@@ -141,6 +185,12 @@ rule QC:
         "%s/QC/CONCATENATED/multiqc_R1/" % (config["project-folder"]),
         "%s/QC/TRIMMED/multiqc_R1/" % (config["project-folder"]),
 
+rule preparations:
+    input:
+        "%s/chrName.txt" % (config["genome-star-index"]),
+        expand("%s/FASTQ/CONCATENATED/{samples}_R1_001.merged.fastq.gz" % (config["project-folder"]), samples=samples),
+        config["genome-bwa-index"]
+
 rule MockEval:
     input:
         "%s/mockEvalReport.html" % (config["project-folder"])
@@ -162,12 +212,12 @@ report: "report/workflow.rst"
 
 ##### load rules #####
 include: "rules/Module0-PreparationsAndIndexing"
-include: "rules/Module1-QC"
-include: "rules/Module2-DataPreprocessing"
-include: "rules/Module3-MockReference"
-include: "rules/Module4-ReadAlignment"
-include: "rules/Module5-CallVariants"
-include: "rules/Module6-PostProcessing"
-include: "rules/Module7-Reporting"
-include: "rules/Module8-CallNewData"
-include: "rules/Module9-ReferenceGenome"
+#include: "rules/Module1-QC"
+#include: "rules/Module2-DataPreprocessing"
+#include: "rules/Module3-MockReference"
+#include: "rules/Module4-ReadAlignment"
+#include: "rules/Module5-CallVariants"
+#include: "rules/Module6-PostProcessing"
+#include: "rules/Module7-Reporting"
+#include: "rules/Module8-CallNewData"
+#include: "rules/Module9-ReferenceGenome"

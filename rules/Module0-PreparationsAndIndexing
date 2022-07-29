@@ -26,6 +26,9 @@ rule Concatenate_lanes:
     """
     Concatenate the demultiplexed fastq files (BASH).
     """
+    input:
+        R1=get_fastq_for_concatenating_read1,
+        R2=get_fastq_for_concatenating_read2
     output:
         R1=temp("%s/FASTQ/CONCATENATED/{samples}_R1_001.merged.fastq.gz" % (config["project-folder"])),
         R1Report="%s/FASTQ/CONCATENATED/{samples}_R1_001.merged.fastq.gz.report" % (config["project-folder"]),
@@ -37,14 +40,13 @@ rule Concatenate_lanes:
         "%s/benchmark/SHELL/{samples}_concatenate.benchmark.tsv" % (config["project-folder"])
     threads: lambda cores: cpu_count()
     params:
-        infolder="%s/FASTQ/RAW" % (config["project-folder"]),
         outfolder="%s/FASTQ/CONCATENATED" % (config["project-folder"])
     shell:"""
         mkdir -p {params.outfolder}
-        cat {params.infolder}/{wildcards.samples}*_R1_001.fastq.gz > {output.R1} 2> {log}
-        ls {params.infolder}/{wildcards.samples}*_R1_001.fastq.gz > {output.R1Report} 2> {log}
-        cat {params.infolder}/{wildcards.samples}*_R2_001.fastq.gz > {output.R2} 2> {log}
-        ls {params.infolder}/{wildcards.samples}*_R2_001.fastq.gz > {output.R2Report} 2> {log}
+        cat {input.R1} > {output.R1} 2> {log}
+        ls {input.R1} > {output.R1Report} 2> {log}
+        cat {input.R2} > {output.R2} 2> {log}
+        ls {input.R2} > {output.R2Report} 2> {log}
   	"""
 
 if config["genome"] == "":
@@ -187,7 +189,7 @@ else:
     else:
         rule bwa_create_index_existingMock:
             """
-            Index the Reference Genome (BWA).
+            Index the existing mock reference Genome (BWA).
             """
             input:
                 config["mockreference"]

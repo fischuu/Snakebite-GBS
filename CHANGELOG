@@ -4,6 +4,7 @@
 #####                                                                      #####
 ################################################################################
 
+0.14  : * Major change, switching from unhandy rawsamples, samples, barcodes.txt to single, universal sample sheet file
 0.12  : * Stable release after bugfixes and added features
 0.11.5: * Mock reference contig alignemtns against reference genome coverage plot added
 0.11.4: * StringMerge stats removed from the FinalReport and Cleaning scripts adjusted
