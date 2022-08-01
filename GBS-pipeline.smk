@@ -20,7 +20,7 @@ min_version("6.0")
 
 ##### load config and sample sheets #####
 
-samplesheet = pd.read_table(config["samplesheet"]).set_index("rawsample", drop=False)
+samplesheet = pd.read_table(config["samplesheet-file"]).set_index("rawsample", drop=False)
 rawsamples=list(samplesheet.rawsample)
 samples=list(samplesheet.sample_name)
 lane=list(samplesheet.lane)
@@ -74,7 +74,7 @@ def get_fastq_for_concatenating_read2(wildcards):
 ##### Complete the input configuration
 config["genome-bwa-index"] = config["genome"]+".bwt"
 config["mockref-bwa-index"] = config["mockreference"]+".bwt"
-config["genome-star-index"] = config["project-folder"]+"/references/STAR2.7.3a"
+config["genome-star-index"] = config["project-folder"]+"/References/STAR2.7.5a"    # Change here to the path from the reference genome!!!!!!!!!!!!!!!!!!
 config["report-script"] = config["pipeline-folder"]+"/scripts/workflow-report.Rmd"
 config["mockeval-script"] = config["pipeline-folder"]+"/scripts/mockeval-report.Rmd"
 config["refinement-script"] = config["pipeline-folder"]+"/scripts/refineMockReference.R"
@@ -118,7 +118,7 @@ print("##### Runtime-configurations")
 print("##### --------------------------------")
 print("##### genome           : "+ config["genome"])
 print("##### existing mock    : "+ config["mockreference"])
-print("##### Sample sheet     : "+ config["samplesheet"])
+print("##### Sample sheet     : "+ config["samplesheet-file"])
 print("##### Rawdata folder   : "+ config["rawdata-folder"])
 print("#####")
 print("##### Derived runtime parameters")
@@ -202,6 +202,10 @@ rule preprocessing:
         expand("%s/FASTQ/TRIMMED/{samples}.R1.fq.gz" % (config["project-folder"]), samples=samples),
         expand("%s/FASTQ/TRIMMED/{samples}.R2.fq.gz" % (config["project-folder"]), samples=samples),
 
+rule mockreference:
+    input:
+        "%s/FASTQ/TRIMMED/GSC.MR.Genome.fa" % (config["project-folder"])
+
 rule MockEval:
     input:
         "%s/mockEvalReport.html" % (config["project-folder"])
@@ -225,10 +229,10 @@ report: "report/workflow.rst"
 include: "rules/Module0-PreparationsAndIndexing"
 include: "rules/Module1-QC"
 include: "rules/Module2-DataPreprocessing"
-#include: "rules/Module3-MockReference"
-#include: "rules/Module4-ReadAlignment"
-#include: "rules/Module5-CallVariants"
-#include: "rules/Module6-PostProcessing"
-#include: "rules/Module7-Reporting"
-#include: "rules/Module8-CallNewData"
-#include: "rules/Module9-ReferenceGenome"
+include: "rules/Module3-MockReference"
+include: "rules/Module4-ReadAlignment"
+include: "rules/Module5-CallVariants"
+include: "rules/Module6-PostProcessing"
+include: "rules/Module7-Reporting"
+include: "rules/Module8-CallNewData"
+include: "rules/Module9-ReferenceGenome"

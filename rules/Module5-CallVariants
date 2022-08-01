@@ -73,7 +73,7 @@ rule create_verticalRef:
         "%s/benchmark/BASH/create_verticalRef.benchmark.tsv" % (config["project-folder"])
     params:
         wd="%s/FASTQ/TRIMMED" % config["project-folder"],
-        barcodes=config["barcodes"],
+        barcodes=config["samplesheet-file"],
         countfolder="%s/FASTQ/TRIMMED" % (config["project-folder"]),
         pipefolder=config["pipeline-folder"]
     threads: 1
@@ -96,7 +96,7 @@ else:
         input:
             co=expand("%s/MPILEUP/mpileup_reference/{samples}.count.txt" % (config["project-folder"]), samples=samples),
             ref=expand("%s/MPILEUP/mpileup_reference/{samples}.ref.txt" % (config["project-folder"]), samples=samples),
-            bar=config["barcodes"]
+            bar=config["samplesheet-file"]
         output:
            vref="%s/MPILEUP/mpileup_reference/VerticalRefPos.txt" % (config["project-folder"]),
            co="%s/MPILEUP/mpileup_reference/CountFileList.txt" % (config["project-folder"])
@@ -367,7 +367,7 @@ rule CreateVCF:
     output:
         "%s/FASTQ/TRIMMED/GSC.vcf" % (config["project-folder"])
     params:
-        barcodes=config["barcodes"],
+        barcodes=config["samplesheet-file"],
         genoMatrix=config["params"]["step8"]["genoMatrix"],
         out=config["params"]["step8"]["out"],
         unfilteredOut=config["params"]["step8"]["unfiltered"],
@@ -406,7 +406,7 @@ else:
         output:
             "%s/VCF/FinalSetVariants_referenceGenome.vcf" % (config["project-folder"])
         params:
-            barcodes=config["barcodes"],
+            barcodes=config["samplesheet-file"],
             genoMatrix=config["params"]["step8"]["genoMatrix"],
             out=config["params"]["step8"]["out"],
             unfilteredOut=config["params"]["step8"]["unfiltered"],
@@ -480,7 +480,7 @@ rule create_verticalRef_finalMock:
         "%s/benchmark/BASH/create_verticalRef_finalMock.benchmark.tsv" % (config["project-folder"])
     params:
         wd="%s/MPILEUP/mpileup_finalMock" % config["project-folder"],
-        barcodes=config["barcodes"],
+        barcodes=config["samplesheet-file"],
         countfolder="%s/MPILEUP/mpileup_finalMock" % (config["project-folder"]),
         pipefolder=config["pipeline-folder"]
     threads: 1
@@ -609,7 +609,7 @@ rule CreateVCF_finalMock:
     output:
         "%s/VCF/FinalSetVariants_finalMock.vcf" % (config["project-folder"]),
     params:
-        barcodes=config["barcodes"],
+        barcodes=config["samplesheet-file"],
         genoMatrix=config["params"]["step8"]["genoMatrix"],
         out=config["params"]["step8"]["out"],
         unfilteredOut=config["params"]["step8"]["unfiltered"],

@@ -10,7 +10,7 @@ rule CreateClusterAndMockReference:
     params:
         libtype=config["libtype"],
         libname=config["libname"],
-        barcodes=config["barcodes"],
+        barcodes=config["samplesheet-file"],
         pear=config["params"]["step4"]["pear"],
         vsearch=config["params"]["step4"]["vsearch"],
         cl=config["params"]["step4"]["cl"],
