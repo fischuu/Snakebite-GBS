@@ -22,7 +22,7 @@ min_version("6.0")
 
 samplesheet = pd.read_table(config["samplesheet-file"]).set_index("rawsample", drop=False)
 rawsamples=list(samplesheet.rawsample)
-samples=list(samplesheet.sample_name)
+samples=list(set(list(samplesheet.sample_name)))
 lane=list(samplesheet.lane)
 
 workdir: config["project-folder"]
@@ -75,10 +75,12 @@ def get_fastq_for_concatenating_read2(wildcards):
 config["genome-bwa-index"] = config["genome"]+".bwt"
 config["mockref-bwa-index"] = config["mockreference"]+".bwt"
 config["genome-star-index"] = config["project-folder"]+"/References/STAR2.7.5a"    # Change here to the path from the reference genome!!!!!!!!!!!!!!!!!!
+config["barcodes-script"] = config["pipeline-folder"]+"/scripts/prepareBarcodes.R"
 config["report-script"] = config["pipeline-folder"]+"/scripts/workflow-report.Rmd"
 config["mockeval-script"] = config["pipeline-folder"]+"/scripts/mockeval-report.Rmd"
 config["refinement-script"] = config["pipeline-folder"]+"/scripts/refineMockReference.R"
 config["adapter"]=config["pipeline-folder"]+"/adapter.fa"
+config["barcodes-file"] = config["project-folder"]+"/barcodesID.txt"
 
 ##### Singularity container #####
 config["singularity"] = {}
@@ -185,7 +187,7 @@ rule preparations:
         "%s/chrName.txt" % (config["genome-star-index"]),
         expand("%s/FASTQ/CONCATENATED/{samples}_R1_001.merged.fastq.gz" % (config["project-folder"]), samples=samples),
         expand("%s/FASTQ/CONCATENATED/{samples}_R2_001.merged.fastq.gz" % (config["project-folder"]), samples=samples),
-        config["genome-bwa-index"]
+        config["barcodes-file"]
 
 rule QC:
     input:

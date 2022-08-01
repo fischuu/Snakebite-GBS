@@ -196,3 +196,29 @@ else:
                     bwa index -a bwtsw {input} 2> {log}
                     samtools faidx {input} 2> {log}
           	"""
+          	
+# vim: set filetype=sh :
+
+rule R_createBarcodesID_file:
+    """
+    Create the file barcodesID.txt (R).
+    """
+    input:
+        script=config["barcodes-script"],
+        samplesheet=config["samplesheet-file"]
+    output:
+        config["barcodes-file"]
+    log:
+        "%s/logs/R/prepareBarcodes.log" % (config["project-folder"])
+    benchmark:
+        "%s/benchmark/R/prepareBarcodes.benchmark.tsv" % (config["project-folder"])
+    singularity:
+        config["singularity"]["r-gbs"]
+    params:
+       projFolder=config["project-folder"],
+       pipeFolder=config["pipeline-folder"],
+       pipeConfig=config["pipeline-config"],
+       refGenome=config["genome"]
+    shell:"""
+       Rscript {input.script} {input.samplesheet} {output} &> {log}
+    """

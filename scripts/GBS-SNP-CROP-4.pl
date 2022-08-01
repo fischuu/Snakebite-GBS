@@ -96,7 +96,7 @@ while ( <$BAR> ) {
 	my @barcode = split("\t", $barcodeID);
 	my $barcode_list = $barcode[0];
 	my $TaxaNames = $barcode[1];
-	my $MR_geno = $barcode[5];
+	my $MR_geno = $barcode[2];
 
 	if (index($MR_geno, "YES") != -1) {
 		push @MR_taxa_files, $TaxaNames;
