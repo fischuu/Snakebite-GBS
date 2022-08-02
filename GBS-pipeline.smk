@@ -197,16 +197,21 @@ rule QC:
         expand("%s/QC/RAW/{rawsamples}_R1_qualdist.txt" % (config["project-folder"]), rawsamples=rawsamples),
         expand("%s/QC/RAW/{rawsamples}_R2_qualdist.txt" % (config["project-folder"]), rawsamples=rawsamples),
         expand("%s/QC/CONCATENATED/{samples}_R1_qualdist.txt" % (config["project-folder"]), samples=samples),
-        expand("%s/QC/CONCATENATED/{samples}_R2_qualdist.txt" % (config["project-folder"]), samples=samples)
+        expand("%s/QC/CONCATENATED/{samples}_R2_qualdist.txt" % (config["project-folder"]), samples=samples),
+        expand("%s/QC/TRIMMED/{samples}_R1_qualdist.txt" % (config["project-folder"]), samples=samples),
+        expand("%s/QC/TRIMMED/{samples}_R2_qualdist.txt" % (config["project-folder"]), samples=samples)
 
 rule preprocessing:
     input:
         expand("%s/FASTQ/TRIMMED/{samples}.R1.fq.gz" % (config["project-folder"]), samples=samples),
         expand("%s/FASTQ/TRIMMED/{samples}.R2.fq.gz" % (config["project-folder"]), samples=samples),
+        expand("%s/FASTQ/SUBSTITUTED/{samples}.R1.fq.gz" % (config["project-folder"]), samples=samples),
+        expand("%s/FASTQ/SUBSTITUTED/{samples}.R2.fq.gz" % (config["project-folder"]), samples=samples),
 
 rule mockreference:
     input:
-        "%s/FASTQ/TRIMMED/GSC.MR.Genome.fa" % (config["project-folder"])
+        "%s/FASTQ/TRIMMED/GSC.MR.Genome.fa" % (config["project-folder"]),
+        "%s/FASTQ/TRIMMED/GSC.MR.Clusters.fa" % (config["project-folder"])
 
 rule MockEval:
     input:
