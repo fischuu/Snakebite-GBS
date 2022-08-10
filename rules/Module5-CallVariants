@@ -63,7 +63,8 @@ rule create_verticalRef:
     """
     input:
         co=expand("%s/FASTQ/TRIMMED/{samples}.count.txt" % (config["project-folder"]), samples=samples),
-        ref=expand("%s/FASTQ/TRIMMED/{samples}.ref.txt" % (config["project-folder"]), samples=samples)
+        ref=expand("%s/FASTQ/TRIMMED/{samples}.ref.txt" % (config["project-folder"]), samples=samples),
+        barcodes=config["barcodes-file"]
     output:
        vref="%s/FASTQ/TRIMMED/VerticalRefPos.txt" % (config["project-folder"]),
        co="%s/FASTQ/TRIMMED/CountFileList.txt" % (config["project-folder"])
@@ -73,7 +74,6 @@ rule create_verticalRef:
         "%s/benchmark/BASH/create_verticalRef.benchmark.tsv" % (config["project-folder"])
     params:
         wd="%s/FASTQ/TRIMMED" % config["project-folder"],
-        barcodes=config["barcodes-file"],
         countfolder="%s/FASTQ/TRIMMED" % (config["project-folder"]),
         pipefolder=config["pipeline-folder"]
     threads: 1
@@ -83,7 +83,7 @@ rule create_verticalRef:
         #ls {params.wd}/*count.txt | xargs -n1 basename > {output.co}
         #ls {params.wd}/*count.txt > {output.co}
         
-        {params.pipefolder}/scripts/getCountFileList.sh {params.barcodes} {params.countfolder} > {output.co}
+        {params.pipefolder}/scripts/getCountFileList.sh {input.barcodes} {params.countfolder} > {output.co}
     """
     
 if config["genome"] == "":
@@ -95,7 +95,8 @@ else:
         """
         input:
             co=expand("%s/MPILEUP/mpileup_reference/{samples}.count.txt" % (config["project-folder"]), samples=samples),
-            ref=expand("%s/MPILEUP/mpileup_reference/{samples}.ref.txt" % (config["project-folder"]), samples=samples)
+            ref=expand("%s/MPILEUP/mpileup_reference/{samples}.ref.txt" % (config["project-folder"]), samples=samples),
+            barcodes=config["barcodes-file"]
         output:
            vref="%s/MPILEUP/mpileup_reference/VerticalRefPos.txt" % (config["project-folder"]),
            co="%s/MPILEUP/mpileup_reference/CountFileList.txt" % (config["project-folder"])
@@ -105,7 +106,6 @@ else:
             "%s/benchmark/BASH/create_verticalRef_reference.benchmark.tsv" % (config["project-folder"])
         params:
             wd="%s/MPILEUP/mpileup_reference" % config["project-folder"],
-            barcodes=config["barcodes-file"],
             countfolder="%s/MPILEUP/mpileup_reference" % (config["project-folder"]),
             pipefolder=config["pipeline-folder"]
         threads: 1
@@ -115,7 +115,7 @@ else:
            # DO not do it that way, it is the wrong order!!!!
            # ls {params.wd}/*count.txt | xargs -n1 basename > {output.co}
            # ls {params.wd}/*count.txt > {output.co}
-            {params.pipefolder}/scripts/getCountFileList.sh {params.barcodes} {params.countfolder} > {output.co}
+            {params.pipefolder}/scripts/getCountFileList.sh {input.barcodes} {params.countfolder} > {output.co}
         """
     
 # Create the checkpoints to break out into parallel job
@@ -363,11 +363,11 @@ rule CreateVCF:
     """
     input:
         filtered="%s/FASTQ/TRIMMED/variants/GSC.GenoMatrix.txt" % (config["project-folder"]),
-        unfiltered="%s/FASTQ/TRIMMED/variants/GSC.GenoMatrix.unfiltered.txt" % (config["project-folder"])
+        unfiltered="%s/FASTQ/TRIMMED/variants/GSC.GenoMatrix.unfiltered.txt" % (config["project-folder"]),
+        barcodes=config["barcodes-file"]
     output:
         "%s/FASTQ/TRIMMED/GSC.vcf" % (config["project-folder"])
     params:
-        barcodes=config["barcodes-file"],
         genoMatrix=config["params"]["step8"]["genoMatrix"],
         out=config["params"]["step8"]["out"],
         unfilteredOut=config["params"]["step8"]["unfiltered"],
@@ -388,8 +388,8 @@ rule CreateVCF:
         # -formats 	The name(s) (R, Tassel, Plink, vcf, H) for which the GBS-SNP-CROP final genotyping matrix should be converted. If more than one format is desired, the names should be separated by commas without any space, as in the examples shown below 	String 	R,T,P,V,H
 
         cd {params.wd}
-        perl {params.pipefolder}/scripts/GBS-SNP-CROP-8.pl -in {input.filtered} -out {params.out} -b {params.barcodes} -formats {params.format} &> {log}
-        perl {params.pipefolder}/scripts/GBS-SNP-CROP-8.pl -in {input.unfiltered} -out {params.unfilteredOut} -b {params.barcodes} -formats {params.format} &> {log}
+        perl {params.pipefolder}/scripts/GBS-SNP-CROP-8.pl -in {input.filtered} -out {params.out} -b {input.barcodes} -formats {params.format} &> {log}
+        perl {params.pipefolder}/scripts/GBS-SNP-CROP-8.pl -in {input.unfiltered} -out {params.unfilteredOut} -b {input.barcodes} -formats {params.format} &> {log}
         cd ../..
   	"""
 
@@ -402,11 +402,11 @@ else:
         """
         input:
             filtered="%s/MPILEUP/mpileup_reference/variants/GSC.GenoMatrix.txt" % (config["project-folder"]),
-            unfiltered="%s/MPILEUP/mpileup_reference/variants/GSC.GenoMatrix.unfiltered.txt" % (config["project-folder"])
+            unfiltered="%s/MPILEUP/mpileup_reference/variants/GSC.GenoMatrix.unfiltered.txt" % (config["project-folder"]),
+            barcodes=config["barcodes-file"]
         output:
             "%s/VCF/FinalSetVariants_referenceGenome.vcf" % (config["project-folder"])
         params:
-            barcodes=config["barcodes-file"],
             genoMatrix=config["params"]["step8"]["genoMatrix"],
             out=config["params"]["step8"]["out"],
             unfilteredOut=config["params"]["step8"]["unfiltered"],
@@ -429,8 +429,8 @@ else:
             # -formats 	The name(s) (R, Tassel, Plink, vcf, H) for which the GBS-SNP-CROP final genotyping matrix should be converted. If more than one format is desired, the names should be separated by commas without any space, as in the examples shown below 	String 	R,T,P,V,H
     
             cd {params.wd}
-            perl {params.pipefolder}/scripts/GBS-SNP-CROP-8.pl -in {input.filtered} -out {params.out} -b {params.barcodes} -formats {params.format} &> {log}
-            perl {params.pipefolder}/scripts/GBS-SNP-CROP-8.pl -in {input.unfiltered} -out {params.unfilteredOut} -b {params.barcodes} -formats {params.format} &> {log}
+            perl {params.pipefolder}/scripts/GBS-SNP-CROP-8.pl -in {input.filtered} -out {params.out} -b {input.barcodes} -formats {params.format} &> {log}
+            perl {params.pipefolder}/scripts/GBS-SNP-CROP-8.pl -in {input.unfiltered} -out {params.unfilteredOut} -b {input.barcodes} -formats {params.format} &> {log}
             cp {params.pipeout} {output}
             cd ../..
       	"""
@@ -470,7 +470,8 @@ rule create_verticalRef_finalMock:
     """
     input:
         co=expand("%s/MPILEUP/mpileup_finalMock/{samples}.count.txt" % (config["project-folder"]), samples=samples),
-        ref=expand("%s/MPILEUP/mpileup_finalMock/{samples}.ref.txt" % (config["project-folder"]), samples=samples)
+        ref=expand("%s/MPILEUP/mpileup_finalMock/{samples}.ref.txt" % (config["project-folder"]), samples=samples),
+        barcodes=config["barcodes-file"]
     output:
        vref="%s/MPILEUP/mpileup_finalMock/VerticalRefPos.txt" % (config["project-folder"]),
        co="%s/MPILEUP/mpileup_finalMock/CountFileList.txt" % (config["project-folder"])
@@ -480,7 +481,6 @@ rule create_verticalRef_finalMock:
         "%s/benchmark/BASH/create_verticalRef_finalMock.benchmark.tsv" % (config["project-folder"])
     params:
         wd="%s/MPILEUP/mpileup_finalMock" % config["project-folder"],
-        barcodes=config["barcodes-file"],
         countfolder="%s/MPILEUP/mpileup_finalMock" % (config["project-folder"]),
         pipefolder=config["pipeline-folder"]
     threads: 1
@@ -490,7 +490,7 @@ rule create_verticalRef_finalMock:
         #ls {params.wd}/*count.txt | xargs -n1 basename > {output.co}
         #ls {params.wd}/*count.txt > {output.co}
         
-        {params.pipefolder}/scripts/getCountFileList.sh {params.barcodes} {params.countfolder} > {output.co}
+        {params.pipefolder}/scripts/getCountFileList.sh {input.barcodes} {params.countfolder} > {output.co}
     """
 
 checkpoint cut_verticalRef_finalMock:
@@ -605,11 +605,11 @@ rule CreateVCF_finalMock:
     """
     input:
         filtered="%s/MPILEUP/mpileup_finalMock/variants/GSC.GenoMatrix.txt" % (config["project-folder"]),
-        unfiltered="%s/MPILEUP/mpileup_finalMock/variants/GSC.GenoMatrix.unfiltered.txt" % (config["project-folder"])
+        unfiltered="%s/MPILEUP/mpileup_finalMock/variants/GSC.GenoMatrix.unfiltered.txt" % (config["project-folder"]),
+        barcodes=config["barcodes-file"]
     output:
         "%s/VCF/FinalSetVariants_finalMock.vcf" % (config["project-folder"]),
     params:
-        barcodes=config["barcodes-file"],
         genoMatrix=config["params"]["step8"]["genoMatrix"],
         out=config["params"]["step8"]["out"],
         unfilteredOut=config["params"]["step8"]["unfiltered"],
@@ -633,8 +633,8 @@ rule CreateVCF_finalMock:
      
         mkdir -p {params.outdir}
         cd {params.wd}
-        perl {params.pipefolder}/scripts/GBS-SNP-CROP-8.pl -in {input.filtered} -out {params.out} -b {params.barcodes} -formats {params.format} &> {log}
-        perl {params.pipefolder}/scripts/GBS-SNP-CROP-8.pl -in {input.unfiltered} -out {params.unfilteredOut} -b {params.barcodes} -formats {params.format} &> {log}
+        perl {params.pipefolder}/scripts/GBS-SNP-CROP-8.pl -in {input.filtered} -out {params.out} -b {input.barcodes} -formats {params.format} &> {log}
+        perl {params.pipefolder}/scripts/GBS-SNP-CROP-8.pl -in {input.unfiltered} -out {params.unfilteredOut} -b {input.barcodes} -formats {params.format} &> {log}
         
         cp {params.pipeout} {output}
         cd ../..

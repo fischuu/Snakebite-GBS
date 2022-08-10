@@ -10,8 +10,8 @@ import os
 ##### Natural Resources Institute Finland (Luke)
 ##### This pipeline is build upon the the GBS-SNP-CROP pipeline:
 ##### https://github.com/halelab/GBS-SNP-CROP
-##### Version: 0.13.0
-version = "0.13.0"
+##### Version: 0.15.2
+version = "0.15.2"
 
 ##### set minimum snakemake version #####
 min_version("6.0")
@@ -89,7 +89,7 @@ config["singularity"]["gbs"] = "docker://fischuu/gbs:0.2"
 config["singularity"]["cutadapt"] = "docker://fischuu/cutadapt:2.8-0.3"
 config["singularity"]["minimap2"] = "docker://fischuu/minimap2:2.17-0.2"
 config["singularity"]["samtools"] = "docker://fischuu/samtools:1.9-0.2"
-config["singularity"]["r-gbs"] = "docker://fischuu/r-gbs:3.6.3-0.2"
+config["singularity"]["r-gbs"] = "docker://fischuu/r-gbs:4.2.1-0.4"
 config["singularity"]["stringtie"] = "docker://fischuu/stringtie:2.2.1-0.1"
 config["singularity"]["subread"] = "docker://fischuu/subread:2.0.1-0.1"
 

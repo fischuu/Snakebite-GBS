@@ -4,6 +4,8 @@
 #####                                                                      #####
 ################################################################################
 
+0.15.2: * Added the barcodes file as a dependency for rules that need it, otherwise the pipeline ran into a missing file error.
+0.15.1: * Changed the r-gbs standard container to version 4.2.1-0.2
 0.14  : * Major change, switching from unhandy rawsamples, samples, barcodes.txt to single, universal sample sheet file
 0.12  : * Stable release after bugfixes and added features
 0.11.5: * Mock reference contig alignemtns against reference genome coverage plot added

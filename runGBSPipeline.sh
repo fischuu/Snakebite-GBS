@@ -3,6 +3,9 @@ projectFolder="/scratch/project_2001746/TestProject"
 
 module load bioconda/3
 
+export SINGULARITY_TMPDIR="/scratch/project/tmp"
+export SINGULARITY_CACHEDIR="/scratch/project/tmp"
+
 # Create the rulegraph
 snakemake -s $pipelineFolder/GBS-pipeline.smk \
           --configfile $projectFolder/GBS-pipeline_config.yaml \

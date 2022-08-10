@@ -7,7 +7,8 @@ project-folder: "/scratch/project_2001746/TestProject"                          
 pipeline-folder: "/users/fischerd/git/Pipeline-GBS"                                                                 # Absolute path to the pipeline folder
 pipeline-config: "/scratch/project_2001746/TestProject/GBS-pipeline_config.yaml"                                    # Absolute path to the pipeline configuration file
 rawdata-folder: "/scratch/project_2001746/TestProject/FASTQ/RAW"                                                    # Absolute path to the folder that contain the raw fastq files
-samplesheet-file: "/scratch/project_2001746/TestProject/samplesheet.tsv"                                                 # Absolute path to the raw samples file (MAKE THIS OPTIONAL)
+samplesheet-file: "/scratch/project_2001746/TestProject/samplesheet.tsv"                                            # Absolute path to the samplesheet (MAKE THIS OPTIONAL)
+sampleinfo-file: "/scratch/project_2001746/TestProject/sampleinfo.tsv"                                             # Absolute path to the sample info (MAKE THIS OPTIONAL)
 genome: "/scratch/project_2001746/TestProject/References/Vulpes_vulpes.VulVul2.2.dna.toplevel.fa"                   # Absolute path to an existing reference genome, leave empty "" if not available
 mockreference: ""                                                                                                   # Use an existing mock reference for variant calling
 existingvariants: ""                                                                                                # A vcf file with existing variants

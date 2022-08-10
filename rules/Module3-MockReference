@@ -3,14 +3,14 @@ rule CreateClusterAndMockReference:
     Cluster reads and assemble the Mock Reference.
     """
     input:
-        expand("%s/FASTQ/TRIMMED/{samples}.R1.fq.gz" % (config["project-folder"]), samples=samples)
+        expand("%s/FASTQ/TRIMMED/{samples}.R1.fq.gz" % (config["project-folder"]), samples=samples),
+        barcodes=config["barcodes-file"]
     output:
         Genome="%s/FASTQ/TRIMMED/GSC.MR.Genome.fa" % (config["project-folder"]),
         Clusters="%s/FASTQ/TRIMMED/GSC.MR.Clusters.fa" % (config["project-folder"])
     params:
         libtype=config["libtype"],
         libname=config["libname"],
-        barcodes=config["barcodes-file"],
         pear=config["params"]["step4"]["pear"],
         vsearch=config["params"]["step4"]["vsearch"],
         cl=config["params"]["step4"]["cl"],
@@ -43,7 +43,7 @@ rule CreateClusterAndMockReference:
 	      # MR: Mock Reference name. String. Default: GSC.MockRef
         
         cd {params.wd}
-        perl {params.pipefolder}/scripts/GBS-SNP-CROP-4.pl -pr {params.pear} -vs {params.vsearch} -d {params.libtype} -b {params.barcodes} -t {params.threads} -cl {params.cl} -rl {params.rl} -pl {params.pl} -p {params.p} -id {params.id}  -min {params.min} -MR {params.MR} &> {log}
+        perl {params.pipefolder}/scripts/GBS-SNP-CROP-4.pl -pr {params.pear} -vs {params.vsearch} -d {params.libtype} -b {input.barcodes} -t {params.threads} -cl {params.cl} -rl {params.rl} -pl {params.pl} -p {params.p} -id {params.id}  -min {params.min} -MR {params.MR} &> {log}
   	"""
 
 if config["genome"] == "":
