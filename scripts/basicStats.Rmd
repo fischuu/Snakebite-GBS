@@ -1,0 +1,86 @@
+# Basic stats
+
+```{r get pipeline version}
+pipeSMK <- readLines(file.path(pipelineFolder,"GBS-pipeline.smk"))
+pipeVersion <- gsub("##### Version: ","",pipeSMK[grep("##### Version:", pipeSMK)])
+```
+
+```{r import barcodesID, results="asis"}
+#barcodes <- read.table(file.path(projFolder, "barcodesID.txt"))
+#rawsamples <- read.table(file.path(projFolder, "rawsamples"))
+#sampleInfo <- read.table(file.path(projFolder, "sampleInfo.txt"), header=TRUE)
+pipelineConfig <- readLines(pipelineConfig.file)
+
+sampleSheet.file <- getConfigField("samplesheet-file")
+sampleSheet <- read.table(sampleSheet.file, sep="\t", header=TRUE)
+
+sampleInfo.file <- getConfigField("sampleinfo-file")
+sampleInfo <- NULL
+
+if(length(sampleInfo.file)>0 ) sampleInfo <- read.table(sampleInfo.file, sep="\t", header=TRUE)
+
+#projectFolder.info <- trimws(gsub("project-folder:","", pipelineConfig[grep("project-folder:", pipelineConfig)]))
+#pipelineFolder.info <- trimws(gsub("pipeline-folder:","", pipelineConfig[grep("pipeline-folder:", pipelineConfig)]))
+#pipelineConfig.info <- trimws(gsub("pipeline-config:","", pipelineConfig[grep("pipeline-config:", pipelineConfig)]))
+
+projectFolder.info <- getConfigField("project-folder")
+pipelineFolder.info <- getConfigField("pipeline-folder")
+pipelineConfig.info <- pipelineConfig.file
+
+groupingNames <- "No file with sample information provided ('sampleinfo-file'-field)!"
+numberGroupingNames <- 0
+if(!is.null(sampleInfo)){
+  groupingNames <- colnames(sampleInfo[,-1])
+  numberGroupingNames <- length(groupingNames)
+} 
+
+mockSamples <- unique(sampleSheet$sample_name[sampleSheet$useForMock=="YES"])
+
+out <- data.frame(c("Number of raw-samples",
+                    "Number of samples (after concatenating)",
+                    "No. of grouping information",
+                    "Grouping names",
+                    "No. of mock reference samples",
+                    "Samples used for mock reference",
+                    "Used reference genome",
+                    "Pipeline version",
+                    "Project folder",
+                    "Pipeline folder",
+                    "Pipeline config"),
+                  c(length(unique(sampleSheet$rawsample)),
+                    length(unique(sampleSheet$sample_name)),
+                    numberGroupingNames,
+                    groupingNames,
+                    length(mockSamples),
+                    paste(mockSamples,collapse=", "),
+                    basename(refGenome.file),
+                    pipeVersion,
+                    projectFolder.info,
+                    pipelineFolder.info,
+                    pipelineConfig.info))
+
+out_html <- knitr::kable(out, col.names = NULL, "html")
+kable_styling(out_html, "striped", position = "left")
+```
+
+## Concatenating stats
+As the concatenating is a crucial step in this pipeline, it is important to make this correct. As a double check that things went right, we check how
+many raw samples were concatenated per sample. We do this visually. Basically, the height of the bars should correspond to your number of used lanes,
+normally 1,2 or 4. Sometimes, you might want to concatenate also more files together (e.g. technical replicates), in this case the bar can be also higher.
+
+```{r import the conc report files}
+conc.reports.files <- list.files(file.path(projFolder, "FASTQ", "CONCATENATED"), pattern="*.report")
+
+conc.reports <- list()
+conc.reports[[1]] <- read.table(file.path(projFolder, "FASTQ", "CONCATENATED", conc.reports.files[1]))
+
+for(i in 2:length(conc.reports.files)){
+  conc.reports[[i]]<- read.table(file.path(projFolder, "FASTQ", "CONCATENATED", conc.reports.files[i]))
+}
+```
+
+```{r visualize concatenation reports}
+par(oma=c(6,5,0,0))
+labels <- gsub(".merged.fastq.gz.report","",conc.reports.files)
+barplot(sapply(conc.reports,nrow), ylab="Concatenated files", names=labels, las=2, col=report.colours[1])
+```

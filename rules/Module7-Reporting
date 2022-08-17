@@ -45,6 +45,40 @@ rule R_finalReport:
              snakemake <- TRUE;\
              rmarkdown::render('{input.script}',output_file='{output}')" &> {log}
     """
+    
+rule R_QCReport:
+    """
+    Create the final report (R).
+    """
+    input:
+        script=config["qc-script"],
+        mqcraw="%s/QC/RAW/multiqc_R1/" % (config["project-folder"]),
+        mqcconcatenated="%s/QC/CONCATENATED/multiqc_R1/" % (config["project-folder"]),
+        mqctrimmed="%s/QC/TRIMMED/multiqc_R1/" % (config["project-folder"]),
+        qdRaw=expand("%s/QC/RAW/{rawsamples}_R1_qualdist.txt" % (config["project-folder"]), rawsamples=rawsamples),
+        qdConc=expand("%s/QC/CONCATENATED/{samples}_R1_qualdist.txt" % (config["project-folder"]), samples=samples),
+        qdTrimmed=expand("%s/QC/TRIMMED/{samples}_R1_qualdist.txt" % (config["project-folder"]), samples=samples),
+    output:
+        "%s/QC-Report.html" % (config["project-folder"])
+    log:
+        "%s/logs/R/QC-Report.log" % (config["project-folder"])
+    benchmark:
+        "%s/benchmark/R/QC-Report.benchmark.tsv" % (config["project-folder"])
+    singularity:
+        config["singularity"]["r-gbs"]
+    params:
+       projFolder=config["project-folder"],
+       pipeFolder=config["pipeline-folder"],
+       pipeConfig=config["pipeline-config"],
+       refGenome=config["genome"]
+    shell:"""
+       R -e "projFolder <- '{params.projFolder}'; \
+             pipelineFolder <- '{params.pipeFolder}'; \
+             refGenome.file <- '{params.refGenome}'; \
+             pipelineConfig.file <- '{params.pipeConfig}'; \
+             snakemake <- TRUE;\
+             source('{input.script}')" &> {log}
+    """
 
 rule R_MockEval:
     """

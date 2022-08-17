@@ -10,8 +10,8 @@ import os
 ##### Natural Resources Institute Finland (Luke)
 ##### This pipeline is build upon the the GBS-SNP-CROP pipeline:
 ##### https://github.com/halelab/GBS-SNP-CROP
-##### Version: 0.15.2
-version = "0.15.2"
+##### Version: 0.15.3
+version = "0.15.3"
 
 ##### set minimum snakemake version #####
 min_version("6.0")
@@ -77,6 +77,7 @@ config["mockref-bwa-index"] = config["mockreference"]+".bwt"
 config["genome-star-index"] = config["project-folder"]+"/References/STAR2.7.5a"    # Change here to the path from the reference genome!!!!!!!!!!!!!!!!!!
 config["barcodes-script"] = config["pipeline-folder"]+"/scripts/prepareBarcodes.R"
 config["report-script"] = config["pipeline-folder"]+"/scripts/workflow-report.Rmd"
+config["qc-script"] = config["pipeline-folder"]+"/scripts/QC-report.R"
 config["mockeval-script"] = config["pipeline-folder"]+"/scripts/mockeval-report.Rmd"
 config["refinement-script"] = config["pipeline-folder"]+"/scripts/refineMockReference.R"
 config["adapter"]=config["pipeline-folder"]+"/adapter.fa"
@@ -199,7 +200,8 @@ rule QC:
         expand("%s/QC/CONCATENATED/{samples}_R1_qualdist.txt" % (config["project-folder"]), samples=samples),
         expand("%s/QC/CONCATENATED/{samples}_R2_qualdist.txt" % (config["project-folder"]), samples=samples),
         expand("%s/QC/TRIMMED/{samples}_R1_qualdist.txt" % (config["project-folder"]), samples=samples),
-        expand("%s/QC/TRIMMED/{samples}_R2_qualdist.txt" % (config["project-folder"]), samples=samples)
+        expand("%s/QC/TRIMMED/{samples}_R2_qualdist.txt" % (config["project-folder"]), samples=samples),
+        "%s/QC-Report.html" % (config["project-folder"])
 
 rule preprocessing:
     input:
