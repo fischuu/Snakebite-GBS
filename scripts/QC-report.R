@@ -6,6 +6,7 @@ if(!is.element("snakemake",ls())){
 }
 
 createRMD.command <- paste0("cat ",pipelineFolder,"scripts/QC-header.Rmd ",
+                                   pipelineFolder,"scripts/helpFunctions.Rmd ",
                                    pipelineFolder,"scripts/generalWorkflow.Rmd ",
                                    pipelineFolder,"scripts/basicStats.Rmd ",
                                    pipelineFolder,"scripts/QC.Rmd ",

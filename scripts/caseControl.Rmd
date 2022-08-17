@@ -1,0 +1,84 @@
+# Case/Control Analysis
+In case there is a casecontrol column in the file sampleInfo.txt we perform a search for causative mutations.
+
+First, we identify possible candidate loci. For that, we create two sets of candidate loci, homozygeous reference and
+homozygeous alternative. Hereby, we ignore the missing genotypes as well as accepting two wrong genotype across all
+cases.
+
+Then, we check if for those particular loci the controls do not have this particular homozygeous genotype (besides five
+accepted mistakes).
+
+```{r}
+if(!is.null(sampleInfo)){
+  if(is.element(colnames(sampleInfo), "casecontrol")){
+    if(ncol(sampleInfo)>1){
+      mmCase <- 2
+      mmControl <- 5
+      vcf.cases <- vcf$genotypes[sampleInfo$casecontrol=="case",]
+      vcf.control <- vcf$genotypes[sampleInfo$casecontrol=="control",]
+      
+      vcf.cases.table <- apply(vcf.cases,2,table)
+      vcf.control.table <- apply(vcf.control,2,table)
+      
+      nCases <- nrow(vcf.cases)
+      nControl <- nrow(vcf.control)
+      
+      candidateLociRef <- c()
+      candidateLociAlt <- c()
+      for(i in 1:length(vcf.cases.table)){
+        tmp <- vcf.cases.table[[i]]
+        homRef <- tmp[names(tmp)=="00"] + tmp[names(tmp)=="03"]
+        homAlt <- tmp[names(tmp)=="02"] + tmp[names(tmp)=="03"]
+        if(length(homRef)==0) homRef <- 0
+        if(length(homAlt)==0) homAlt <- 0
+        if(homRef>=(nCases - mmCase)) candidateLociRef <- c(candidateLociRef, names(vcf.cases.table)[i])
+        if(homAlt>=(nCases - mmCase)) candidateLociAlt <- c(candidateLociAlt, names(vcf.cases.table)[i])
+      }
+      
+      causativeRef <- c()
+      causativeAlt <- c()
+      for(i in 1:length(candidateLociRef)){
+        tmp <- vcf.control.table[[which(names(vcf.control.table)==candidateLociRef[i])]]
+        homRef <- tmp[names(tmp)=="00"] + tmp[names(tmp)=="03"]
+        homAlt <- tmp[names(tmp)=="02"] + tmp[names(tmp)=="03"]
+        if(length(homRef)==0) homRef <- 0
+        if(length(homAlt)==0) homAlt <- 0
+      #  if(homRef>=(nControl - 1)) causativeRef <- c(causativeRef, names(vcf.control.table)[i])
+        if(homAlt>=(nControl - mmControl)) causativeRef <- c(causativeRef, names(vcf.control.table)[i])
+      }
+      
+      for(i in 1:length(candidateLociAlt)){
+        tmp <- vcf.control.table[[which(names(vcf.control.table)==candidateLociAlt[i])]]
+        homRef <- tmp[names(tmp)=="00"] + tmp[names(tmp)=="03"]
+        homAlt <- tmp[names(tmp)=="02"] + tmp[names(tmp)=="03"]
+        if(length(homRef)==0) homRef <- 0
+        if(length(homAlt)==0) homAlt <- 0
+        if(homRef>=(nControl - mmControl)) causativeAlt <- c(causativeAlt, names(vcf.control.table)[i])
+      #  if(homAlt>=(nControl - 1)) causativeAlt <- c(causativeAlt, names(vcf.control.table)[i])
+      }
+    }
+  }
+}
+```
+
+Then we identify the following potentially causative mutations:
+
+```{r}
+if(!is.null(sampleInfo)){
+  if(is.element(colnames(sampleInfo), "casecontrol")){
+    if(ncol(sampleInfo)>1){
+      if(length(causativeRef)>0){
+        datatable(as.data.frame(causativeRef))
+      } else {
+        cat("No potentially mutations found for homozygeous reference!\n")
+      }
+      if(length(causativeAlt)>0){
+        datatable(as.data.frame(causativeAlt))
+      } else {
+        cat("No potentially mutations found for homozygeous alternative!\n")
+      }
+    }
+  }
+}
+```
+

@@ -1,0 +1,13 @@
+# Warnings and Issues
+Here we add some automatic checks of the pipeline and the data and report possible problems
+
+```{r}
+conc.test <- "FAILED"
+if(totalRawSequences==totalConcSequences) conc.test <- "PASS"
+
+out <- data.frame(c("Concatenation (number of sequences)"),
+                  c(conc.test))
+colnames(out) <- c("Test", "Result")
+out_html <- knitr::kable(out, "html")
+kable_styling(out_html, "striped", position = "left") 
+```

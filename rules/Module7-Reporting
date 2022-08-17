@@ -43,7 +43,7 @@ rule R_finalReport:
              refGenome.file <- '{params.refGenome}'; \
              pipelineConfig.file <- '{params.pipeConfig}'; \
              snakemake <- TRUE;\
-             rmarkdown::render('{input.script}',output_file='{output}')" &> {log}
+             source('{input.script}')" &> {log}
     """
     
 rule R_QCReport:

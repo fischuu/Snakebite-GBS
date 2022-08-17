@@ -4,6 +4,7 @@
 #####                                                                      #####
 ################################################################################
 
+0.15.4: * Changed final Report also to modules that can be reused from other pipelines
 0.15.3: * Dedicated QC report added for the QC rule
 0.15.2: * Added the barcodes file as a dependency for rules that need it, otherwise the pipeline ran into a missing file error.
 0.15.1: * Changed the r-gbs standard container to version 4.2.1-0.2

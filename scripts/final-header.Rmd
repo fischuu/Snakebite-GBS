@@ -1,6 +1,6 @@
 ---
 title: "GBS-Pipeline report"
-subtitle: "QC Report"
+subtitle: "Final Report"
 author: "Daniel Fischer"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
