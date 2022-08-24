@@ -19,8 +19,8 @@ createRMD.command <- paste0("cat ",pipelineFolder,"scripts/final-header.Rmd ",
                                    pipelineFolder,"scripts/benchmarks.Rmd ",
                                    pipelineFolder,"scripts/appendix.Rmd ",
                                    pipelineFolder,"scripts/references.Rmd ",
-                                   "> ",pipelineFolder,"scripts/final-report.Rmd",)
+                                   "> ",pipelineFolder,"scripts/final-report.Rmd")
 
 system(createRMD.command)
 
-rmarkdown::render(file.path(pipelineFolder,"scripts","final-report.Rmd"), output_file=file.path(pipelineFolder,"finalReport.html"))"
+rmarkdown::render(file.path(pipelineFolder,"scripts","final-report.Rmd"), output_file=file.path(pipelineFolder,"finalReport.html"))

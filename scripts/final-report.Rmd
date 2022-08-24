@@ -1,0 +1,2114 @@
+---
+title: "GBS-Pipeline report"
+subtitle: "Final Report"
+author: "Daniel Fischer"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 4
+    toc_float:
+      toc_collapsed: true
+    number_sections: true
+    theme: lumen
+    df_print: paged
+    code_folding: show
+---
+
+```{r setup, include=FALSE}
+.libPaths()
+#.libPaths(c("/projappl/project_2001746/R/libraries", .libPaths()))
+#library("knitr")
+library("GenomicTools")
+library("Luke")
+library("xtable")   # Needed for LaTeX output of the tables
+library("viridis")  # Needed for the colouring of the plots
+library("rjson")    # Needed for multiqc dgsb etail data
+library("adegenet")
+library("vcfR")
+library("DT")
+library("kableExtra")
+library("ICS")
+library("tsne")
+#library("lle")
+library("kernlab")
+#library("REPPlab")
+#library("RDRToolbox")
+library("destiny")
+library("ggplot2")
+options(scipen=999,
+        stringsAsFactors=FALSE)
+knitr::opts_chunk$set(echo = FALSE,
+                      cache = FALSE,
+                      cache.lazy = FALSE,
+                      dev = c('png', 'pdf'),
+                      fig.align = 'center', fig.height = 5, fig.width = 8.5)
+report.colours <-c("#FF8200", "#00B5E2", "#78BE20", "#7F3F98", "#E13C98", "#0033A0", "#54585A")
+
+mockClusters.file <- "GSC.MR.Clusters.fa"
+mockReference.file <- "GSC.MR.Genome.fa"
+# To run locally on terminal type this command in the pipeline folder:
+# R -e "rmarkdown::render('./scripts/workflow-report.Rmd',output_file='./finalReport.html')"
+
+if(!is.element("snakemake",ls())){
+  projFolder <- "/scratch/project_2001746/TestProject"
+  pipelineFolder <- "~/git/Pipeline-GBS/"
+  pipelineConfig.file <- "/scratch/project_2001746/TestProject/GBS-pipeline_config.yaml"
+  refGenome.file <- "hermetiaRef_112020.fasta"
+}
+refGenome.file <- basename(refGenome.file)
+ifelse(refGenome.file == "", refAvail <- FALSE, refAvail <- TRUE)
+```
+
+```{r help functions}
+vectorToDF.int <- function(x, sep=" ", names=NULL, autoCoerc=TRUE){
+  x.split <- strsplit(x, sep)
+  no.columns <- length(x.split[[1]])
+  no.rows <- length(x.split)
+  out <- as.data.frame(matrix(NA, ncol=no.columns, nrow=no.rows))
+  for(i in 1:no.columns){
+    out[,i] <- sapply(x.split,"[", i)
+  }
+  names(out) <- names
+  if(autoCoerc){
+    for(i in 1:no.columns){
+      ac <- suppressWarnings(as.numeric(out[1,i]))
+      if(!is.na(ac)){
+      out[,i] <- as.numeric(out[,i])
+      }
+      
+    }
+  }
+  out
+}
+
+
+getConfigField <- function(x, from=pipelineConfig){
+  out <- c()
+  
+  if(length(x)==1){
+    pos <- grep(x, from)
+    out <- from[pos]
+    
+    out <- gsub(x, "", out)
+    out <- gsub('\"','',out)
+    out <- gsub(' ','',out)
+    out <- gsub(':','',out)
+    out <- gsub('#.*','',out)
+  } else {
+    # Get here the part for the subfields
+    
+  }
+  
+  out
+}
+
+class.table <- function(x, classes=NULL){
+  if(is.null(classes)){
+    out <- table(x)
+  } else {
+    out <- rep(0, length(classes))
+    for(i in 1:length(classes)){
+      out[i] <- sum(x==classes[i])
+    }
+    names(out) <- classes
+  }
+  out
+}
+
+# alternative colours c(viridis(20)[8], viridis(20)[16])
+plotFastQCFeature <- function(x,y, labels=c("R1", "R2"), col=c(report.colours[1], report.colours[2]), feature="total_deduplicated_percentage", axes=TRUE){
+  x.values <- as.vector(as.matrix(x[feature]))
+  y.values <- as.vector(as.matrix(y[feature]))
+  
+  if(feature=="total_deduplicated_percentage"){
+    label <- "De-Duplication level in %"
+  } else if (feature=="X.GC"){
+    label <- "GC content in %"
+  } else if (feature=="avg_sequence_length"){
+    label <- "Feature length"
+  } else if (feature=="Total.Sequences"){
+    label <- "Total sequences"
+  }
+  
+  barplot(rbind(x.values, y.values), beside=TRUE, ylab=label, col=col)
+
+  if(axes) axis(1, at=seq(2,3*nrow(x), by=3), paste(substr(x$Sample,1,10),"..."), las=2, cex=0.1)
+  
+  legend("bottomright", pch=c(20,20), col=col, legend=labels, fill="white")
+}
+
+plotFastQCJSONFeature <- function(x,y, labels, feature){
+  par(mfrow=c(1,2))
+  ymax <- max(rbind(x[feature][[1]],y[feature][[1]]))
+  ymax <- ceiling(ymax+ymax*0.1)
+  if(feature=="sequenceQuality") ymax <- 40
+  boxplot(t(x[feature][[1]]), ylim=c(0,ymax))
+  boxplot(t(y[feature][[1]]), ylim=c(0,ymax))
+}
+
+plotMQCFeature <- function(x, y, labels, feature){
+  
+  result1 <- fromJSON(file=file.path(x,"multiqc_data","multiqc_data.json"))
+  result2 <- fromJSON(file=file.path(y,"multiqc_data","multiqc_data.json"))
+  
+  data1 <- get(feature, result1$report_plot_data)$datasets[[1]]
+  data2 <- get(feature, result2$report_plot_data)$datasets[[1]]
+  
+  pos1 <-  length(sapply(data1,"[",2)[[1]]) - 1
+  pos2 <-  length(sapply(data2,"[",2)[[1]]) - 1
+  
+  obs1 <- length(sapply(sapply(sapply(data1,"[",2),"[",1),"[",2))
+  obs2 <- length(sapply(sapply(sapply(data2,"[",2),"[",1),"[",2))
+
+  plotData1 <- matrix(-1, ncol=pos1, nrow=obs1)
+  tmp <- sapply(sapply(data1,"[",2)[[1]],"[",1) 
+  colnames(plotData1) <-  tmp[-length(tmp)]
+  
+  plotData2 <- matrix(-1, ncol=pos2, nrow=obs2)
+  tmp <- sapply(sapply(data2,"[",2)[[1]],"[",1)
+  colnames(plotData2) <- tmp[-length(tmp)]
+  
+  for(i in 1:pos1){
+    plotData1[,i] <- sapply(sapply(sapply(data1,"[",2),"[",i),"[",2)
+  }
+  
+  for(i in 1:pos2){
+    plotData2[,i] <- sapply(sapply(sapply(data2,"[",2),"[",i),"[",2)
+  }
+
+  par(mfrow=c(1,2))
+  ymax1 <- max(plotData1)
+  ymax2 <- max(plotData2)
+  ymax <- max(ymax1, ymax2)
+  ymax <- ceiling(ymax+ymax*0.1)
+  
+  if(feature=="sequenceQuality") ymax <- 40
+  boxplot(plotData1, ylim=c(0,ymax), pch=".", xaxt="n")
+  #  axis(1,at=2:ncol(data1),gsub("X","",colnames(data1)[-1]))
+  boxplot(plotData2, ylim=c(0,ymax), pch=".", xaxt="n")
+  #  axis(1,at=2:ncol(data2),gsub("X","",colnames(data2)[-1]))
+}
+
+```
+
+
+```{r help function 2}
+getFastQCJSON <- function(path){
+  
+  x_file <- file.path(path)
+  x <- fromJSON(paste(readLines(x_file), collapse=""))
+
+  tmp <- x$report_plot_data$fastqc_per_base_sequence_quality_plot$datasets[[1]]
+  datapoints <- length(tmp[[1]]$data)
+  sequenceQuality <- matrix(-1, nrow= datapoints, ncol=length(tmp))
+  rownames(sequenceQuality) <- sapply(tmp[[1]]$data,"[",1)
+  for(i in 1:length(tmp)){
+    sequenceQuality[,i] <- sapply(tmp[[i]]$data,"[",2)[1:datapoints]
+  }  
+  
+  tmp <- x$report_plot_data$fastqc_per_base_n_content_plot$datasets[[1]]
+  perBaseN <- matrix(-1, nrow= length(tmp[[1]]$data), ncol=length(tmp))
+  rownames(perBaseN) <- sapply(tmp[[1]]$data,"[",1)
+  for(i in 1:length(tmp)){
+    perBaseN[,i] <- sapply(tmp[[i]]$data,"[",2)[1:datapoints]
+  }
+  
+  output <- list(sequenceQuality=sequenceQuality,
+                 perBaseN=perBaseN)
+  output
+}
+```
+# General workflow
+
+## Directed acyclic graph (DAG)
+
+The DAG of the used pipeline with rule dependencies.
+
+```{r import workflow, echo=FALSE, fig.cap="Overview of the applied workflow", out.width = '100%'}
+if(file.exists(file.path(projFolder,"workflow.png"))) knitr::include_graphics(file.path(projFolder,"workflow.png"))
+```
+# Basic stats
+
+```{r get pipeline version}
+pipeSMK <- readLines(file.path(pipelineFolder,"GBS-pipeline.smk"))
+pipeVersion <- gsub("##### Version: ","",pipeSMK[grep("##### Version:", pipeSMK)])
+```
+
+```{r import barcodesID, results="asis"}
+#barcodes <- read.table(file.path(projFolder, "barcodesID.txt"))
+#rawsamples <- read.table(file.path(projFolder, "rawsamples"))
+#sampleInfo <- read.table(file.path(projFolder, "sampleInfo.txt"), header=TRUE)
+pipelineConfig <- readLines(pipelineConfig.file)
+
+sampleSheet.file <- getConfigField("samplesheet-file")
+sampleSheet <- read.table(sampleSheet.file, sep="\t", header=TRUE)
+
+sampleInfo.file <- getConfigField("sampleinfo-file")
+sampleInfo <- NULL
+
+if(length(sampleInfo.file)>0 ) sampleInfo <- read.table(sampleInfo.file, sep="\t", header=TRUE)
+
+#projectFolder.info <- trimws(gsub("project-folder:","", pipelineConfig[grep("project-folder:", pipelineConfig)]))
+#pipelineFolder.info <- trimws(gsub("pipeline-folder:","", pipelineConfig[grep("pipeline-folder:", pipelineConfig)]))
+#pipelineConfig.info <- trimws(gsub("pipeline-config:","", pipelineConfig[grep("pipeline-config:", pipelineConfig)]))
+
+projectFolder.info <- getConfigField("project-folder")
+pipelineFolder.info <- getConfigField("pipeline-folder")
+pipelineConfig.info <- pipelineConfig.file
+
+groupingNames <- "No file with sample information provided ('sampleinfo-file'-field)!"
+numberGroupingNames <- 0
+if(!is.null(sampleInfo)){
+  groupingNames <- colnames(sampleInfo[,-1])
+  numberGroupingNames <- length(groupingNames)
+} 
+
+mockSamples <- unique(sampleSheet$sample_name[sampleSheet$useForMock=="YES"])
+
+out <- data.frame(c("Number of raw-samples",
+                    "Number of samples (after concatenating)",
+                    "No. of grouping information",
+                    "Grouping names",
+                    "No. of mock reference samples",
+                    "Samples used for mock reference",
+                    "Used reference genome",
+                    "Pipeline version",
+                    "Project folder",
+                    "Pipeline folder",
+                    "Pipeline config"),
+                  c(length(unique(sampleSheet$rawsample)),
+                    length(unique(sampleSheet$sample_name)),
+                    numberGroupingNames,
+                    groupingNames,
+                    length(mockSamples),
+                    paste(mockSamples,collapse=", "),
+                    basename(refGenome.file),
+                    pipeVersion,
+                    projectFolder.info,
+                    pipelineFolder.info,
+                    pipelineConfig.info))
+
+out_html <- knitr::kable(out, col.names = NULL, "html")
+kable_styling(out_html, "striped", position = "left")
+```
+
+## Concatenating stats
+As the concatenating is a crucial step in this pipeline, it is important to make this correct. As a double check that things went right, we check how
+many raw samples were concatenated per sample. We do this visually. Basically, the height of the bars should correspond to your number of used lanes,
+normally 1,2 or 4. Sometimes, you might want to concatenate also more files together (e.g. technical replicates), in this case the bar can be also higher.
+
+```{r import the conc report files}
+conc.reports.files <- list.files(file.path(projFolder, "FASTQ", "CONCATENATED"), pattern="*.report")
+
+conc.reports <- list()
+conc.reports[[1]] <- read.table(file.path(projFolder, "FASTQ", "CONCATENATED", conc.reports.files[1]))
+
+for(i in 2:length(conc.reports.files)){
+  conc.reports[[i]]<- read.table(file.path(projFolder, "FASTQ", "CONCATENATED", conc.reports.files[i]))
+}
+```
+
+```{r visualize concatenation reports}
+par(oma=c(6,5,0,0))
+labels <- gsub(".merged.fastq.gz.report","",conc.reports.files)
+barplot(sapply(conc.reports,nrow), ylab="Concatenated files", names=labels, las=2, col=report.colours[1])
+```
+# FastQC quality checks
+
+In this chapter the results from the FastQC part of the pipeline are presented. First, the basic stats on the very raw data are shown, then the concatenated (in case samples were split across different lanes) and then the final reads, after trimming.
+
+After that, the concatenated reads are comapred against the trimmed reads.
+
+```{r import multiqc data}
+# Import the FastQC/MultiQC output for the RAW data
+rawFastQC.R1 <- read.table(file.path(projFolder,"QC","RAW","multiqc_R1","multiqc_data","multiqc_fastqc.txt"), header=TRUE, sep="\t")
+rawFastQC.R2 <- read.table(file.path(projFolder,"QC","RAW","multiqc_R2","multiqc_data","multiqc_fastqc.txt"), header=TRUE, sep="\t")
+#rawFastQCJSON.R1 <- getFastQCJSON(file.path(projFolder, "QC", "RAW", "multiqc_R1", "multiqc_data", "multiqc_data.json"))
+#rawFastQCJSON.R2 <- getFastQCJSON(file.path(projFolder, "QC", "RAW", "multiqc_R2", "multiqc_data", "multiqc_data.json"))
+
+# Import the FastQC/MultiQC output for the CONCATENATED data
+conFastQC.R1 <- read.table(file.path(projFolder,"QC","CONCATENATED","multiqc_R1","multiqc_data","multiqc_fastqc.txt"), header=TRUE, sep="\t")
+conFastQC.R2 <- read.table(file.path(projFolder,"QC","CONCATENATED","multiqc_R2","multiqc_data","multiqc_fastqc.txt"), header=TRUE, sep="\t")
+conFastQCJSON.R1 <- getFastQCJSON(file.path(projFolder, "QC", "CONCATENATED", "multiqc_R1", "multiqc_data", "multiqc_data.json"))
+conFastQCJSON.R2 <- getFastQCJSON(file.path(projFolder, "QC", "CONCATENATED", "multiqc_R2", "multiqc_data", "multiqc_data.json"))
+
+# Import the FastQC/MultiQC output for the TRIMMED data
+trimmedFastQC.R1 <- read.table(file.path(projFolder,"QC","TRIMMED","multiqc_R1","multiqc_data","multiqc_fastqc.txt"), header=TRUE, sep="\t")
+trimmedFastQC.R2 <- read.table(file.path(projFolder,"QC","TRIMMED","multiqc_R2","multiqc_data","multiqc_fastqc.txt"), header=TRUE, sep="\t")
+trimmedFastQCJSON.R1 <- getFastQCJSON(file.path(projFolder, "QC", "TRIMMED", "multiqc_R1", "multiqc_data", "multiqc_data.json"))
+trimmedFastQCJSON.R2 <- getFastQCJSON(file.path(projFolder, "QC", "TRIMMED", "multiqc_R2", "multiqc_data", "multiqc_data.json"))
+```
+
+
+## Raw data
+These are the reads, as they come from the sequencer, no trimming, no nothing.
+
+### De-duplication percent
+
+```{r raw data duplication percent}
+#par(mar=c(10,5,1,1))
+plotFastQCFeature(rawFastQC.R1, rawFastQC.R2, feature="total_deduplicated_percentage", axes=FALSE)
+abline(h=50, lty="dotted", col="red")
+```
+
+A list of samples over a certain threshold (>50%)
+
+```{r table samples duplication under threshold raw}
+tmp <- cbind(rawFastQC.R1$Sample,rawFastQC.R1["total_deduplicated_percentage"])
+tmp <- tmp[tmp[,2]>50,]
+if(nrow(tmp)>0){
+rownames(tmp) <- 1:nrow(tmp)
+colnames(tmp) <- c("Rawsample", "Total deduplicated percentage")
+
+datatable(tmp)
+}
+```
+
+### GC content
+
+```{r raw data qc content}
+#par(mar=c(10,5,1,1))
+plotFastQCFeature(rawFastQC.R1, rawFastQC.R2, feature="X.GC", axes=FALSE)
+abline(h=60, lty="dotted", col="red")
+abline(h=30, lty="dotted", col="red")
+```
+
+A list of samples under a certain threshold (<30%)
+
+```{r table samples GC content}
+tmp <- cbind(rawFastQC.R1$Sample,rawFastQC.R1["X.GC"])
+tmp <- tmp[tmp[,2]<30,]
+if(nrow(tmp)>0){
+  rownames(tmp) <- 1:nrow(tmp)
+  colnames(tmp) <- c("Rawsample", "GC content")
+  #knitr::kable(tmp) %>% kable_styling
+  datatable(tmp)
+}
+```
+
+### Sequence length
+
+```{r raw data sequence length}
+#par(mar=c(10,5,1,1))
+plotFastQCFeature(rawFastQC.R1, rawFastQC.R2, feature="avg_sequence_length", axes=FALSE)
+tmp <- rawFastQC.R1["avg_sequence_length"]
+tmp <- mean(as.vector(as.matrix((tmp)))) 
+abline(h=tmp*0.9, lty="dotted", col="red")
+```
+
+A list of samples with average sequence length smaller then overall average minus 10%.
+
+```{r table samples sequence length}
+tmp <- rawFastQC.R1["avg_sequence_length"]
+tmp <- mean(as.vector(as.matrix((tmp)))) 
+th <- tmp*0.9
+
+tmp <- cbind(rawFastQC.R1$Sample,rawFastQC.R1["avg_sequence_length"])
+
+tmp <- tmp[tmp[,2]<th,]
+if(nrow(tmp)>0){
+  rownames(tmp) <- 1:nrow(tmp)
+  colnames(tmp) <- c("Rawsample", "Avg sequence length")
+  #knitr::kable(tmp) %>% kable_styling
+  datatable(tmp)
+}
+```
+
+### Total sequences
+
+```{r raw data total sequences}
+#par(mar=c(10,5,1,1))
+plotFastQCFeature(rawFastQC.R1, rawFastQC.R2, feature="Total.Sequences", axes=FALSE)
+```
+
+### Quality value distribution
+```{r}
+qcFiles.R1.raw <- paste0(sampleSheet$rawsample, "_R1_qualdist.txt")
+qcFiles.R2.raw <- paste0(sampleSheet$rawsample, "_R2_qualdist.txt")
+
+qcQual.R1.raw <- vectorToDF.int(trimws(readLines(file.path(projFolder,"QC", "RAW", qcFiles.R1.raw[1]))[-1]))
+qcQual.R2.raw <- vectorToDF.int(trimws(readLines(file.path(projFolder,"QC", "RAW", qcFiles.R2.raw[1]))[-1]))
+
+colnames(qcQual.R1.raw) <- c(gsub("_qualdist.txt","", qcFiles.R1.raw[1]), "Quality")
+colnames(qcQual.R2.raw) <- c(gsub("_qualdist.txt","", qcFiles.R2.raw[1]), "Quality")
+
+for(i in 2:length(qcFiles.R1.raw)){
+    fileIn <- readLines(file.path(projFolder,"QC", "RAW", qcFiles.R1.raw[i]))[-1]
+    if(length(fileIn)>0){
+      tmp <- vectorToDF.int(trimws(fileIn))
+      colnames(tmp) <- c(gsub("_qualdist.txt","", qcFiles.R1.raw[i]), "Quality")
+    } else {
+      tmp <- data.frame(qcQual.R1.raw$Quality, 0)
+      colnames(tmp) <- c("Quality", gsub("_qualdist.txt","", qcFiles.R1.raw[i]))
+    }
+
+      qcQual.R1.raw <- merge(qcQual.R1.raw, tmp, all=TRUE)      
+}
+
+qcQual.R1.raw[is.na(qcQual.R1.raw)] <- 0
+
+for(i in 2:length(qcFiles.R2.raw)){
+    fileIn <- readLines(file.path(projFolder,"QC", "RAW", qcFiles.R2.raw[i]))[-1]
+    if(length(fileIn)>0){
+      tmp <- vectorToDF.int(trimws(fileIn))
+      colnames(tmp) <- c(gsub("_qualdist.txt","", qcFiles.R2.raw[i]), "Quality")
+    } else {
+      tmp <- data.frame(qcQual.R2.raw$Quality, 0)
+      colnames(tmp) <- c("Quality", gsub("_qualdist.txt","", qcFiles.R2.raw[i]))
+    }
+
+      qcQual.R2.raw <- merge(qcQual.R2.raw, tmp, all=TRUE)      
+}
+
+qcQual.R2.raw[is.na(qcQual.R2.raw)] <- 0
+
+```
+
+```{r}
+plotThis <- as.matrix(qcQual.R1.raw[,-1])
+rownames(plotThis) <- as.vector(as.matrix(qcQual.R1.raw[,1]))
+par(mar=c(15,5,2,8), xpd=TRUE)
+barplot(plotThis, las=2, col=1:nrow(plotThis), main="Read 1 Quality scores")
+legend("topright", inset=c(-0.2,0), legend=rownames(plotThis)[(nrow(plotThis)):1], fill=nrow(plotThis):1)
+```
+
+```{r}
+plotThis <- as.matrix(qcQual.R2.raw[,-1])
+rownames(plotThis) <- as.vector(as.matrix(qcQual.R2.raw[,1]))
+par(mar=c(15,5,2,8), xpd=TRUE)
+barplot(plotThis, las=2, col=1:nrow(plotThis), main="Read 2 Quality scores")
+legend("topright", inset=c(-0.2,0), legend=rownames(plotThis)[(nrow(plotThis)):1], fill=nrow(plotThis):1)
+```
+
+### Summary
+```{r raw data summary stats}
+mqcStats.raw <- read.table(file.path(projFolder,"QC","RAW","multiqc_R1", "multiqc_data", "multiqc_fastqc.txt"), header=TRUE, sep="\t")
+tmp <- mqcStats.raw[,-c(1:4,7,11:21)]
+
+totalRawSequences <- sum(mqcStats.raw$Total.Sequences)
+out <- c(totalRawSequences,sd(tmp[,1]),apply(tmp,2,mean))
+names(out) <- c("Tot. number sequences",
+                "SD total sequences",
+                "Avg. total sequences",
+                "Avg. poor quality",
+                "Avg. GC Percent",
+                "Avg. deplication percent",
+                "Avg. sequence length")
+
+out_html <- knitr::kable(formatC(out,  format="d", big.mark=","), col.names = NULL, "html")
+kable_styling(out_html, "striped", position = "left")
+
+out <- t(as.data.frame(as.matrix((summary(tmp[,1])))))
+rownames(out) <- "5-point summary of total sequences"
+out_html <- knitr::kable(formatC(out,  format="d", big.mark=","), "html")
+kable_styling(out_html, "striped", position = "left")
+```
+
+
+## Concatenated data
+In this section samples lanes are concatentated, but no other steps were performed.
+
+### De-Duplication percent
+
+```{r conc data duplication percent}
+#par(mar=c(10,5,1,1))
+plotFastQCFeature(conFastQC.R1, conFastQC.R2, feature="total_deduplicated_percentage", axes=FALSE)
+abline(h=50, lty="dotted", col="red")
+```
+
+A list of samples over a certain threshold (>50%)
+
+```{r table samples duplication under threshold conc}
+tmp <- cbind(conFastQC.R1$Sample,conFastQC.R1["total_deduplicated_percentage"])
+tmp <- tmp[tmp[,2]>50,]
+if(nrow(tmp)>0){
+rownames(tmp) <- 1:nrow(tmp)
+colnames(tmp) <- c("Sample", "Total deduplicated percentage")
+
+datatable(tmp)
+}
+```
+
+### GC content
+
+```{r conc data qc content}
+#par(mar=c(10,5,1,1))
+plotFastQCFeature(conFastQC.R1, conFastQC.R2, feature="X.GC", axes=FALSE)
+abline(h=60, lty="dotted", col="red")
+abline(h=30, lty="dotted", col="red")
+```
+
+A list of samples under a certain threshold (<30%)
+
+```{r table samples GC content conc}
+tmp <- cbind(conFastQC.R1$Sample,conFastQC.R1["X.GC"])
+tmp <- tmp[tmp[,2]<30,]
+if(nrow(tmp)>0){
+  rownames(tmp) <- 1:nrow(tmp)
+  colnames(tmp) <- c("Sample", "GC content")
+  datatable(tmp)
+}
+```
+
+### Sequence length
+
+```{r con data sequence length}
+#par(mar=c(10,5,1,1))
+plotFastQCFeature(conFastQC.R1, conFastQC.R2, feature="avg_sequence_length", axes=FALSE)
+tmp <- conFastQC.R1["avg_sequence_length"]
+tmp <- mean(as.vector(as.matrix((tmp)))) 
+abline(h=tmp*0.9, lty="dotted", col="red")
+```
+
+A list of samples with average sequence length smaller then overall average minus 10%.
+
+```{r table samples sequence length conc}
+tmp <- conFastQC.R1["avg_sequence_length"]
+tmp <- mean(as.vector(as.matrix((tmp)))) 
+th <- tmp*0.9
+
+tmp <- cbind(conFastQC.R1$Sample, conFastQC.R1["avg_sequence_length"])
+
+tmp <- tmp[tmp[,2]<th,]
+if(nrow(tmp)>0){
+  rownames(tmp) <- 1:nrow(tmp)
+  colnames(tmp) <- c("Sample", "Avg sequence length")
+  datatable(tmp)
+}
+```
+
+### Total sequences
+
+```{r con data total sequences}
+par(mar=c(10,5,1,1))
+plotFastQCFeature(conFastQC.R1, conFastQC.R2, feature="Total.Sequences")
+```
+
+### Quality value distribution
+```{r}
+qcFiles.conc <- list.files(file.path(projFolder,"QC", "CONCATENATED"), pattern="*qualdist.txt")
+qcQual.conc <- fread(file.path(projFolder,"QC", "CONCATENATED", qcFiles.conc[1]), skip=1)
+colnames(qcQual.conc) <- c(gsub("_qualdist.txt","", qcFiles.conc[1]), "Quality")
+
+for(i in 2:length(qcFiles.conc)){
+    tmp <- fread(file.path(projFolder,"QC", "CONCATENATED", qcFiles.conc[i]), skip=1)
+    colnames(tmp) <- c(gsub("_qualdist.txt","", qcFiles.conc[i]), "Quality")
+    qcQual.conc <- merge(qcQual.conc, tmp, all=TRUE)
+}
+qcQual.conc[is.na(qcQual.conc)] <- 0
+
+```
+
+```{r}
+plotThis <- as.matrix(qcQual.conc[,-1])
+rownames(plotThis) <- as.vector(as.matrix(qcQual.conc[,1]))
+par(mar=c(15,5,2,8), xpd=TRUE)
+barplot(plotThis, las=2, col=1:nrow(plotThis))
+legend("topright", inset=c(-0.2,0), legend=rownames(plotThis)[(nrow(plotThis)):1], fill=nrow(plotThis):1)
+```
+
+### Per base N content (left: R1, right: R2)
+
+```{r con data per base n content}
+par(mar=c(5,5,1,1))
+#plotFastQCJSONFeature(conFastQCJSON.R1, conFastQCJSON.R2, feature="perBaseN")
+
+plotMQCFeature(x=file.path(projFolder,"QC","CONCATENATED","multiqc_R1"),
+               y=file.path(projFolder,"QC","CONCATENATED","multiqc_R2"),
+               feature="fastqc_per_base_n_content_plot")
+```
+
+### Per base quality (left: R1, right: R2)
+```{r con data per base sequence quality}
+par(mar=c(5,5,1,1))
+#plotFastQCJSONFeature(conFastQCJSON.R1, conFastQCJSON.R2, feature="sequenceQuality")
+
+plotMQCFeature(x=file.path(projFolder,"QC","CONCATENATED","multiqc_R1"),
+               y=file.path(projFolder,"QC","CONCATENATED","multiqc_R2"),
+               feature="fastqc_per_base_sequence_quality_plot")
+```
+
+### Summary
+```{r conc data summary stats}
+mqcStats.conc <- read.table(file.path(projFolder,"QC","CONCATENATED","multiqc_R1", "multiqc_data", "multiqc_fastqc.txt"), header=TRUE, sep="\t")
+tmp <- mqcStats.conc[,-c(1:4,7,11:21)]
+
+totalConcSequences <- sum(mqcStats.conc$Total.Sequences)
+out <- c(totalConcSequences,apply(tmp,2,mean))
+names(out) <- c("Tot. number sequences",
+                "Avg. total sequences",
+                "Avg. poor quality",
+                "Avg. GC Percent",
+                "Avg. deplication percent",
+                "Avg. sequence length")
+
+out_html <- knitr::kable(formatC(out,  format="d", big.mark=","), col.names = NULL, "html")
+kable_styling(out_html, "striped", position = "left")
+
+out <- t(as.data.frame(as.matrix((summary(tmp[,1])))))
+rownames(out) <- "5-point summary of total sequences"
+out_html <- knitr::kable(formatC(out,  format="d", big.mark=","), "html")
+kable_styling(out_html, "striped", position = "left")
+```
+
+
+## Trimmed data
+
+### De-Duplication percent
+
+```{r trimmed data duplication percent}
+#par(mar=c(10,5,1,1))
+plotFastQCFeature(trimmedFastQC.R1, trimmedFastQC.R2, feature="total_deduplicated_percentage", axes=FALSE)
+abline(h=50, lty="dotted", col="red")
+```
+
+A list of samples over a certain threshold (>50%)
+
+```{r table samples duplication under threshold trimmed}
+tmp <- cbind(trimmedFastQC.R1$Sample,trimmedFastQC.R1["total_deduplicated_percentage"])
+tmp <- tmp[tmp[,2]>50,]
+if(nrow(tmp)>0){
+rownames(tmp) <- 1:nrow(tmp)
+colnames(tmp) <- c("Sample", "Total deduplicated percentage")
+
+datatable(tmp)
+}
+```
+
+### QC content
+
+```{r trimmed data qc content}
+#par(mar=c(10,5,1,1))
+plotFastQCFeature(trimmedFastQC.R1, trimmedFastQC.R2, feature="X.GC", axes=FALSE)
+abline(h=60, lty="dotted", col="red")
+abline(h=30, lty="dotted", col="red")
+```
+
+A list of samples under a certain threshold (<30%)
+
+```{r table samples GC content trimmed}
+tmp <- cbind(trimmedFastQC.R1$Sample, trimmedFastQC.R1["X.GC"])
+tmp <- tmp[tmp[,2]<30,]
+if(nrow(tmp)>0){
+  rownames(tmp) <- 1:nrow(tmp)
+  colnames(tmp) <- c("Sample", "GC content")
+  #knitr::kable(tmp) %>% kable_styling
+  datatable(tmp)
+}
+```
+### Sequence length
+
+```{r trimmed data sequence length}
+#par(mar=c(10,5,1,1))
+plotFastQCFeature(trimmedFastQC.R1, trimmedFastQC.R2, feature="avg_sequence_length", axes=FALSE)
+tmp <- trimmedFastQC.R1["avg_sequence_length"]
+tmp <- mean(as.vector(as.matrix((tmp)))) 
+abline(h=tmp*0.9, lty="dotted", col="red")
+```
+
+A list of samples with average sequence length smaller then overall average minus 10%.
+
+```{r table samples sequence length trimmed}
+tmp <- trimmedFastQC.R1["avg_sequence_length"]
+tmp <- mean(as.vector(as.matrix((tmp)))) 
+th <- tmp*0.9
+
+tmp <- cbind(trimmedFastQC.R1$Sample, trimmedFastQC.R1["avg_sequence_length"])
+
+tmp <- tmp[tmp[,2]<th,]
+if(nrow(tmp)>0){
+  rownames(tmp) <- 1:nrow(tmp)
+  colnames(tmp) <- c("Sample", "Avg sequence length")
+  #knitr::kable(tmp) %>% kable_styling
+  datatable(tmp)
+}
+```
+
+### Total sequences
+
+```{r trimmed data total sequences}
+par(mar=c(10,5,1,1))
+plotFastQCFeature(trimmedFastQC.R1, trimmedFastQC.R2, feature="Total.Sequences")
+```
+
+```{r}
+totalSequences <- trimmedFastQC.R1[,c(1,5)]
+totalSequences[,1] <- gsub(".R1","",totalSequences[,1])
+```
+
+### Quality value distribution
+```{r}
+qcFiles.trimmed <- list.files(file.path(projFolder,"QC", "TRIMMED"), pattern="*qualdist.txt")
+qcQual.trimmed <- fread(file.path(projFolder,"QC", "TRIMMED", qcFiles.trimmed[1]), skip=1)
+colnames(qcQual.trimmed) <- c(gsub("_qualdist.txt","", qcFiles.trimmed[1]), "Quality")
+
+for(i in 2:length(qcFiles.trimmed)){
+    tmp <- fread(file.path(projFolder,"QC", "TRIMMED", qcFiles.trimmed[i]), skip=1)
+    colnames(tmp) <- c(gsub("_qualdist.txt","", qcFiles.trimmed[i]), "Quality")
+    qcQual.trimmed <- merge(qcQual.trimmed, tmp, all=TRUE)
+}
+qcQual.trimmed[is.na(qcQual.trimmed)] <- 0
+```
+
+```{r}
+plotThis <- as.matrix(qcQual.trimmed[,-1])
+rownames(plotThis) <- as.vector(as.matrix(qcQual.trimmed[,1]))
+par(mar=c(15,5,2,8), xpd=TRUE)
+barplot(plotThis, las=2, col=1:nrow(plotThis))
+legend("topright", inset=c(-0.2,0), legend=rownames(plotThis)[(nrow(plotThis)):1], fill=nrow(plotThis):1)
+```
+
+### Per base N content
+
+```{r trimmed data per base n content}
+par(mar=c(5,5,1,1))
+#plotFastQCJSONFeature(conFastQCJSON.R1, conFastQCJSON.R2, feature="perBaseN")
+
+plotMQCFeature(x=file.path(projFolder,"QC","TRIMMED","multiqc_R1"),
+               y=file.path(projFolder,"QC","TRIMMED","multiqc_R2"),
+               feature="fastqc_per_base_n_content_plot")
+```
+
+### Per base quality (left: R1, right: R2)
+```{r trimmed data per base sequence quality}
+par(mar=c(5,5,1,1))
+#plotFastQCJSONFeature(conFastQCJSON.R1, conFastQCJSON.R2, feature="sequenceQuality")
+
+plotMQCFeature(x=file.path(projFolder,"QC","TRIMMED","multiqc_R1"),
+               y=file.path(projFolder,"QC","TRIMMED","multiqc_R2"),
+               feature="fastqc_per_base_sequence_quality_plot")
+```
+
+
+### Length distribution trimmed reads
+From the trimlog we get more statistics on the output of the trimming. Include the trimlog data also here as density plots.
+
+```{r}
+cutLogs.files <- list.files(file.path(projFolder, "logs", "CUTADAPT"), pattern="cutadapt*")
+cutLogs <- suppressWarnings(fread(file.path(projFolder, "logs", "CUTADAPT", cutLogs.files[1]), skip="Overview of removed sequences"))
+cutLogs <- cutLogs[,1:2]
+colnames(cutLogs) <- c("length", gsub(".log", "",cutLogs.files[1]))
+
+for(i in 2:length(cutLogs.files)){
+  tmp <- suppressWarnings(fread(file.path(projFolder, "logs", "CUTADAPT", cutLogs.files[i]), skip="Overview of removed sequences"))
+  tmp <- tmp[,1:2]
+  colnames(tmp) <- c("length", gsub(".log", "", cutLogs.files[i]))
+  
+  cutLogs <- merge(cutLogs, tmp, all=TRUE)
+}
+
+cutLogs[is.na(cutLogs)] <- 0
+```
+
+```{r}
+tmp <- apply(cutLogs[,-1],1,mean)
+names(tmp) <- as.vector(as.matrix(cutLogs[,1]))
+tmp <- sort(tmp, decreasing=TRUE)[1:10]
+tmp2 <- data.frame(names(tmp), tmp)
+out_html <- knitr::kable(tmp2, col.names = c("Trimmed bases", "Avg. freq"), row.names = FALSE, "html")
+kable_styling(out_html, "striped", position = "left")
+```
+
+### Summary
+```{r trimmed data summary stats}
+mqcStats.trim <- read.table(file.path(projFolder,"QC","TRIMMED","multiqc_R1", "multiqc_data", "multiqc_fastqc.txt"), header=TRUE, sep="\t")
+tmp <- mqcStats.trim[,-c(1:4,7,11:21)]
+
+totalTrimSequences <- sum(mqcStats.trim$Total.Sequences)
+out <- c(totalTrimSequences,apply(tmp,2,mean))
+names(out) <- c("Tot. number sequences",
+                "Avg. total sequences",
+                "Avg. poor quality",
+                "Avg. GC Percent",
+                "Avg. deplication percent",
+                "Avg. sequence length")
+
+out_html <- knitr::kable(formatC(out,  format="d", big.mark=","), col.names = NULL, "html")
+kable_styling(out_html, "striped", position = "left")
+
+out <- t(as.data.frame(as.matrix((summary(tmp[,1])))))
+rownames(out) <- "5-point summary of total sequences"
+out_html <- knitr::kable(formatC(out,  format="d", big.mark=","), "html")
+kable_styling(out_html, "striped", position = "left")
+
+```
+
+
+## Concatenated vs. Trimmed
+
+```{r average trimmed and conc}
+conFastQC.avg <- (conFastQC.R1[,-c(1:4,7,11:21)] + conFastQC.R2[,-c(1:4,7,11:21)]) / 2
+trimmedFastQC.avg <- (trimmedFastQC.R1[,-c(1:4,7,11:21)] + trimmedFastQC.R2[,-c(1:4,7,11:21)]) / 2
+conFastQC.avg$Sample <- conFastQC.R1$Sample
+trimmedFastQC.avg$Sample <- trimmedFastQC.R1$Sample
+
+conFastQCJSON.avg <- list()
+conFastQCJSON.avg$sequenceQuality <- (conFastQCJSON.R1$sequenceQuality + conFastQCJSON.R2$sequenceQuality)/2
+conFastQCJSON.avg$perBaseN <- (conFastQCJSON.R1$perBaseN + conFastQCJSON.R2$perBaseN)/2
+trimmedFastQCJSON.avg <- list()
+trimmedFastQCJSON.avg$sequenceQuality <- (trimmedFastQCJSON.R1$sequenceQuality + trimmedFastQCJSON.R2$sequenceQuality)/2
+trimmedFastQCJSON.avg$perBaseN <- (trimmedFastQCJSON.R1$perBaseN + trimmedFastQCJSON.R2$perBaseN)/2
+```
+
+### De-Duplication percent
+
+```{r conctrim data duplication percent}
+par(mar=c(10,5,1,1))
+plotFastQCFeature(conFastQC.avg, trimmedFastQC.avg, labels=c("Conc", "Trimmed"), feature="total_deduplicated_percentage")
+```
+
+### GC content
+
+```{r conctrim data qc content}
+par(mar=c(10,5,1,1))
+plotFastQCFeature(conFastQC.avg, trimmedFastQC.avg, labels=c("Conc", "Trimmed"), feature="X.GC")
+```
+
+### Sequence length
+
+```{r conctrim data sequence length}
+par(mar=c(10,5,1,1))
+plotFastQCFeature(conFastQC.avg, trimmedFastQC.avg, labels=c("Conc", "Trimmed"), feature="avg_sequence_length")
+```
+
+### Total sequences
+
+```{r conctrim data total sequences}
+par(mar=c(10,5,1,1))
+plotFastQCFeature(conFastQC.avg, trimmedFastQC.avg, labels=c("Conc", "Trimmed"), feature="Total.Sequences")
+```
+
+### Per base N content (left: Conc., right: Trimmed)
+```{r contrimm data per base n content}
+par(mar=c(5,5,1,1))
+#plotFastQCJSONFeature(conFastQCJSON.R1, conFastQCJSON.R2, feature="perBaseN")
+
+plotMQCFeature(x=file.path(projFolder,"QC","CONCATENATED","multiqc_R1"),
+               y=file.path(projFolder,"QC","TRIMMED","multiqc_R1"),
+               feature="fastqc_per_base_n_content_plot")
+```
+
+### Per base quality (left: R1, right: R2)
+```{r contrimm data per base sequence quality}
+par(mar=c(5,5,1,1))
+#plotFastQCJSONFeature(conFastQCJSON.R1, conFastQCJSON.R2, feature="sequenceQuality")
+
+plotMQCFeature(x=file.path(projFolder,"QC","CONCATENATED","multiqc_R1"),
+               y=file.path(projFolder,"QC","TRIMMED","multiqc_R1"),
+               feature="fastqc_per_base_sequence_quality_plot")
+```
+# Cluster and Reference genome
+
+## Preliminary Mock Reference
+
+### To Add
+ * Get statistics on multi-mapping of the reads.
+
+### Basic stats
+```{r import required files, warning=FALSE, }
+prelimMockReference <- importFA(file.path(projFolder,"FASTQ", "TRIMMED", mockReference.file))
+prelimMockClusters <- importFA(file.path(projFolder,"FASTQ", "TRIMMED", mockClusters.file))
+vsearchIN <- importFA(file.path(projFolder,"FASTQ", "TRIMMED", "VsearchIN.fa"))
+#vsearchOUT <- importFA(file.path(projFolder,"FASTQ", "TRIMMED", "VsearchOUT.fa"))
+```
+
+Basic information on the sequences used to build the mock reference:
+```{r mock build stats}
+  out <- summary(vsearchIN)
+  out[,2] <- formatC(out[,2],  format="d", big.mark=",")
+  out_html <- knitr::kable(out, col.names = NULL, "html")
+  kable_styling(out_html, "striped", position = "left")
+```
+
+Basic information on the identified clusters, used as mock reference
+
+```{r summarise mock reference clusters}
+  out <- summary(prelimMockClusters)
+  out[1,1] <- c("No. of Clusters")
+  out[,2] <- formatC(out[,2],  format="d", big.mark=",")
+  out_html <- knitr::kable(out, col.names = NULL, "html")
+  kable_styling(out_html, "striped", position = "left")
+```
+
+Total length of the input fasta to build reference: `r format(sum(nchar(vsearchIN)), big.mark=",")` bp.
+
+Total length of the preliminary Mock Reference Clusters: `r format(sum(nchar(prelimMockClusters)), big.mark=",")` bp.
+
+Total length of the preliminary Mock Reference (Used as reference): `r format(sum(nchar(prelimMockReference)), big.mark=",")` bp.
+
+### Theoretical coverage of Mock per sample
+Given the length of the mock reference assembly and the total number of sequenced bases per sample, we can estimate the theoretical coverage of the mock for each sample
+
+Currently I hard-code here the paired-end reads and assume equal lengths and reads in both pairs, but it should be a good estimate.
+
+```{r mock coverage}
+par(mar=c(10,5,1,1))
+mockLength <- sum(nchar(prelimMockReference))
+mockCov <- (2*mqcStats.trim[,10] * mqcStats.trim[,5])/mockLength
+names(mockCov) <- mqcStats.trim[,1]
+barplot(mockCov, ylab="'x'-fold Coverage", col=viridis(20)[8], las=2)
+lines(c(-100,10000),c(1,1), lty="dotted")
+lines(c(-100,10000),c(5,5), lty="dotted")
+lines(c(-100,10000),c(10,10), lty="dotted")
+```
+
+### Pear Stats
+
+```{r import pear stats}
+pearIn <- readLines(file.path(projFolder, "FASTQ", "TRIMMED", "Pear.log"))
+pearIn <- pearIn[-grep("Assemblying reads", pearIn)]
+startPos <- which(pearIn=="Zhang et al (2014) Bioinformatics 30(5): 614-620 | doi:10.1093/bioinformatics/btt593")+2
+```
+
+### Pear settings used
+
+```{r pear settings}
+tmp <- pearIn[(startPos[1]+2):(startPos[1]+12)]
+tmp <- strsplit(tmp, ": ")
+out <- cbind(gsub("\\.","",sapply(tmp,"[",1)),
+             sapply(tmp,"[",2))
+
+out_html <- knitr::kable(out, col.names = NULL, "html")
+kable_styling(out_html, "striped", position = "left")
+
+```
+
+Number of used samples for the mock reference: `r length(startPos)`.
+
+```{r report Pear stats}
+
+tmp <- pearIn[c(startPos, startPos+1)]
+tmp <- strsplit(tmp, ": ")
+out <- cbind(gsub("\\.","",sapply(tmp,"[",1)),
+             sapply(tmp,"[",2))
+out_html <- knitr::kable(out, col.names = NULL, "html")
+kable_styling(out_html, "striped", position = "left")
+
+mockSamples <- unique(sapply(strsplit(sapply(strsplit(pearIn[c(startPos, startPos+1)],": "),"[", 2),".R"),"[",1))
+
+final("mockSamples")
+
+```
+
+```{r vis atcg distribution}
+# Get the ATCG distribution
+atDist <- matrix(-1, ncol=length(startPos), nrow=4)
+for(i in 1:4){
+  atDist[i,] <- as.numeric(sapply(strsplit(pearIn[startPos+i+16], ": "),"[",2))
+}
+rownames(atDist) <- c("A", "C", "G", "T")
+
+barplot(t(atDist), main="A,C,T,G distribution", col=viridis(20)[8])
+```
+
+### Assembling statistics
+Statistics on how many reads have been assembled (=had a minimum overlap of x-bases (see table above) between R1 and R2), have been discarded ( due to length and/or quality) or were not possible to overlap.
+
+```{r assembling stat}
+tmp <- pearIn[c(startPos+23, startPos+24, startPos+25)]
+pearAssembly <- matrix(sapply(strsplit(tmp,": "),"[",2), ncol=length(startPos), byrow=TRUE)
+rownames(pearAssembly) <- sapply(strsplit(tmp," .."),"[",1)[seq(1,length(tmp), by=length(startPos))]
+colnames(pearAssembly) <- paste("Sample",1:length(startPos))
+
+out_html <- knitr::kable(pearAssembly, col.names = NULL, "html")
+kable_styling(out_html, "striped", position = "left")
+```
+
+The stitching merges the unassembled paired reads together to single reads by adding just 20 T's in between them. Only reads of a certain length are stitched together, namely the rl (set to 100) parameter -19 respective -5
+
+```{r stitching stat}
+tmp <- pearIn[c(startPos+35, startPos+36, startPos+37)]
+stitching <- matrix(sapply(strsplit(tmp,"= "),"[",2), ncol=length(startPos), byrow=TRUE)
+rownames(stitching) <- sapply(strsplit(tmp," ="),"[",1)[seq(1,length(tmp), by=length(startPos))]
+colnames(stitching) <- paste("Sample",1:length(startPos))
+
+out_html <- knitr::kable(stitching, col.names = NULL, "html")
+kable_styling(out_html, "striped", position = "left")
+```
+
+### Discarded reads
+
+In case we used several samples for the mock, the discarded reads are considered together. As a reminder, we
+have here `r length(mockSamples)` samples used to build the mock reference.
+
+```{r import discard fasta}
+if(length(mockSamples)==1){
+  discardedReads <- importFQ(file.path(projFolder,"FASTQ", "TRIMMED", paste(mockSamples,".discarded.fastq",sep="") ))
+} else {
+  discardedReads <- importFQ(file.path(projFolder,"FASTQ", "TRIMMED", paste(mockSamples[1],".discarded.fastq",sep="")))
+  for(i in 2:length(mockSamples)){
+    tmp <- importFQ(file.path(projFolder,"FASTQ", "TRIMMED", paste(mockSamples[i],".discarded.fastq",sep="")))
+    discardedReads$seq <- c(discardedReads$seq, tmp$seq)    
+    discardedReads$qual <- c(discardedReads$qual, tmp$qual)    
+  }
+}
+
+```
+
+Summary on the read length distribution of the discarded reads
+
+```{r summarise discarded reads}
+out <- summary(discardedReads)
+out_html <- knitr::kable(out, col.names = NULL, "html")
+kable_styling(out_html, "striped", position = "left")
+```
+
+Quality values for the first 100,000 sequences. As a rule of thumb, capital letters are good, special characters are bad quality.
+```{r quality measues}
+outQual <- table(unlist(strsplit(discardedReads$qual[1:100000],"")))
+out_html <- knitr::kable(formatC(outQual,  format="d", big.mark=","), "html")
+kable_styling(out_html, "striped", position = "left")
+```
+
+```{r visualize Quality scores}
+barplot(outQual, ylab="Frequency", main="Quality-score distribution", col=report.colours[1])
+```
+
+### Ratio samles used to length Mock reference
+How much were the reads merged down? Length of Mock reference vs the length of all used reads together.
+
+## Mock reference
+
+### Basic stats
+```{r import required files mock, warning=FALSE, }
+finalMockClusters <- importFA(file.path(projFolder,"MockReference","MockReference.fa"))
+```
+
+Basic information for the final mock reference:
+```{r final mock build stats}
+  out <- summary(finalMockClusters)
+  out[,2] <- formatC(out[,2],  format="d", big.mark=",")
+  out_html <- knitr::kable(out, col.names = NULL, "html")
+  kable_styling(out_html, "striped", position = "left")
+```
+
+Total length of the Mock Reference Clusters: `r format(sum(nchar(finalMockClusters)), big.mark=",")` bp.
+
+### Theoretical coverage of Mock per sample
+Given the length of the final mock reference assembly and the total number of sequenced bases per sample, we can estimate the theoretical coverage of the final mock for each sample
+
+```{r final mock coverage}
+par(mar=c(10,5,1,1))
+finalMockLength <- sum(nchar(finalMockClusters))
+mockCov <- 2*mqcStats.trim[,10] * mqcStats.trim[,5]/finalMockLength
+names(mockCov) <- mqcStats.trim[,1]
+barplot(mockCov, ylab="'x'-fold Coverage", col=report.colours[1], las=2)
+lines(c(-100,10000),c(1,1), lty="dotted")
+lines(c(-100,10000),c(10,10), lty="dotted")
+```
+
+
+## Existing Reference
+In case a reference genome was provided, here are a few statistics regarding it
+
+### Basic stats
+
+```{r importRefGenome, warning=FALSE, results="asis"}
+if(refAvail){
+  refGenome <- importFA(getConfigField("genome"))
+}
+```
+
+```{r show ref stats}
+if(refAvail){
+  out <- summary(refGenome)
+  out[1,1] <- c("No. of Chromosomes/Contigs")
+  out[,2] <- formatC(out[,2],  format="d", big.mark=",")
+  out_html <- knitr::kable(out, col.names = NULL, "html")
+  
+  kable_styling(out_html, "striped", position = "left")
+}
+```
+
+
+## Mock vs reference
+
+These are the flagstats from mapping the mock clusters against an existing reference genome. Typical flag stats are:
+* 0: Read aligned against forward strand
+* 16: Read aligned against reverse strand
+* 2048: Supplementary alignment forward
+* 2064: Supplementary alignment reverse
+* 4: Unmapped
+
+```{r samflags}
+if(refAvail){
+samFlagstats <- read.table(file.path(projFolder,"BAM", "Mockref", "mockToRef.sam.samflags"))
+colnames(samFlagstats) <- c("Freq.", "Flag")
+totalLoci <- samFlagstats$V1[samFlagstats$V2==0] + samFlagstats$V1[samFlagstats$V2==16]
+out_html <- knitr::kable(samFlagstats, "html")
+kable_styling(out_html, "striped", position = "left")
+} else {
+  totalLoci <- 0
+}
+```
+
+From there we have `r totalLoci` primary alignments.
+
+```{r bam.merged.bed}
+if(refAvail){
+unmergedLoci <- read.table(file.path(projFolder,"BAM","Mockref","mockToRef.bed"))
+mergedLoci <- read.table(file.path(projFolder,"BAM","Mockref","mockToRef.merged.bed"))
+totalBases <- sum(abs(mergedLoci$V3 - mergedLoci$V2))
+} else {
+  unmergedLoci <- 0
+  mergedLoci <- 0
+  totalBases <- 0
+}
+```
+
+However, in total we have `r formatC(nrow(unmergedLoci),  format="d", big.mark=",")` mapping loci that can be merged down (by intersection of the bed) to `r formatC(nrow(mergedLoci),  format="d", big.mark=",")` if their chromosomal location is intersected.
+Please note, if the difference between these two numbers is too large, it indicates that the mock reference needs to be merged more strict.
+
+In total `r formatC(totalBases, big.mark=",")` bases are covered in the reference genome from mock cluster sequences.
+
+A visualisation of the alignments of the mock clusters to the reference genome
+
+```{r}
+if(refAvail){
+  par(oma=c(8,1,1,0))
+mappedLoci <- read.table(file.path(projFolder,"BAM","Mockref","mockToRef.coverage"))
+barplot(mappedLoci[,2], main="Alignments per Chromosome in Reference", col=report.colours[1], names=mappedLoci[,1],las=2)
+}
+```
+
+```{r SAMbed}
+if(refAvail){
+ SAMLoci <- read.table(file.path(projFolder,"BAM","Mockref","mockToRef.bed"))
+}
+```
+
+This is the length distribution of the sequences of mock reference clusters mapped against the reference genome
+
+```{r}
+if(refAvail){
+  out <- t(as.data.frame(as.matrix((summary(SAMLoci$V3-SAMLoci$V2)))))
+  rownames(out) <- "5-point summary"
+  out_html <- knitr::kable(t(out), "html")
+  kable_styling(out_html, "striped", position = "left")  
+}
+```
+
+Then, this is the average distance from one alignment to the next, per chromosome
+
+```{r}
+if(refAvail){
+chrNames <- unique(SAMLoci$V1)
+avgDist <- c()
+for(i in 1:length(chrNames)){
+  tmp <- SAMLoci[SAMLoci$V1==chrNames[i],]
+  avgDist[i] <- mean(abs(tmp$V2[1:(nrow(tmp)-1)] - tmp$V2[2:(nrow(tmp))]))
+}
+}
+```
+
+```{r}
+if(refAvail){
+barplot(avgDist, main="Avg cluster mapping distance per Chromosome", col=report.colours[1], names=chrNames, las=2)
+}
+```
+
+Coverage of the lined up alignment loci of the mock reference contigs against the reference genome. Ideally, we observe here just a constant coverage of 1, meaning that each contig of the mock reference aligns to a unique place on the reference genome. Having here spikes indicates thaat several mock reference contigs align to one and the same loci along the reference genome and that those contigs are not merged.
+
+```{r}
+if(refAvail){
+  barplot(SAMLoci$V4, main="Mock reference contig alignments on reference genome")
+}
+```
+
+TO BE ADDED
+* Identify loci with more than a certain threshold contigs (e.g. 10), identify the loci on the reference and all mock reference contigs that align to it and then put them in a IGV style manner under each other (bases colour coded, top line the reference and then all the sequences of the mock reference contig)
+* Check if this information can be used to optimise the refinement of the final mock, is there any systematics that creates those multimapping contigs?!
+
+```{r}
+if(refAvail){
+flankingCounts <- read.table(file.path(projFolder,"BAM","Mockref","mockToRef.merged.combined.fa.counts"))
+} else {
+  flankingCounts <- 0
+}
+```
+
+In total we have `r nrow(flankingCounts)` many different flanking sequence combinations (+-6 bases), here is the top 20 for the unmerged set of sequences.
+
+```{r}
+if(refAvail){
+tmp <- flankingCounts[order(flankingCounts$V1, decreasing=TRUE),][1:20,]
+rownames(tmp) <- NULL
+colnames(tmp) <- c("Counts", "Sequence")
+#  out_html <- knitr::kable(tmp, "html")
+#  kable_styling(out_html, "striped", position = "left")  
+datatable(tmp)
+}
+```
+
+```{r}
+if(refAvail){
+mergedFlankingCounts <- read.table(file.path(projFolder,"BAM", "Mockref","mockToRef.merged.combined.fa.counts"))
+} else {
+  mergedFlankingCounts <- 0
+}
+```
+
+In total we have `r nrow(mergedFlankingCounts)` many different flanking sequence combinations (+-6 bases) in the merged set, here is the top 20 for the unmerged set of sequences.
+
+```{r}
+if(refAvail){
+tmp <- mergedFlankingCounts[order(mergedFlankingCounts$V1, decreasing=TRUE),][1:20,]
+rownames(tmp) <- NULL
+colnames(tmp) <- c("Counts", "Sequence")
+datatable(tmp)
+}
+```
+
+WE COULD COUNT HERE STILL HOW MANY SEQUENCES MATCH THE GIVEN ONE WITH ONE SUBSTITUTION ALLOWED.
+
+# Alignment
+
+## Preliminary Mock Reference
+### Mapping stats
+ 
+Import the mapping statistics to the Mock reference
+
+```{r import flagstats}
+flagstatFiles <- list.files(file.path(projFolder,"FASTQ", "TRIMMED", "alignments"), pattern="*.flagstat")
+flagstats <- list()
+for(i in 1:length(flagstatFiles)){
+  flagstats[[i]] <- readLines(file.path(projFolder,"FASTQ", "TRIMMED", "alignments",flagstatFiles[i]))
+}
+```
+
+Visualization of the alignments, red stars indicate the mock reference samples
+
+```{r vis mapping stats}
+par(oma=c(6,3,0,0))
+mapStats <- matrix(0,ncol=length(flagstatFiles), nrow=2)
+
+sampleNames <- gsub(".sam.flagstat", "", flagstatFiles)
+
+colnames(mapStats) <- sampleNames
+
+tmp <- as.numeric(sapply(strsplit(sapply(flagstats,"[",1), " +"),"[",1))
+mapStats[1,] <- as.numeric(sapply(strsplit(sapply(flagstats,"[",5), " +"),"[",1))
+mapStats[2,] <- tmp - mapStats[1,]
+
+p <- barplot(mapStats, col=c(report.colours[1], report.colours[2]), las=2)
+
+legend("topleft", pch=c(20,20), col=c(report.colours[2], report.colours[1]), legend=c("Unmapped", "Mapped"), fill="white")
+
+# highlight the mock reference samples
+mockFiles <- paste(mockSamples, ".sam.flagstat", sep="")
+mockPos <- which(is.element(flagstatFiles, mockFiles))
+
+points(p[mockPos], rep(200000, length(mockPos)), pch="*", col="red", cex=4)
+```
+
+```{r mapping percentage}
+barplot(mapStats[1,] / (apply(mapStats,2,sum)) * 100, ylim=c(0,100), ylab="Mapping in Percent", col=report.colours[1], las=2)
+```
+
+And the same information in table format.
+
+```{r}
+mappingRates <- mapStats[1,] / apply(mapStats,2,sum)
+out <- as.matrix(mappingRates)
+colnames(out)[1] <- "Mapping rate"
+DT::datatable(out)
+```
+
+The average mapping rate is `r mean(mappingRates)`.
+
+### Coverage
+
+Data mapped against the clusters and then the reads per cluster visualized
+```{r importClusterCoverage, warning=FALSE}
+clusterFiles <- list.files(file.path(projFolder, "FASTQ", "TRIMMED", "alignments_clusters"), pattern="*.coverage")
+clusterCoverage <- read.table(file.path(projFolder, "FASTQ", "TRIMMED", "alignments_clusters", clusterFiles[1]))
+names(clusterCoverage)[1:2] <- c("cluster", clusterFiles[1])
+
+for(i in 2:length(clusterFiles)){
+  tmp <- read.table(file.path(projFolder, "FASTQ", "TRIMMED", "alignments_clusters", clusterFiles[i]))
+  names(tmp)[1:2] <- c("cluster", clusterFiles[i])
+  clusterCoverage <- merge(clusterCoverage, tmp, by="cluster")
+}
+names(clusterCoverage)[2:(length(clusterFiles)+1)] <- clusterFiles
+clusterCoverage[,1] <- as.numeric(gsub("Cluster", "", clusterCoverage[,1]))
+clusterCoverage <- clusterCoverage[order(clusterCoverage[,1]),]
+clusterCoverage <- clusterCoverage[is.na(clusterCoverage[,1])==FALSE,]
+
+clusterCoverage.std <- t(t(clusterCoverage)/apply(clusterCoverage,2,sum))*100000
+```
+
+### Lorenz curve
+Concentration measure of reads against clusters
+
+```{r lorenz}
+plot(cumsum(sort(clusterCoverage[,2] / sum(clusterCoverage[,2]))), type="l", xlab="Cluster", ylab="Concentration")
+for(i in 3:ncol(clusterCoverage)){
+  lines(cumsum(sort(clusterCoverage[,i] / sum(clusterCoverage[,i]))))
+}
+```
+
+### Stats on coverage
+
+These are the amounts of clusters with different samples. 
+
+```{r cluster coverage stats}
+coveredClusters <- apply(clusterCoverage[,-1]>0,1,sum)
+barplot(table(coveredClusters), xlab="No. of different samples aligned to cluster", col=report.colours[1])
+```
+
+Now we have here the number of reads per coverage class. That means, instead of having it binary as in the previous plot, we now count all the reads per coverage group.
+
+```{r reads per coverage group}
+readsPerCoverageGroup <- c()
+
+for(i in 1:max(coveredClusters)){
+  if(sum(coveredClusters==i)>0){
+    readsPerCoverageGroup[i] <-  sum(clusterCoverage[coveredClusters==i,-1])
+  } else {
+    readsPerCoverageGroup[i] <- 0
+  }
+}
+
+names(readsPerCoverageGroup) <- 1:max(coveredClusters)
+
+barplot(readsPerCoverageGroup, xlab="Coverage group", ylab="Reads on cluster group", col=report.colours[1])
+```
+
+
+```{r reads per coverage group in percent}
+barplot(readsPerCoverageGroup/sum(readsPerCoverageGroup)*100, xlab="Coverage group", ylab="Reads on cluster group (in %)", ylim=c(0,100), col=report.colours[1])
+```
+
+Then still the number of clusters without coverage per sample
+
+```{r clusters without coverage}
+nonHittedClusters <- apply(clusterCoverage[,-1]==0,2,sum)
+names(nonHittedClusters) <- gsub(".coverage", "", names(nonHittedClusters))
+barplot(nonHittedClusters, col=report.colours[1], las=2)
+lines(c(0,100000), c(nrow(clusterCoverage), nrow(clusterCoverage)), lty="dotted")
+```
+
+And then this still as percentage
+
+```{r clusterhits percentage}
+barplot(nonHittedClusters/nrow(clusterCoverage), ylim=c(0,1), las=2, col=report.colours[1])
+lines(c(0,10000),c(0.2,0.2), lty="dotted")
+lines(c(0,10000),c(0.4,0.4), lty="dotted")
+lines(c(0,10000),c(0.5,0.5), lty="dashed")
+lines(c(0,10000),c(0.6,0.6), lty="dotted")
+lines(c(0,10000),c(0.8,0.8), lty="dotted")
+```
+
+
+### Smoothed log-coverage per cluster
+
+```{r vizCusterCoverage}
+plot(smooth.spline(clusterCoverage[,1], log(clusterCoverage[,2]+1), all.knots=FALSE), type="l", xlab="Cluster", ylab="Log-coverage", ylim=c(0, max(log(clusterCoverage))/2))
+
+for(i in 3:ncol(clusterCoverage)){
+  lines(smooth.spline(clusterCoverage[,1], log(clusterCoverage[,i]+1), all.knots=FALSE))  
+}
+```
+
+### Smoothed std-log-coverage per cluster
+
+Now the coverages are divided by the total amount of reads per sample and then multiplied by 10^5.
+
+```{r vizStdCusterCoverage}
+# I use here the first column of the other matrix to keep the same coordinates. It does not affect the plot.
+plot(smooth.spline(clusterCoverage[,1], log(clusterCoverage.std[,2]+1), all.knots=FALSE), type="l", xlab="Cluster", ylab="", ylim=c(0, max(log(clusterCoverage.std))/4))
+
+for(i in 3:ncol(clusterCoverage)){
+  lines(smooth.spline(clusterCoverage[,1], log(clusterCoverage.std[,i]+1), all.knots=FALSE))  
+}
+```
+### Cluster coverage Mock samples vs others
+ADD HERE STILL A COMPARISON, HOW THE READS FROM THE MOCK DISTRIBUTE ACROSS THE REFERENCE VS ALL OTHER SAMPLES
+
+## Mock Reference
+### Mapping stats
+
+Import the mapping statistics to the Mock reference
+
+```{r import final flagstats}
+flagstatFiles <- list.files(file.path(projFolder,"BAM", "alignments_finalMock"), pattern="*.flagstat")
+flagstats <- list()
+for(i in 1:length(flagstatFiles)){
+  flagstats[[i]] <- readLines(file.path(projFolder,"BAM", "alignments_finalMock",flagstatFiles[i]))
+}
+```
+
+Visualization of the alignments, red stars indicate the mock reference samples
+
+```{r vis mapping final stats}
+par(oma=c(6,3,0,0))
+mapStats <- matrix(0,ncol=length(flagstatFiles), nrow=2)
+
+sampleNames <- gsub(".sam.flagstat", "", flagstatFiles)
+
+colnames(mapStats) <- sampleNames
+
+tmp <- as.numeric(sapply(strsplit(sapply(flagstats,"[",1), " +"),"[",1))
+mapStats[1,] <- as.numeric(sapply(strsplit(sapply(flagstats,"[",5), " +"),"[",1))
+mapStats[2,] <- tmp - mapStats[1,]
+
+p <- barplot(mapStats, col=c(report.colours[1], report.colours[2]), las=2)
+
+legend("topleft", pch=c(20,20), col=c(report.colours[2], report.colours[1]), legend=c("Unmapped", "Mapped"), fill="white")
+
+# highlight the mock reference samples
+mockFiles <- paste(mockSamples, ".sam.flagstat", sep="")
+mockPos <- which(is.element(flagstatFiles, mockFiles))
+
+points(p[mockPos], rep(200000, length(mockPos)), pch="*", col="red", cex=4)
+```
+
+```{r mapping final percentage}
+barplot(mapStats[1,] / (apply(mapStats,2,sum)) * 100, ylim=c(0,100), ylab="Mapping in Percent", col=report.colours[1], las=2)
+```
+
+And the same information in table format.
+
+```{r}
+mappingRates <- mapStats[1,] / apply(mapStats,2,sum)
+out <- as.matrix(mappingRates)
+colnames(out)[1] <- "Mapping rate"
+DT::datatable(out)
+```
+
+The average mapping rate is `r mean(mappingRates)`.
+
+### Coverage
+
+Data mapped against the clusters and then the reads per cluster visualized
+```{r importFinalClusterCoverage, warning=FALSE}
+clusterFiles <- list.files(file.path(projFolder, "BAM", "alignments_finalMock"), pattern="*.coverage")
+clusterCoverage <- read.table(file.path(projFolder, "BAM", "alignments_finalMock", clusterFiles[1]))
+names(clusterCoverage)[1:2] <- c("cluster", clusterFiles[1])
+
+for(i in 2:length(clusterFiles)){
+  tmp <- read.table(file.path(projFolder, "BAM", "alignments_finalMock", clusterFiles[i]))
+  names(tmp)[1:2] <- c("cluster", clusterFiles[i])
+  clusterCoverage <- merge(clusterCoverage, tmp, by="cluster")
+}
+names(clusterCoverage)[2:(length(clusterFiles)+1)] <- clusterFiles
+clusterCoverage[,1] <- as.numeric(gsub("Cluster", "", clusterCoverage[,1]))
+clusterCoverage <- clusterCoverage[order(clusterCoverage[,1]),]
+clusterCoverage <- clusterCoverage[is.na(clusterCoverage[,1])==FALSE,]
+
+clusterCoverage.std <- t(t(clusterCoverage)/apply(clusterCoverage,2,sum))*100000
+```
+
+### Lorenz curve
+Concentration measure of reads against clusters
+
+```{r final lorenz}
+plot(cumsum(sort(clusterCoverage[,2] / sum(clusterCoverage[,2]))), type="l", xlab="Cluster", ylab="Concentration")
+for(i in 3:ncol(clusterCoverage)){
+  lines(cumsum(sort(clusterCoverage[,i] / sum(clusterCoverage[,i]))))
+}
+```
+
+
+### Stats on coverage
+
+These are the amounts of clusters with different samples. 
+
+```{r final  cluster coverage stats}
+coveredClusters <- apply(clusterCoverage[,-1]>0,1,sum)
+barplot(table(coveredClusters), xlab="No. of different samples aligned to cluster", col=report.colours[1])
+```
+
+Now we have here the number of reads per coverage class. That means, instead of having it binary as in the previous plot, we now count all the reads per coverage group.
+
+```{r final reads per coverage group}
+readsPerCoverageGroup <- c()
+
+for(i in 1:max(coveredClusters)){
+ rowsOI <- which(coveredClusters==i)
+ if(length(rowsOI)>0){
+   readsPerCoverageGroup[i] <-  sum(clusterCoverage[rowsOI,-1])   
+ } else {
+   readsPerCoverageGroup[i] <-  0 
+ }
+}
+
+names(readsPerCoverageGroup) <- 1:max(coveredClusters)
+
+barplot(readsPerCoverageGroup, xlab="Coverage group", ylab="Reads on cluster group", col=report.colours[1])
+```
+
+
+```{r final reads per coverage group in percent}
+barplot(readsPerCoverageGroup/sum(readsPerCoverageGroup)*100, xlab="Coverage group", ylab="Reads on cluster group (in %)", ylim=c(0,100), col=report.colours[1])
+```
+
+Then still the number of clusters without coverage per sample
+
+```{r final clusters without coverage}
+nonHittedClusters <- apply(clusterCoverage[,-1]==0,2,sum)
+names(nonHittedClusters) <- gsub(".coverage", "", names(nonHittedClusters))
+barplot(nonHittedClusters, col=report.colours[1], las=2)
+lines(c(0,100000), c(nrow(clusterCoverage), nrow(clusterCoverage)), lty="dotted")
+```
+
+And then this still as percentage
+
+```{r final clusterhits percentage}
+barplot(nonHittedClusters/nrow(clusterCoverage), ylim=c(0,1), las=2, col=report.colours[1])
+lines(c(0,10000),c(0.2,0.2), lty="dotted")
+lines(c(0,10000),c(0.4,0.4), lty="dotted")
+lines(c(0,10000),c(0.5,0.5), lty="dashed")
+lines(c(0,10000),c(0.6,0.6), lty="dotted")
+lines(c(0,10000),c(0.8,0.8), lty="dotted")
+```
+
+### Smoothed log-coverage per cluster
+
+```{r final vizCusterCoverage}
+plot(smooth.spline(clusterCoverage[,1], log(clusterCoverage[,2]+1), all.knots=FALSE), type="l", xlab="Cluster", ylab="Log-coverage", ylim=c(0, max(log(clusterCoverage))/2))
+
+for(i in 3:ncol(clusterCoverage)){
+  lines(smooth.spline(clusterCoverage[,1], log(clusterCoverage[,i]+1), all.knots=FALSE))  
+}
+```
+
+### Smoothed std-log-coverage per cluster
+
+Now the coverages are divided by the total amount of reads per sample and then multiplied by 10^5.
+
+```{r final vizStdCusterCoverage}
+# I use here the first column of the other matrix to keep the same coordinates. It does not affect the plot.
+plot(smooth.spline(clusterCoverage[,1], log(clusterCoverage.std[,2]+1), all.knots=FALSE), type="l", xlab="Cluster", ylab="", ylim=c(0, max(log(clusterCoverage.std))/4))
+
+for(i in 3:ncol(clusterCoverage)){
+  lines(smooth.spline(clusterCoverage[,1], log(clusterCoverage.std[,i]+1), all.knots=FALSE))  
+}
+```
+
+
+
+## Reference genome
+### Basic stats
+Import the mapping statistics to the reference genome
+
+```{r import ref flagstats}
+if(refAvail){
+  flagstatFiles <- list.files(file.path(projFolder,"FASTQ", "TRIMMED", "alignments_reference"), pattern="*.flagstat")
+  flagstats <- list()
+  for(i in 1:length(flagstatFiles)){
+    flagstats[[i]] <- readLines(file.path(projFolder,"FASTQ", "TRIMMED", "alignments_reference",flagstatFiles[i]))
+  }
+}
+```
+
+### Coverage
+```{r reference mapping stat grpah}
+par(oma=c(6,3,0,0))
+mapStats <- matrix(0,ncol=length(flagstatFiles), nrow=2)
+
+sampleNames <- gsub(".sam.flagstat", "", flagstatFiles)
+
+colnames(mapStats) <- sampleNames
+
+tmp <- as.numeric(sapply(strsplit(sapply(flagstats,"[",1), " +"),"[",1))
+mapStats[1,] <- as.numeric(sapply(strsplit(sapply(flagstats,"[",5), " +"),"[",1))
+mapStats[2,] <- tmp - mapStats[1,]
+
+p <- barplot(mapStats, col=c(report.colours[1], report.colours[2]), las=2)
+
+legend("topleft", pch=c(20,20), col=c(report.colours[2], report.colours[1]), legend=c("Unmapped", "Mapped"), fill="white")
+
+# highlight the mock reference samples
+mockFiles <- paste(mockSamples, ".sam.flagstat", sep="")
+mockPos <- which(is.element(flagstatFiles, mockFiles))
+
+points(p[mockPos], rep(200000, length(mockPos)), pch="*", col="red", cex=4)
+```
+
+```{r ref mapping percentage}
+refGenome.mappingStats <- mapStats[1,] / (apply(mapStats,2,sum))
+barplot(mapStats[1,] / (apply(mapStats,2,sum)), ylim=c(0,1), ylab="Mapping in Percent", col=report.colours[1], las=2)
+```
+
+The average mapping rate on the reference genome is `r mean(refGenome.mappingStats)`.
+
+### Read alignments
+The aligned reads are interpreted as "transcripts" and via Stringtie novel transcripts are detected to identify the common alignments via stringtie merge
+
+```{r}
+string.merge <- importGTF(file.path(projFolder, "Stringtie", "merged_STRG.gtf"), level="transcript")
+```
+
+Length distribution of identified contigs across the reference genome
+
+```{r}
+  tmp <- summary(abs(string.merge$V5 - string.merge$V4))
+  out <- data.frame(names(tmp), as.vector(tmp))
+  out_html <- knitr::kable(out, col.names = NULL, "html")
+  kable_styling(out_html, "striped", position = "left")
+```
+
+Then we have the identified clusters per chromosome on the reference genome
+
+```{r}
+barplot(table(string.merge$V1), las=2, col=report.colours[1])
+```
+
+TO BE ADDED:
+* Visualisation, how are loci distributed across the chromosomes ("dots on chromosome lines")
+* quantifications per contig, across samples
+* flanking side sequences of the indified loci
+* Intersection with the mock reference contig alignments against reference genome
+* ...
+
+# Variants
+Import the Result vcf
+
+```{r import vcf, echo=FALSE, message=FALSE, warning=FALSE}
+vcf <- importVCF(file.path(projFolder, "MPILEUP", "mpileup_finalMock", "GSC.vcf"))
+vcfUnfiltered <- importVCF(file.path(projFolder, "MPILEUP", "mpileup_finalMock", "GSC.unfiltered.vcf"))
+if(refAvail){
+  vcfRef <- importVCF(file.path(projFolder, "VCF", "FinalSetVariants_referenceGenome.vcf"))
+}
+```
+
+```{r get alleleCounts}
+gtInfo <- apply(vcfUnfiltered$genotypesInfo,2,strsplit,",")
+refAll <- matrix(-1, nrow=length(gtInfo), ncol=length(gtInfo[[1]]))
+altAll <- matrix(-1, nrow=length(gtInfo), ncol=length(gtInfo[[1]]))
+
+for(i in 1:nrow(refAll)){
+  tmp <- sapply(gtInfo[[i]],"[",1)
+  tmp[tmp=="."] <- NA
+  refAll[i,] <- as.numeric(tmp)
+  
+  tmp <- sapply(gtInfo[[i]],"[",2)
+  tmp[tmp=="."] <- NA
+  altAll[i,] <- as.numeric(tmp)
+}
+
+DP <- refAll+altAll
+```
+
+## Mock reference
+We give some basic stats on the vcf file
+
+```{r}
+  out <- c()
+  out[1] <- dim(vcf$map)[1]
+  noVariants <- dim(vcf$map)[1]
+  names(out)[1] <- "Total number of variants"
+  out[2] <- sum(sapply(apply(vcf$genotypes,2,table),length)==1)
+  names(out)[2] <- "Monomorphic sites"
+  out_html <- knitr::kable(out, col.names = NULL, "html")
+  kable_styling(out_html, "striped", position = "left")
+```
+
+### SNP position vs snp index
+Plot the snp position
+
+```{r}
+plot(as.vector(as.matrix(vcf$map[,4])), ylab="Pos. on mock", xlab="SNP index")
+```
+
+### SNP loci on cluster
+Distribution of the variant across the cluster
+
+```{r}
+hist(as.vector(as.matrix(vcf$map[,4])), main="SNP loci distribution", xlab="Position", col=report.colours[1])
+```
+
+### Missing variants per samples
+
+Missing variant calls per sample
+
+```{r}
+missingnessPerSample <- apply(vcf$genotypesInfo==".,.",2,sum)
+barplot(missingnessPerSample, las=2, main="Missing variants per sample", col=report.colours[1])
+missingnessPerSample <- as.matrix(missingnessPerSample)
+```
+
+### Missigness vs sequencing depths
+
+```{r}
+missSample <- data.frame(Sample=gsub("\\.","_",rownames(missingnessPerSample)),
+                         Missing=missingnessPerSample)
+missVSseq <- merge(totalSequences, missSample, by="Sample")
+plot(missVSseq[,3], missVSseq[,2])
+```
+
+### Missingness per bp position
+t.b.a.
+
+### Missing variants per samples
+
+```{r}
+barplot(apply(vcf$genotypesInfo==".,.",2,sum)/noVariants*100, las=2, main="Missing variants per sample (in %)", col=report.colours[1])
+```
+
+### Distribution of filtering criterias
+```{r}
+tmp <- cumsum(sort(apply(DP,2,sum, na.rm=TRUE)))
+plot(tmp, type="l")
+abline(a=0, b=3*70, col="red")
+abline(a=0, b=200*70, col="red")
+```
+
+```{r}
+tmp <- table(apply(DP>200,2,sum, na.rm=TRUE))
+tmp <- rbind(tmp,table(apply(DP>2,2,sum)))
+tmp <- rbind(tmp,table(apply(DP>3,2,sum)))
+tmp <- rbind(tmp,table(apply(DP>4,2,sum)))
+tmp <- rbind(tmp,table(apply(DP>5,2,sum)))
+barplot(tmp,border=0)
+```
+
+
+## Reference genome
+We give some basic stats on the vcf file
+
+```{r}
+if(refAvail){
+  out <- c()
+  out[1] <- dim(vcfRef$map)[1]
+  noVariants.ref <- dim(vcfRef$map)[1]
+  names(out)[1] <- "Total number of variants"
+  out[2] <- sum(sapply(apply(vcfRef$genotypes,2,table),length)==1)
+  names(out)[2] <- "Monomorphic sites"
+  out_html <- knitr::kable(out, col.names = NULL, "html")
+  kable_styling(out_html, "striped", position = "left")
+}
+```
+
+Plot the snp position
+```{r}
+if(refAvail){
+  plot(as.vector(as.matrix(vcfRef$map[,4])), ylab="Pos. on mock", xlab="SNP index")
+}
+```
+Missing variant calls per sample
+
+```{r}
+if(refAvail){
+  barplot(apply(vcfRef$genotypesInfo==".,.",2,sum), las=2, main="Missing variants per sample", col=report.colours[1])
+}
+```
+```{r}
+if(refAvail){
+  barplot(apply(vcfRef$genotypesInfo==".,.",2,sum)/noVariants.ref*100, las=2, main="Missing variants per sample (in %)", col=report.colours[1])
+}
+```
+
+
+# Homology comparison
+```{r homology search}
+# Get the group vectors
+  rownames.vcf <- rownames(vcf$genotypes)
+
+  father <- which(sapply(strsplit(rownames.vcf,"\\."),"[",1)=="isa")
+  mother <- which(sapply(strsplit(rownames.vcf,"\\."),"[",1)=="ema")
+  sister <- which(sapply(strsplit(rownames.vcf,"\\."),"[",1)=="sisar")
+  control <- which(sapply(strsplit(rownames.vcf,"\\."),"[",1)=="control")
+  case <- which(sapply(strsplit(rownames.vcf,"\\."),"[",1)=="kaapio")
+  
+  father <- vcf$genotypes[father,]
+  mother <- vcf$genotypes[mother,]
+  sister <- vcf$genotypes[sister,]
+  control <- vcf$genotypes[control,]
+  case <- as.data.frame(vcf$genotypes[case,])
+
+# Now get the Heterozygeous loci for father (father needs to be 0/1)
+  tmp <- lapply(apply(father,2,table),names)=="01"  
+  father.candi <- tmp[tmp==TRUE]
+  tmp <- lapply(apply(mother,2,table),names)=="01"  
+  mother.candi <- tmp[tmp==TRUE]
+  tmp <- table(c(names(father.candi),names(mother.candi)))
+  parents.candi <- names(tmp[tmp==2])
+  
+# Now check if at these candidate loci homolog cases are
+  case.filtered <- case[,which(is.element(colnames(case),parents.candi))]
+```
+
+## Visualization of VCF
+Here, we have Homo. Ref green, Homo. Alt red, hetero blue and missing black
+
+```{r image vcf, fig.width=15, fig.height=10, warning=FALSE}
+par(mar=c(10,5,1,1))
+plotThis <- t(apply(as.matrix(vcf$genotypes),1,as.numeric))
+dataForBarplot <- apply(plotThis,1,class.table, classes=c(0,1,2,3))
+colnames(dataForBarplot) <- rownames(vcf$genotypes)
+barplot(dataForBarplot, col=c("green", "blue", "red", "black"), las=2)
+```
+
+## PCA
+
+```{r, warning=FALSE}
+ vcf2 <- importVCF(file.path(projFolder, "VCF", "FinalSetVariants_finalMock.vcf"))
+#vcf2 <- importVCF(file.path(projFolder, "MPILEUP", "mpileup_reference", "GSC.vcf"))
+
+tmp <- as.matrix(vcf2$genotypes)
+tmp <- apply(tmp,1,as.numeric)
+tmp[is.na(tmp)] <- 0
+
+vcf.PCA <- prcomp(t(tmp))
+```
+
+```{r}
+palette("default")
+pairs(vcf.PCA$x[,1:3])
+
+if(!is.null(sampleInfo)){
+for(i in 2:ncol(sampleInfo)){
+  pairs(vcf.PCA$x[,1:3], col=as.factor(sampleInfo[,i]), pch=20)
+}
+}
+```
+
+```{r}
+cols <- min(ncol(vcf.PCA$x),10)
+pairs(vcf.PCA$x[,1:cols])
+
+if(!is.null(sampleInfo)){
+for(i in 2:ncol(sampleInfo)){
+  pairs(vcf.PCA$x[,1:cols], col=as.numeric(as.factor(sampleInfo[,i])), pch=20)
+}
+}
+```
+
+## Other methods
+
+### ICS
+```{r, eval=FALSE}
+cols <- min(ncol(vcf.PCA$x),10)
+FOBI <- ics(vcf.PCA$x[,1:cols])
+if(ncol(sampleInfo)>1){
+for(i in 2:ncol(sampleInfo)){
+  plot(FOBI@Scores, col=as.numeric(as.factor(sampleInfo[,i])), pch=20)
+}  
+} else {
+   plot(FOBI@Scores, pch=20)
+}
+
+```
+
+### t-SNE
+```{r}
+cols <- min(ncol(vcf.PCA$x),10)
+TSNEout <- tsne(vcf.PCA$x[,1:cols], k=5)
+
+if(!is.null(sampleInfo)){
+for(i in 2:ncol(sampleInfo)){
+  plot(TSNEout, col=as.numeric(as.factor(sampleInfo[,i])), pch=20)
+}
+} else {
+   plot(TSNEout, pch=20)
+}
+```
+
+### Kernel PCA
+```{r}
+# Kernel PCA
+cols <- min(min(dim(vcf.PCA$x)),10)-1
+
+KPCAres <- kpca(vcf.PCA$x[,1:cols])
+
+if(!is.null(sampleInfo)){
+  for(i in 2:ncol(sampleInfo)){
+     pairs(rotated(KPCAres)[,1:cols], col=as.numeric(as.factor(sampleInfo[,i])), pch=20)
+  }
+
+} else {
+   ndim <- min(ncol(rotated(KPCAres)), 10)
+   plot(rotated(KPCAres)[,1:ndim], pch=20)
+}
+
+```
+
+### Diffusion map
+```{r}
+# Diffusion map
+#  dm <- DiffusionMap(vcf.PCA$x[,1:10])
+#  for(i in 2:ncol(sampleInfo)){
+#     pairs(dm@eigenvectors[,1:10], col=as.numeric(as.factor(sampleInfo[,i])), pch=20)
+#  }
+```
+
+### Locally linear embedding (LLE)
+```{r, eval=FALSE}
+# LLE
+cols <- min(ncol(vcf.PCA$x),10)
+
+  lleres <- lle(vcf.PCA$x[,1:cols], m=min(nrow(vcf$genotypes), 7), k=17, v=0.99)
+ 
+if(ncol(sampleInfo)>1){
+ for(i in 2:ncol(sampleInfo)){
+     pairs(lleres$Y[,1:(min(ncol(lleres$Y),5))], col=as.numeric(as.factor(sampleInfo[,i])), pch=20)
+  }
+
+} else {
+   plot(lleres$Y[,1:(min(ncol(lleres$Y),5))], pch=20)
+}
+```
+
+```{r}
+# REPPlab
+#  REPPres <- EPPlab(x.pca[,1:5], PPalg = "Tribe", PPindex = "KurtosisMin", n.simu = 100, maxiter = 200, sphere = TRUE)
+#  plot(REPPres, type = "angles", which = 1:100)
+#  pairs(REPPres, which = c(60, 80,100))
+  
+```
+
+# Case/Control Analysis
+In case there is a casecontrol column in the file sampleInfo.txt we perform a search for causative mutations.
+
+First, we identify possible candidate loci. For that, we create two sets of candidate loci, homozygeous reference and
+homozygeous alternative. Hereby, we ignore the missing genotypes as well as accepting two wrong genotype across all
+cases.
+
+Then, we check if for those particular loci the controls do not have this particular homozygeous genotype (besides five
+accepted mistakes).
+
+```{r}
+if(!is.null(sampleInfo)){
+  if(is.element(colnames(sampleInfo), "casecontrol")){
+    if(ncol(sampleInfo)>1){
+      mmCase <- 2
+      mmControl <- 5
+      vcf.cases <- vcf$genotypes[sampleInfo$casecontrol=="case",]
+      vcf.control <- vcf$genotypes[sampleInfo$casecontrol=="control",]
+      
+      vcf.cases.table <- apply(vcf.cases,2,table)
+      vcf.control.table <- apply(vcf.control,2,table)
+      
+      nCases <- nrow(vcf.cases)
+      nControl <- nrow(vcf.control)
+      
+      candidateLociRef <- c()
+      candidateLociAlt <- c()
+      for(i in 1:length(vcf.cases.table)){
+        tmp <- vcf.cases.table[[i]]
+        homRef <- tmp[names(tmp)=="00"] + tmp[names(tmp)=="03"]
+        homAlt <- tmp[names(tmp)=="02"] + tmp[names(tmp)=="03"]
+        if(length(homRef)==0) homRef <- 0
+        if(length(homAlt)==0) homAlt <- 0
+        if(homRef>=(nCases - mmCase)) candidateLociRef <- c(candidateLociRef, names(vcf.cases.table)[i])
+        if(homAlt>=(nCases - mmCase)) candidateLociAlt <- c(candidateLociAlt, names(vcf.cases.table)[i])
+      }
+      
+      causativeRef <- c()
+      causativeAlt <- c()
+      for(i in 1:length(candidateLociRef)){
+        tmp <- vcf.control.table[[which(names(vcf.control.table)==candidateLociRef[i])]]
+        homRef <- tmp[names(tmp)=="00"] + tmp[names(tmp)=="03"]
+        homAlt <- tmp[names(tmp)=="02"] + tmp[names(tmp)=="03"]
+        if(length(homRef)==0) homRef <- 0
+        if(length(homAlt)==0) homAlt <- 0
+      #  if(homRef>=(nControl - 1)) causativeRef <- c(causativeRef, names(vcf.control.table)[i])
+        if(homAlt>=(nControl - mmControl)) causativeRef <- c(causativeRef, names(vcf.control.table)[i])
+      }
+      
+      for(i in 1:length(candidateLociAlt)){
+        tmp <- vcf.control.table[[which(names(vcf.control.table)==candidateLociAlt[i])]]
+        homRef <- tmp[names(tmp)=="00"] + tmp[names(tmp)=="03"]
+        homAlt <- tmp[names(tmp)=="02"] + tmp[names(tmp)=="03"]
+        if(length(homRef)==0) homRef <- 0
+        if(length(homAlt)==0) homAlt <- 0
+        if(homRef>=(nControl - mmControl)) causativeAlt <- c(causativeAlt, names(vcf.control.table)[i])
+      #  if(homAlt>=(nControl - 1)) causativeAlt <- c(causativeAlt, names(vcf.control.table)[i])
+      }
+    }
+  }
+}
+```
+
+Then we identify the following potentially causative mutations:
+
+```{r}
+if(!is.null(sampleInfo)){
+  if(is.element(colnames(sampleInfo), "casecontrol")){
+    if(ncol(sampleInfo)>1){
+      if(length(causativeRef)>0){
+        datatable(as.data.frame(causativeRef))
+      } else {
+        cat("No potentially mutations found for homozygeous reference!\n")
+      }
+      if(length(causativeAlt)>0){
+        datatable(as.data.frame(causativeAlt))
+      } else {
+        cat("No potentially mutations found for homozygeous alternative!\n")
+      }
+    }
+  }
+}
+```
+
+# Warnings and Issues
+Here we add some automatic checks of the pipeline and the data and report possible problems
+
+```{r}
+conc.test <- "FAILED"
+if(totalRawSequences==totalConcSequences) conc.test <- "PASS"
+
+out <- data.frame(c("Concatenation (number of sequences)"),
+                  c(conc.test))
+colnames(out) <- c("Test", "Result")
+out_html <- knitr::kable(out, "html")
+kable_styling(out_html, "striped", position = "left") 
+```
+# Benchmarks
+
+## Runtimes per calculation step
+IMPORT HERE STILL THE BENCHMARKING TABLES
+
+# Appendix
+
+## Project Setup
+
+### Content of barcodeID.txt
+
+This is the barcodeID.txt that is used in the project:
+```{r import barcodesID.txt}
+barcodesID <- read.table(file.path(projFolder,"barcodesID.txt"))
+colnames(barcodesID) <- c("Index", "SampleID", "UsedForMock")
+```
+
+```{r print barcodesID}
+datatable(barcodesID)
+#  out_html <- knitr::kable(barcodesID, "html")
+#  kable_styling(out_html, "striped", position = "left") 
+```
+
+
+## Pipeline configuration
+This is the configuration file that is used for the project:
+
+```{r import config file}
+pipelineConfig <- readLines(pipelineConfig.file)
+```
+
+```{r print configuration}
+  out_html <- knitr::kable(as.matrix(pipelineConfig), "html")
+  kable_styling(out_html, "striped", position = "left")
+```
+
+## Pipeline environment
+And this is the conda environment configuration
+ 
+```{r import conda file}
+condaFile <- readLines(file.path(pipelineFolder, "GBS.yaml"))
+```
+
+```{r print conda}
+  out_html <- knitr::kable(as.matrix(condaFile), "html")
+  kable_styling(out_html, "striped", position = "left")
+```
+
+# References
+Tools used in the analysis:
+
+(Populate this later automatically from the conda environment file)
+
+* FastQC (0.11.8)
+* MultiQC (1.17)

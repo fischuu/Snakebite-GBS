@@ -5,13 +5,13 @@ if(!is.element("snakemake",ls())){
   refGenome.file <- "hermetiaRef_112020.fasta"
 }
 
-createRMD.command <- paste0("cat ",pipelineFolder,"scripts/QC-header.Rmd ",
-                                   pipelineFolder,"scripts/helpFunctions.Rmd ",
-                                   pipelineFolder,"scripts/generalWorkflow.Rmd ",
-                                   pipelineFolder,"scripts/basicStats.Rmd ",
-                                   pipelineFolder,"scripts/QC.Rmd ",
-                                   "> ",pipelineFolder,"scripts/QC-report.Rmd",)
+createRMD.command <- paste0("cat ",pipelineFolder,"/scripts/QC-header.Rmd ",
+                                   pipelineFolder,"/scripts/helpFunctions.Rmd ",
+                                   pipelineFolder,"/scripts/generalWorkflow.Rmd ",
+                                   pipelineFolder,"/scripts/basicStats.Rmd ",
+                                   pipelineFolder,"/scripts/QC.Rmd ",
+                                   "> ",pipelineFolder,"/scripts/QC-Report.Rmd")
 
 system(createRMD.command)
 
-rmarkdown::render(file.path(pipelineFolder,"scripts","QC-report.Rmd"), output_file=file.path(pipelineFolder,"QC-report.html"))"
+rmarkdown::render(file.path(pipelineFolder,"scripts","QC-Report.Rmd"), output_file=file.path(projFolder,"QC-Report.html"))

@@ -4,6 +4,7 @@ from multiprocessing import cpu_count
 import glob
 import re
 import os
+import sys
 
 ##### GBS-snakemake pipeline #####
 ##### Daniel Fischer (daniel.fischer@luke.fi)
@@ -24,6 +25,17 @@ samplesheet = pd.read_table(config["samplesheet-file"]).set_index("rawsample", d
 rawsamples=list(samplesheet.rawsample)
 samples=list(set(list(samplesheet.sample_name)))
 lane=list(samplesheet.lane)
+
+if '--configfile' in sys.argv:
+    i = sys.argv.index('--configfile')
+    config["pipeline-config"] = sys.argv[i + 1]
+
+if '--cluster-config' in sys.argv:
+    i = sys.argv.index('--cluster-config')
+    config["server-config"] = sys.argv[i + 1]
+else:
+    config["server-config"] = ""
+
 
 workdir: config["project-folder"]
 
@@ -104,7 +116,8 @@ print("##### --------------------------------")
 print("##### project-folder  : "+config["project-folder"])
 print("##### pipeline-folder : "+config["pipeline-folder"])
 print("##### report-script   : "+config["report-script"])
-print("##### pipeline-config (NOT NECESSARILY THE USED ONE!!!): "+config["pipeline-config"])
+print("##### pipeline-config : "+config["pipeline-config"])
+print("##### server-config   : "+config["server-config"])
 print("#####")
 print("##### Singularity configuration")
 print("##### --------------------------------")

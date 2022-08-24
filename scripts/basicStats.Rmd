@@ -84,3 +84,4 @@ par(oma=c(6,5,0,0))
 labels <- gsub(".merged.fastq.gz.report","",conc.reports.files)
 barplot(sapply(conc.reports,nrow), ylab="Concatenated files", names=labels, las=2, col=report.colours[1])
 ```
+
