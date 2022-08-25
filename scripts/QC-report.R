@@ -10,8 +10,8 @@ createRMD.command <- paste0("cat ",pipelineFolder,"/scripts/QC-header.Rmd ",
                                    pipelineFolder,"/scripts/generalWorkflow.Rmd ",
                                    pipelineFolder,"/scripts/basicStats.Rmd ",
                                    pipelineFolder,"/scripts/QC.Rmd ",
-                                   "> ",pipelineFolder,"/scripts/QC-Report.Rmd")
+                                   "> ",projFolder,"/QC-Report.Rmd")
 
 system(createRMD.command)
 
-rmarkdown::render(file.path(pipelineFolder,"scripts","QC-Report.Rmd"), output_file=file.path(projFolder,"QC-Report.html"))
+rmarkdown::render(file.path(projFolder,"QC-Report.Rmd"), output_file=file.path(projFolder,"QC-Report.html"))
