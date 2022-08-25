@@ -26,16 +26,18 @@ rawsamples=list(samplesheet.rawsample)
 samples=list(set(list(samplesheet.sample_name)))
 lane=list(samplesheet.lane)
 
-if '--configfile' in sys.argv:
-    i = sys.argv.index('--configfile')
-    config["pipeline-config"] = sys.argv[i + 1]
-
-if '--cluster-config' in sys.argv:
-    i = sys.argv.index('--cluster-config')
-    config["server-config"] = sys.argv[i + 1]
-else:
-    config["server-config"] = ""
-
+#### CONTINUE FROM HERE TO ADD PIPE CONFIG ONTO THE FILE
+#if '--configfile' in sys.argv:
+#    i = sys.argv.index('--configfile')
+#    config["pipeline-config"] = sys.argv[i + 1]
+#else:
+#    config["pipeline-config"] = ""
+#
+#if '--cluster-config' in sys.argv:
+#    i = sys.argv.index('--cluster-config')
+#    config["server-config"] = sys.argv[i + 1]
+#else:
+#    config["server-config"] = ""
 
 workdir: config["project-folder"]
 

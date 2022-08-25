@@ -72,6 +72,10 @@ rule R_QCReport:
        pipeConfig=config["pipeline-config"],
        refGenome=config["genome"]
     shell:"""
+       echo "Creating the QC-Report"
+       echo "###################################################################"
+       echo ""
+       
        R -e "projFolder <- '{params.projFolder}'; \
              pipelineFolder <- '{params.pipeFolder}'; \
              refGenome.file <- '{params.refGenome}'; \

@@ -5,6 +5,8 @@
 ################################################################################
 project-folder: "/scratch/project_2001746/TestProject"                                                              # Absolute path to the project root folder
 pipeline-folder: "/users/fischerd/git/Pipeline-GBS"                                                                 # Absolute path to the pipeline folder
+pipeline-config: "/scratch/project_2001746/TestProject/GBS-pipeline_config.yaml"
+server-config: "/users/fischerd/git/Pipeline-GBS/GBS-pipeline_server-config.yaml"
 rawdata-folder: "/scratch/project_2001746/TestProject/FASTQ/RAW"                                                    # Absolute path to the folder that contain the raw fastq files
 samplesheet-file: "/scratch/project_2001746/TestProject/samplesheet.tsv"                                            # Absolute path to the samplesheet (MAKE THIS OPTIONAL)
 sampleinfo-file: "/scratch/project_2001746/TestProject/sampleinfo.tsv"                                             # Absolute path to the sample info (MAKE THIS OPTIONAL)
