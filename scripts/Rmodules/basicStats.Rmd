@@ -17,7 +17,7 @@ sampleSheet <- read.table(sampleSheet.file, sep="\t", header=TRUE)
 sampleInfo.file <- getConfigField("sampleinfo-file")
 sampleInfo <- NULL
 
-if(length(sampleInfo.file)>0 ) sampleInfo <- read.table(sampleInfo.file, sep="\t", header=TRUE)
+if(sampleInfo.file!="") sampleInfo <- read.table(sampleInfo.file, sep="\t", header=TRUE)
 
 #projectFolder.info <- trimws(gsub("project-folder:","", pipelineConfig[grep("project-folder:", pipelineConfig)]))
 #pipelineFolder.info <- trimws(gsub("pipeline-folder:","", pipelineConfig[grep("pipeline-folder:", pipelineConfig)]))

@@ -5,11 +5,11 @@ if(!is.element("snakemake",ls())){
   refGenome.file <- "hermetiaRef_112020.fasta"
 }
 
-createRMD.command <- paste0("cat ",pipelineFolder,"/scripts/QC-header.Rmd ",
-                                   pipelineFolder,"/scripts/helpFunctions.Rmd ",
-                                   pipelineFolder,"/scripts/generalWorkflow.Rmd ",
-                                   pipelineFolder,"/scripts/basicStats.Rmd ",
-                                   pipelineFolder,"/scripts/QC.Rmd ",
+createRMD.command <- paste0("cat ",pipelineFolder,"/scripts/Rmodules/QC-header.Rmd ",
+                                   pipelineFolder,"/scripts/Rmodules/helpFunctions.Rmd ",
+                                   pipelineFolder,"/scripts/Rmodules/generalWorkflow.Rmd ",
+                                   pipelineFolder,"/scripts/Rmodules/basicStats.Rmd ",
+                                   pipelineFolder,"/scripts/Rmodules/QC.Rmd ",
                                    "> ",projFolder,"/QC-Report.Rmd")
 
 system(createRMD.command)

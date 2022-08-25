@@ -4,7 +4,8 @@
 #####                                                                      #####
 ################################################################################
 
-0.15.5: * config and server config files are now taken from bash call and do not need to be specified again in the config file itself
+0.15.6: * Bugfixes and restructing of the script-files
+REVERSED!!! 0.15.5: * config and server config files are now taken from bash call and do not need to be specified again in the config file itself 
 0.15.4: * Changed final Report also to modules that can be reused from other pipelines
 0.15.3: * Dedicated QC report added for the QC rule
 0.15.2: * Added the barcodes file as a dependency for rules that need it, otherwise the pipeline ran into a missing file error.

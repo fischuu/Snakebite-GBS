@@ -5,20 +5,20 @@ if(!is.element("snakemake",ls())){
   refGenome.file <- "hermetiaRef_112020.fasta"
 }
 
-createRMD.command <- paste0("cat ",pipelineFolder,"scripts/final-header.Rmd ",
-                                   pipelineFolder,"scripts/helpFunctions.Rmd ",
-                                   pipelineFolder,"scripts/generalWorkflow.Rmd ",
-                                   pipelineFolder,"scripts/basicStats.Rmd ",
-                                   pipelineFolder,"scripts/QC.Rmd ",
-                                   pipelineFolder,"scripts/clusterAndReference.Rmd ",
-                                   pipelineFolder,"scripts/alignments.Rmd ",
-                                   pipelineFolder,"scripts/variants.Rmd ",
-                                   pipelineFolder,"scripts/homology.Rmd ",
-                                   pipelineFolder,"scripts/caseControl.Rmd ",
-                                   pipelineFolder,"scripts/warnings.Rmd ",
-                                   pipelineFolder,"scripts/benchmarks.Rmd ",
-                                   pipelineFolder,"scripts/appendix.Rmd ",
-                                   pipelineFolder,"scripts/references.Rmd ",
+createRMD.command <- paste0("cat ",pipelineFolder,"scripts/Rmodules/final-header.Rmd ",
+                                   pipelineFolder,"scripts/Rmodules/helpFunctions.Rmd ",
+                                   pipelineFolder,"scripts/Rmodules/generalWorkflow.Rmd ",
+                                   pipelineFolder,"scripts/Rmodules/basicStats.Rmd ",
+                                   pipelineFolder,"scripts/Rmodules/QC.Rmd ",
+                                   pipelineFolder,"scripts/Rmodules/clusterAndReference.Rmd ",
+                                   pipelineFolder,"scripts/Rmodules/alignments.Rmd ",
+                                   pipelineFolder,"scripts/Rmodules/variants.Rmd ",
+                                   pipelineFolder,"scripts/Rmodules/homology.Rmd ",
+                                   pipelineFolder,"scripts/Rmodules/caseControl.Rmd ",
+                                   pipelineFolder,"scripts/Rmodules/warnings.Rmd ",
+                                   pipelineFolder,"scripts/Rmodules/benchmarks.Rmd ",
+                                   pipelineFolder,"scripts/Rmodules/appendix.Rmd ",
+                                   pipelineFolder,"scripts/Rmodules/references.Rmd ",
                                    "> ",pipelineFolder,"scripts/final-report.Rmd")
 
 system(createRMD.command)
