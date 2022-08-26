@@ -271,13 +271,16 @@ plotFastQCFeature(conFastQC.R1, conFastQC.R2, feature="Total.Sequences")
 ```
 
 ### Quality value distribution
-```{r}
+```{r qualityValueDistribution Concatenated data}
 qcFiles.conc <- list.files(file.path(projFolder,"QC", "CONCATENATED"), pattern="*qualdist.txt")
 qcQual.conc <- fread(file.path(projFolder,"QC", "CONCATENATED", qcFiles.conc[1]), skip=1)
 colnames(qcQual.conc) <- c(gsub("_qualdist.txt","", qcFiles.conc[1]), "Quality")
 
 for(i in 2:length(qcFiles.conc)){
     tmp <- fread(file.path(projFolder,"QC", "CONCATENATED", qcFiles.conc[i]), skip=1)
+    if(nrow(tmp)==0){
+      tmp <- data.frame(V1=0, V2="NA")
+    }
     colnames(tmp) <- c(gsub("_qualdist.txt","", qcFiles.conc[i]), "Quality")
     qcQual.conc <- merge(qcQual.conc, tmp, all=TRUE)
 }
@@ -423,13 +426,16 @@ totalSequences[,1] <- gsub(".R1","",totalSequences[,1])
 ```
 
 ### Quality value distribution
-```{r}
+```{r qualityValueDistribution Trimmed data}
 qcFiles.trimmed <- list.files(file.path(projFolder,"QC", "TRIMMED"), pattern="*qualdist.txt")
 qcQual.trimmed <- fread(file.path(projFolder,"QC", "TRIMMED", qcFiles.trimmed[1]), skip=1)
 colnames(qcQual.trimmed) <- c(gsub("_qualdist.txt","", qcFiles.trimmed[1]), "Quality")
 
 for(i in 2:length(qcFiles.trimmed)){
     tmp <- fread(file.path(projFolder,"QC", "TRIMMED", qcFiles.trimmed[i]), skip=1)
+    if(nrow(tmp)==0){
+      tmp <- data.frame(V1=0, V2="NA")
+    }
     colnames(tmp) <- c(gsub("_qualdist.txt","", qcFiles.trimmed[i]), "Quality")
     qcQual.trimmed <- merge(qcQual.trimmed, tmp, all=TRUE)
 }

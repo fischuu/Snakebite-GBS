@@ -4,6 +4,9 @@
 #####                                                                      #####
 ################################################################################
 
+0.15.9: * Added the callvariants rule
+0.15.8: * Added the readalignment rule
+0.15.7: * Exception catching added for QC-Report block "qualityValueDistribution {Concatenated,Trimmed} data"
 0.15.6: * Bugfixes and restructing of the script-files
 REVERSED!!! 0.15.5: * config and server config files are now taken from bash call and do not need to be specified again in the config file itself 
 0.15.4: * Changed final Report also to modules that can be reused from other pipelines

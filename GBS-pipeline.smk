@@ -11,8 +11,8 @@ import sys
 ##### Natural Resources Institute Finland (Luke)
 ##### This pipeline is build upon the the GBS-SNP-CROP pipeline:
 ##### https://github.com/halelab/GBS-SNP-CROP
-##### Version: 0.15.6
-version = "0.15.6"
+##### Version: 0.15.9
+version = "0.15.9"
 
 ##### set minimum snakemake version #####
 min_version("6.0")
@@ -229,6 +229,38 @@ rule mockreference:
     input:
         "%s/FASTQ/TRIMMED/GSC.MR.Genome.fa" % (config["project-folder"]),
         "%s/FASTQ/TRIMMED/GSC.MR.Clusters.fa" % (config["project-folder"])
+
+rule readalignment:
+    input:
+        expand("%s/FASTQ/TRIMMED/alignments_reference/{samples}.sorted.bam" % (config["project-folder"]), samples=samples),
+        expand("%s/MPILEUP/mpileup_reference/{samples}.mpileup" % (config["project-folder"]), samples=samples),
+        expand("%s/FASTQ/TRIMMED/alignments_reference/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
+        expand("%s/FASTQ/TRIMMED/alignments/{samples}.sorted.bam" % (config["project-folder"]), samples=samples),
+        expand("%s/FASTQ/TRIMMED/alignments_clusters/{samples}.sorted.bam" % (config["project-folder"]), samples=samples),
+        expand("%s/FASTQ/TRIMMED/{samples}.mpileup" % (config["project-folder"]), samples=samples),
+        expand("%s/FASTQ/TRIMMED/alignments/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
+        expand("%s/FASTQ/TRIMMED/alignments_clusters/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
+        expand("%s/BAM/alignments_finalMock/{samples}.sorted.bam" % (config["project-folder"]), samples=samples),
+        expand("%s/MPILEUP/mpileup_finalMock/{samples}.mpileup" % (config["project-folder"]), samples=samples),
+        expand("%s/BAM/alignments_finalMock/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples)
+
+rule callvariants:
+    input:
+        expand("%s/FASTQ/TRIMMED/{samples}.ref.txt" % (config["project-folder"]), samples=samples),
+        expand("%s/MPILEUP/mpileup_reference/{samples}.count.txt" % (config["project-folder"]), samples=samples),
+        "%s/FASTQ/TRIMMED/VerticalRefPos.txt" % (config["project-folder"]),
+        "%s/MPILEUP/mpileup_reference/VerticalRefPos.txt" % (config["project-folder"]),
+        "%s/FASTQ/TRIMMED/GSC.MasterMatrix.txt" % (config["project-folder"]),
+        "%s/MPILEUP/mpileup_reference/GSC.MasterMatrix.txt" % (config["project-folder"]),
+        "%s/FASTQ/TRIMMED/variants/GSC.GenoMatrix.txt" % (config["project-folder"]),
+        "%s/MPILEUP/mpileup_reference/variants/GSC.GenoMatrix.txt" % (config["project-folder"]),
+        "%s/FASTQ/TRIMMED/GSC.vcf" % (config["project-folder"]),
+        "%s/VCF/FinalSetVariants_referenceGenome.vcf" % (config["project-folder"]),
+        expand("%s/MPILEUP/mpileup_finalMock/{samples}.count.txt" % (config["project-folder"]), samples=samples),
+        "%s/MPILEUP/mpileup_finalMock/VerticalRefPos.txt" % (config["project-folder"]),
+        "%s/MPILEUP/mpileup_finalMock/GSC.MasterMatrix.txt" % (config["project-folder"]),
+        "%s/MPILEUP/mpileup_finalMock/variants/GSC.GenoMatrix.txt" % (config["project-folder"]),
+        "%s/VCF/FinalSetVariants_finalMock.vcf" % (config["project-folder"])
 
 rule MockEval:
     input:
