@@ -16,6 +16,7 @@ output:
 ---
 
 ```{r setup, include=FALSE}
+.libPaths()
 #.libPaths(c("/projappl/project_2001746/R/libraries", .libPaths()))
 #library("knitr")
 library("GenomicTools")
@@ -29,7 +30,7 @@ library("DT")
 library("kableExtra")
 library("ICS")
 library("tsne")
-library("lle")
+#library("lle")
 library("kernlab")
 #library("REPPlab")
 #library("RDRToolbox")
@@ -42,22 +43,66 @@ knitr::opts_chunk$set(echo = FALSE,
                       cache.lazy = FALSE,
                       dev = c('png', 'pdf'),
                       fig.align = 'center', fig.height = 5, fig.width = 8.5)
+report.colours <-c("#FF8200", "#00B5E2", "#78BE20", "#7F3F98", "#E13C98", "#0033A0", "#54585A")
+
 mockClusters.file <- "GSC.MR.Clusters.fa"
 mockReference.file <- "GSC.MR.Genome.fa"
 # To run locally on terminal type this command in the pipeline folder:
 # R -e "rmarkdown::render('./scripts/workflow-report.Rmd',output_file='./finalReport.html')"
 
 if(!is.element("snakemake",ls())){
-  projFolder <- "/scratch/project_2001746/BSF"
-  pipelineFolder <- "/scratch/project_2001746/Pipeline-GBS/"
-  pipelineConfig.file <- "/scratch/project_2001746/BSF/GBS-pipeline_config-BSF.yaml"
-  refGenome.file <- "GCA_009835165.1_ASM983516v1_genomic.fna"
+  projFolder <- "/scratch/project_2001746/TestProject"
+  pipelineFolder <- "~/git/Pipeline-GBS/"
+  pipelineConfig.file <- "/scratch/project_2001746/TestProject/GBS-pipeline_config.yaml"
+  refGenome.file <- "hermetiaRef_112020.fasta"
 }
 refGenome.file <- basename(refGenome.file)
 ifelse(refGenome.file == "", refAvail <- FALSE, refAvail <- TRUE)
 ```
 
 ```{r help functions}
+vectorToDF.int <- function(x, sep=" ", names=NULL, autoCoerc=TRUE){
+  x.split <- strsplit(x, sep)
+  no.columns <- length(x.split[[1]])
+  no.rows <- length(x.split)
+  out <- as.data.frame(matrix(NA, ncol=no.columns, nrow=no.rows))
+  for(i in 1:no.columns){
+    out[,i] <- sapply(x.split,"[", i)
+  }
+  names(out) <- names
+  if(autoCoerc){
+    for(i in 1:no.columns){
+      ac <- suppressWarnings(as.numeric(out[1,i]))
+      if(!is.na(ac)){
+      out[,i] <- as.numeric(out[,i])
+      }
+      
+    }
+  }
+  out
+}
+
+
+getConfigField <- function(x, from=pipelineConfig){
+  out <- c()
+  
+  if(length(x)==1){
+    pos <- grep(x, from)
+    out <- from[pos]
+    
+    out <- gsub(x, "", out)
+    out <- gsub('\"','',out)
+    out <- gsub(' ','',out)
+    out <- gsub(':','',out)
+    out <- gsub('#.*','',out)
+  } else {
+    # Get here the part for the subfields
+    
+  }
+  
+  out
+}
+
 class.table <- function(x, classes=NULL){
   if(is.null(classes)){
     out <- table(x)
@@ -71,7 +116,8 @@ class.table <- function(x, classes=NULL){
   out
 }
 
-plotFastQCFeature <- function(x,y, labels=c("R1", "R2"), col=c(viridis(20)[8], viridis(20)[16]), feature="total_deduplicated_percentage", axes=TRUE){
+# alternative colours c(viridis(20)[8], viridis(20)[16])
+plotFastQCFeature <- function(x,y, labels=c("R1", "R2"), col=c(report.colours[1], report.colours[2]), feature="total_deduplicated_percentage", axes=TRUE){
   x.values <- as.vector(as.matrix(x[feature]))
   y.values <- as.vector(as.matrix(y[feature]))
   
@@ -183,7 +229,6 @@ The DAG of the used pipeline with rule dependencies.
 if(file.exists(file.path(projFolder,"workflow.png"))) knitr::include_graphics(file.path(projFolder,"workflow.png"))
 ```
 
-
 # Basic stats
 
 ```{r get pipeline version}
@@ -192,31 +237,53 @@ pipeVersion <- gsub("##### Version: ","",pipeSMK[grep("##### Version:", pipeSMK)
 ```
 
 ```{r import barcodesID, results="asis"}
-barcodes <- read.table(file.path(projFolder, "barcodesID.txt"))
-rawsamples <- read.table(file.path(projFolder, "rawsamples"))
-sampleInfo <- read.table(file.path(projFolder, "sampleInfo.txt"), header=TRUE)
+#barcodes <- read.table(file.path(projFolder, "barcodesID.txt"))
+#rawsamples <- read.table(file.path(projFolder, "rawsamples"))
+#sampleInfo <- read.table(file.path(projFolder, "sampleInfo.txt"), header=TRUE)
 pipelineConfig <- readLines(pipelineConfig.file)
 
-projectFolder.info <- trimws(gsub("project-folder:","", pipelineConfig[grep("project-folder:", pipelineConfig)]))
-pipelineFolder.info <- trimws(gsub("pipeline-folder:","", pipelineConfig[grep("pipeline-folder:", pipelineConfig)]))
-pipelineConfig.info <- trimws(gsub("pipeline-config:","", pipelineConfig[grep("pipeline-config:", pipelineConfig)]))
+sampleSheet.file <- getConfigField("samplesheet-file")
+sampleSheet <- read.table(sampleSheet.file, sep="\t", header=TRUE)
 
+sampleInfo.file <- getConfigField("sampleinfo-file")
+sampleInfo <- NULL
+
+if(length(sampleInfo.file)>0 ) sampleInfo <- read.table(sampleInfo.file, sep="\t", header=TRUE)
+
+#projectFolder.info <- trimws(gsub("project-folder:","", pipelineConfig[grep("project-folder:", pipelineConfig)]))
+#pipelineFolder.info <- trimws(gsub("pipeline-folder:","", pipelineConfig[grep("pipeline-folder:", pipelineConfig)]))
+#pipelineConfig.info <- trimws(gsub("pipeline-config:","", pipelineConfig[grep("pipeline-config:", pipelineConfig)]))
+
+projectFolder.info <- getConfigField("project-folder")
+pipelineFolder.info <- getConfigField("pipeline-folder")
+pipelineConfig.info <- pipelineConfig.file
+
+groupingNames <- "No file with sample information provided ('sampleinfo-file'-field)!"
+numberGroupingNames <- 0
+if(!is.null(sampleInfo)){
+  groupingNames <- colnames(sampleInfo[,-1])
+  numberGroupingNames <- length(groupingNames)
+} 
+
+mockSamples <- unique(sampleSheet$sample_name[sampleSheet$useForMock=="YES"])
 
 out <- data.frame(c("Number of raw-samples",
                     "Number of samples (after concatenating)",
                     "No. of grouping information",
                     "Grouping names",
+                    "No. of mock reference samples",
                     "Samples used for mock reference",
                     "Used reference genome",
                     "Pipeline version",
                     "Project folder",
                     "Pipeline folder",
                     "Pipeline config"),
-                  c(nrow(rawsamples),
-                    nrow(barcodes),
-                    ncol(sampleInfo)-1,
-                    paste(colnames(sampleInfo)[-1],collapse=", "),
-                    sum(barcodes[,3]=="YES"),
+                  c(length(unique(sampleSheet$rawsample)),
+                    length(unique(sampleSheet$sample_name)),
+                    numberGroupingNames,
+                    groupingNames,
+                    length(mockSamples),
+                    paste(mockSamples,collapse=", "),
                     basename(refGenome.file),
                     pipeVersion,
                     projectFolder.info,
@@ -246,7 +313,7 @@ for(i in 2:length(conc.reports.files)){
 ```{r visualize concatenation reports}
 par(oma=c(6,5,0,0))
 labels <- gsub(".merged.fastq.gz.report","",conc.reports.files)
-barplot(sapply(conc.reports,nrow), ylab="Concatenated files", names=labels, las=2)
+barplot(sapply(conc.reports,nrow), ylab="Concatenated files", names=labels, las=2, col=report.colours[1])
 ```
 
 
@@ -360,24 +427,60 @@ plotFastQCFeature(rawFastQC.R1, rawFastQC.R2, feature="Total.Sequences", axes=FA
 
 ### Quality value distribution
 ```{r}
-qcFiles.raw <- list.files(file.path(projFolder,"QC", "RAW"), pattern="*qualdist.txt")
-qcQual.raw <- fread(file.path(projFolder,"QC", "RAW", qcFiles.raw[1]), skip=1)
-colnames(qcQual.raw) <- c(gsub("_qualdist.txt","", qcFiles.raw[1]), "Quality")
+qcFiles.R1.raw <- paste0(sampleSheet$rawsample, "_R1_qualdist.txt")
+qcFiles.R2.raw <- paste0(sampleSheet$rawsample, "_R2_qualdist.txt")
 
-for(i in 2:length(qcFiles.raw)){
-    tmp <- fread(file.path(projFolder,"QC", "RAW", qcFiles.raw[i]), skip=1)
-    colnames(tmp) <- c(gsub("_qualdist.txt","", qcFiles.raw[i]), "Quality")
-    qcQual.raw <- merge(qcQual.raw, tmp, all=TRUE)
+qcQual.R1.raw <- vectorToDF.int(trimws(readLines(file.path(projFolder,"QC", "RAW", qcFiles.R1.raw[1]))[-1]))
+qcQual.R2.raw <- vectorToDF.int(trimws(readLines(file.path(projFolder,"QC", "RAW", qcFiles.R2.raw[1]))[-1]))
+
+colnames(qcQual.R1.raw) <- c(gsub("_qualdist.txt","", qcFiles.R1.raw[1]), "Quality")
+colnames(qcQual.R2.raw) <- c(gsub("_qualdist.txt","", qcFiles.R2.raw[1]), "Quality")
+
+for(i in 2:length(qcFiles.R1.raw)){
+    fileIn <- readLines(file.path(projFolder,"QC", "RAW", qcFiles.R1.raw[i]))[-1]
+    if(length(fileIn)>0){
+      tmp <- vectorToDF.int(trimws(fileIn))
+      colnames(tmp) <- c(gsub("_qualdist.txt","", qcFiles.R1.raw[i]), "Quality")
+    } else {
+      tmp <- data.frame(qcQual.R1.raw$Quality, 0)
+      colnames(tmp) <- c("Quality", gsub("_qualdist.txt","", qcFiles.R1.raw[i]))
+    }
+
+      qcQual.R1.raw <- merge(qcQual.R1.raw, tmp, all=TRUE)      
 }
-qcQual.raw[is.na(qcQual.raw)] <- 0
+
+qcQual.R1.raw[is.na(qcQual.R1.raw)] <- 0
+
+for(i in 2:length(qcFiles.R2.raw)){
+    fileIn <- readLines(file.path(projFolder,"QC", "RAW", qcFiles.R2.raw[i]))[-1]
+    if(length(fileIn)>0){
+      tmp <- vectorToDF.int(trimws(fileIn))
+      colnames(tmp) <- c(gsub("_qualdist.txt","", qcFiles.R2.raw[i]), "Quality")
+    } else {
+      tmp <- data.frame(qcQual.R2.raw$Quality, 0)
+      colnames(tmp) <- c("Quality", gsub("_qualdist.txt","", qcFiles.R2.raw[i]))
+    }
+
+      qcQual.R2.raw <- merge(qcQual.R2.raw, tmp, all=TRUE)      
+}
+
+qcQual.R2.raw[is.na(qcQual.R2.raw)] <- 0
 
 ```
 
 ```{r}
-plotThis <- as.matrix(qcQual.raw[,-1])
-rownames(plotThis) <- as.vector(as.matrix(qcQual.raw[,1]))
+plotThis <- as.matrix(qcQual.R1.raw[,-1])
+rownames(plotThis) <- as.vector(as.matrix(qcQual.R1.raw[,1]))
 par(mar=c(15,5,2,8), xpd=TRUE)
-barplot(plotThis, las=2, col=1:nrow(plotThis))
+barplot(plotThis, las=2, col=1:nrow(plotThis), main="Read 1 Quality scores")
+legend("topright", inset=c(-0.2,0), legend=rownames(plotThis)[(nrow(plotThis)):1], fill=nrow(plotThis):1)
+```
+
+```{r}
+plotThis <- as.matrix(qcQual.R2.raw[,-1])
+rownames(plotThis) <- as.vector(as.matrix(qcQual.R2.raw[,1]))
+par(mar=c(15,5,2,8), xpd=TRUE)
+barplot(plotThis, las=2, col=1:nrow(plotThis), main="Read 2 Quality scores")
 legend("topright", inset=c(-0.2,0), legend=rownames(plotThis)[(nrow(plotThis)):1], fill=nrow(plotThis):1)
 ```
 
@@ -645,7 +748,7 @@ colnames(qcQual.trimmed) <- c(gsub("_qualdist.txt","", qcFiles.trimmed[1]), "Qua
 
 for(i in 2:length(qcFiles.trimmed)){
     tmp <- fread(file.path(projFolder,"QC", "TRIMMED", qcFiles.trimmed[i]), skip=1)
-    colnames(tmp) <- c(gsub("_qualdist.txt","", qcFiles.raw[i]), "Quality")
+    colnames(tmp) <- c(gsub("_qualdist.txt","", qcFiles.trimmed[i]), "Quality")
     qcQual.trimmed <- merge(qcQual.trimmed, tmp, all=TRUE)
 }
 qcQual.trimmed[is.na(qcQual.trimmed)] <- 0
@@ -686,12 +789,12 @@ From the trimlog we get more statistics on the output of the trimming. Include t
 
 ```{r}
 cutLogs.files <- list.files(file.path(projFolder, "logs", "CUTADAPT"), pattern="cutadapt*")
-cutLogs <- fread(file.path(projFolder, "logs", "CUTADAPT", cutLogs.files[1]), skip="Overview of removed sequences")
+cutLogs <- suppressWarnings(fread(file.path(projFolder, "logs", "CUTADAPT", cutLogs.files[1]), skip="Overview of removed sequences"))
 cutLogs <- cutLogs[,1:2]
 colnames(cutLogs) <- c("length", gsub(".log", "",cutLogs.files[1]))
 
 for(i in 2:length(cutLogs.files)){
-  tmp <- fread(file.path(projFolder, "logs", "CUTADAPT", cutLogs.files[i]), skip="Overview of removed sequences")
+  tmp <- suppressWarnings(fread(file.path(projFolder, "logs", "CUTADAPT", cutLogs.files[i]), skip="Overview of removed sequences"))
   tmp <- tmp[,1:2]
   colnames(tmp) <- c("length", gsub(".log", "", cutLogs.files[i]))
   
@@ -963,7 +1066,7 @@ kable_styling(out_html, "striped", position = "left")
 ```
 
 ```{r visualize Quality scores}
-barplot(outQual, ylab="Frequency", main="Quality-score distribution")
+barplot(outQual, ylab="Frequency", main="Quality-score distribution", col=report.colours[1])
 ```
 
 ### Ratio samles used to length Mock reference
@@ -994,7 +1097,7 @@ par(mar=c(10,5,1,1))
 finalMockLength <- sum(nchar(finalMockClusters))
 mockCov <- 2*mqcStats.trim[,10] * mqcStats.trim[,5]/finalMockLength
 names(mockCov) <- mqcStats.trim[,1]
-barplot(mockCov, ylab="'x'-fold Coverage", col=viridis(20)[8], las=2)
+barplot(mockCov, ylab="'x'-fold Coverage", col=report.colours[1], las=2)
 lines(c(-100,10000),c(1,1), lty="dotted")
 lines(c(-100,10000),c(10,10), lty="dotted")
 ```
@@ -1007,7 +1110,7 @@ In case a reference genome was provided, here are a few statistics regarding it
 
 ```{r importRefGenome, warning=FALSE, results="asis"}
 if(refAvail){
-  refGenome <- importFA(file.path(projFolder, "references", basename(refGenome.file) ))
+  refGenome <- importFA(getConfigField("genome"))
 }
 ```
 
@@ -1069,7 +1172,7 @@ A visualisation of the alignments of the mock clusters to the reference genome
 if(refAvail){
   par(oma=c(8,1,1,0))
 mappedLoci <- read.table(file.path(projFolder,"BAM","Mockref","mockToRef.coverage"))
-barplot(mappedLoci[,2], main="Alignments per Chromosome in Reference", col=viridis(20)[8], names=mappedLoci[,1],las=2)
+barplot(mappedLoci[,2], main="Alignments per Chromosome in Reference", col=report.colours[1], names=mappedLoci[,1],las=2)
 }
 ```
 
@@ -1105,7 +1208,7 @@ for(i in 1:length(chrNames)){
 
 ```{r}
 if(refAvail){
-barplot(avgDist, main="Avg cluster mapping distance per Chromosome", col=viridis(20)[8], names=chrNames, las=2)
+barplot(avgDist, main="Avg cluster mapping distance per Chromosome", col=report.colours[1], names=chrNames, las=2)
 }
 ```
 
@@ -1192,9 +1295,9 @@ tmp <- as.numeric(sapply(strsplit(sapply(flagstats,"[",1), " +"),"[",1))
 mapStats[1,] <- as.numeric(sapply(strsplit(sapply(flagstats,"[",5), " +"),"[",1))
 mapStats[2,] <- tmp - mapStats[1,]
 
-p <- barplot(mapStats, col=c(viridis(20)[8], viridis(20)[16]), las=2)
+p <- barplot(mapStats, col=c(report.colours[1], report.colours[2]), las=2)
 
-legend("topleft", pch=c(20,20), col=c(viridis(20)[16], viridis(20)[8]), legend=c("Unmapped", "Mapped"), fill="white")
+legend("topleft", pch=c(20,20), col=c(report.colours[2], report.colours[1]), legend=c("Unmapped", "Mapped"), fill="white")
 
 # highlight the mock reference samples
 mockFiles <- paste(mockSamples, ".sam.flagstat", sep="")
@@ -1204,7 +1307,7 @@ points(p[mockPos], rep(200000, length(mockPos)), pch="*", col="red", cex=4)
 ```
 
 ```{r mapping percentage}
-barplot(mapStats[1,] / (apply(mapStats,2,sum)), ylim=c(0,1), ylab="Mapping in Percent", col=viridis(20)[8], las=2)
+barplot(mapStats[1,] / (apply(mapStats,2,sum)) * 100, ylim=c(0,100), ylab="Mapping in Percent", col=report.colours[1], las=2)
 ```
 
 And the same information in table format.
@@ -1255,7 +1358,7 @@ These are the amounts of clusters with different samples.
 
 ```{r cluster coverage stats}
 coveredClusters <- apply(clusterCoverage[,-1]>0,1,sum)
-barplot(table(coveredClusters), xlab="No. of different samples aligned to cluster", col=viridis(20)[8])
+barplot(table(coveredClusters), xlab="No. of different samples aligned to cluster", col=report.colours[1])
 ```
 
 Now we have here the number of reads per coverage class. That means, instead of having it binary as in the previous plot, we now count all the reads per coverage group.
@@ -1273,12 +1376,12 @@ for(i in 1:max(coveredClusters)){
 
 names(readsPerCoverageGroup) <- 1:max(coveredClusters)
 
-barplot(readsPerCoverageGroup, xlab="Coverage group", ylab="Reads on cluster group", col=viridis(20)[8])
+barplot(readsPerCoverageGroup, xlab="Coverage group", ylab="Reads on cluster group", col=report.colours[1])
 ```
 
 
 ```{r reads per coverage group in percent}
-barplot(readsPerCoverageGroup/sum(readsPerCoverageGroup)*100, xlab="Coverage group", ylab="Reads on cluster group (in %)", ylim=c(0,100), col=viridis(20)[8])
+barplot(readsPerCoverageGroup/sum(readsPerCoverageGroup)*100, xlab="Coverage group", ylab="Reads on cluster group (in %)", ylim=c(0,100), col=report.colours[1])
 ```
 
 Then still the number of clusters without coverage per sample
@@ -1286,14 +1389,14 @@ Then still the number of clusters without coverage per sample
 ```{r clusters without coverage}
 nonHittedClusters <- apply(clusterCoverage[,-1]==0,2,sum)
 names(nonHittedClusters) <- gsub(".coverage", "", names(nonHittedClusters))
-barplot(nonHittedClusters, col=viridis(20)[8], las=2)
+barplot(nonHittedClusters, col=report.colours[1], las=2)
 lines(c(0,100000), c(nrow(clusterCoverage), nrow(clusterCoverage)), lty="dotted")
 ```
 
 And then this still as percentage
 
 ```{r clusterhits percentage}
-barplot(nonHittedClusters/nrow(clusterCoverage), ylim=c(0,1), las=2, col=viridis(20)[8])
+barplot(nonHittedClusters/nrow(clusterCoverage), ylim=c(0,1), las=2, col=report.colours[1])
 lines(c(0,10000),c(0.2,0.2), lty="dotted")
 lines(c(0,10000),c(0.4,0.4), lty="dotted")
 lines(c(0,10000),c(0.5,0.5), lty="dashed")
@@ -1354,9 +1457,9 @@ tmp <- as.numeric(sapply(strsplit(sapply(flagstats,"[",1), " +"),"[",1))
 mapStats[1,] <- as.numeric(sapply(strsplit(sapply(flagstats,"[",5), " +"),"[",1))
 mapStats[2,] <- tmp - mapStats[1,]
 
-p <- barplot(mapStats, col=c(viridis(20)[8], viridis(20)[16]), las=2)
+p <- barplot(mapStats, col=c(report.colours[1], report.colours[2]), las=2)
 
-legend("topleft", pch=c(20,20), col=c(viridis(20)[16], viridis(20)[8]), legend=c("Unmapped", "Mapped"), fill="white")
+legend("topleft", pch=c(20,20), col=c(report.colours[2], report.colours[1]), legend=c("Unmapped", "Mapped"), fill="white")
 
 # highlight the mock reference samples
 mockFiles <- paste(mockSamples, ".sam.flagstat", sep="")
@@ -1366,7 +1469,7 @@ points(p[mockPos], rep(200000, length(mockPos)), pch="*", col="red", cex=4)
 ```
 
 ```{r mapping final percentage}
-barplot(mapStats[1,] / (apply(mapStats,2,sum)), ylim=c(0,1), ylab="Mapping in Percent", col=viridis(20)[8], las=2)
+barplot(mapStats[1,] / (apply(mapStats,2,sum)) * 100, ylim=c(0,100), ylab="Mapping in Percent", col=report.colours[1], las=2)
 ```
 
 And the same information in table format.
@@ -1418,7 +1521,7 @@ These are the amounts of clusters with different samples.
 
 ```{r final  cluster coverage stats}
 coveredClusters <- apply(clusterCoverage[,-1]>0,1,sum)
-barplot(table(coveredClusters), xlab="No. of different samples aligned to cluster", col=viridis(20)[8])
+barplot(table(coveredClusters), xlab="No. of different samples aligned to cluster", col=report.colours[1])
 ```
 
 Now we have here the number of reads per coverage class. That means, instead of having it binary as in the previous plot, we now count all the reads per coverage group.
@@ -1437,12 +1540,12 @@ for(i in 1:max(coveredClusters)){
 
 names(readsPerCoverageGroup) <- 1:max(coveredClusters)
 
-barplot(readsPerCoverageGroup, xlab="Coverage group", ylab="Reads on cluster group", col=viridis(20)[8])
+barplot(readsPerCoverageGroup, xlab="Coverage group", ylab="Reads on cluster group", col=report.colours[1])
 ```
 
 
 ```{r final reads per coverage group in percent}
-barplot(readsPerCoverageGroup/sum(readsPerCoverageGroup)*100, xlab="Coverage group", ylab="Reads on cluster group (in %)", ylim=c(0,100), col=viridis(20)[8])
+barplot(readsPerCoverageGroup/sum(readsPerCoverageGroup)*100, xlab="Coverage group", ylab="Reads on cluster group (in %)", ylim=c(0,100), col=report.colours[1])
 ```
 
 Then still the number of clusters without coverage per sample
@@ -1450,14 +1553,14 @@ Then still the number of clusters without coverage per sample
 ```{r final clusters without coverage}
 nonHittedClusters <- apply(clusterCoverage[,-1]==0,2,sum)
 names(nonHittedClusters) <- gsub(".coverage", "", names(nonHittedClusters))
-barplot(nonHittedClusters, col=viridis(20)[8], las=2)
+barplot(nonHittedClusters, col=report.colours[1], las=2)
 lines(c(0,100000), c(nrow(clusterCoverage), nrow(clusterCoverage)), lty="dotted")
 ```
 
 And then this still as percentage
 
 ```{r final clusterhits percentage}
-barplot(nonHittedClusters/nrow(clusterCoverage), ylim=c(0,1), las=2, col=viridis(20)[8])
+barplot(nonHittedClusters/nrow(clusterCoverage), ylim=c(0,1), las=2, col=report.colours[1])
 lines(c(0,10000),c(0.2,0.2), lty="dotted")
 lines(c(0,10000),c(0.4,0.4), lty="dotted")
 lines(c(0,10000),c(0.5,0.5), lty="dashed")
@@ -1517,9 +1620,9 @@ tmp <- as.numeric(sapply(strsplit(sapply(flagstats,"[",1), " +"),"[",1))
 mapStats[1,] <- as.numeric(sapply(strsplit(sapply(flagstats,"[",5), " +"),"[",1))
 mapStats[2,] <- tmp - mapStats[1,]
 
-p <- barplot(mapStats, col=c(viridis(20)[8], viridis(20)[16]), las=2)
+p <- barplot(mapStats, col=c(report.colours[1], report.colours[2]), las=2)
 
-legend("topleft", pch=c(20,20), col=c(viridis(20)[16], viridis(20)[8]), legend=c("Unmapped", "Mapped"), fill="white")
+legend("topleft", pch=c(20,20), col=c(report.colours[2], report.colours[1]), legend=c("Unmapped", "Mapped"), fill="white")
 
 # highlight the mock reference samples
 mockFiles <- paste(mockSamples, ".sam.flagstat", sep="")
@@ -1530,7 +1633,7 @@ points(p[mockPos], rep(200000, length(mockPos)), pch="*", col="red", cex=4)
 
 ```{r ref mapping percentage}
 refGenome.mappingStats <- mapStats[1,] / (apply(mapStats,2,sum))
-barplot(mapStats[1,] / (apply(mapStats,2,sum)), ylim=c(0,1), ylab="Mapping in Percent", col=viridis(20)[8], las=2)
+barplot(mapStats[1,] / (apply(mapStats,2,sum)), ylim=c(0,1), ylab="Mapping in Percent", col=report.colours[1], las=2)
 ```
 
 The average mapping rate on the reference genome is `r mean(refGenome.mappingStats)`.
@@ -1554,7 +1657,7 @@ Length distribution of identified contigs across the reference genome
 Then we have the identified clusters per chromosome on the reference genome
 
 ```{r}
-barplot(table(string.merge$V1), las=2)
+barplot(table(string.merge$V1), las=2, col=report.colours[1])
 ```
 
 TO BE ADDED:
@@ -1618,7 +1721,7 @@ plot(as.vector(as.matrix(vcf$map[,4])), ylab="Pos. on mock", xlab="SNP index")
 Distribution of the variant across the cluster
 
 ```{r}
-hist(as.vector(as.matrix(vcf$map[,4])), main="SNP loci distribution", xlab="Position")
+hist(as.vector(as.matrix(vcf$map[,4])), main="SNP loci distribution", xlab="Position", col=report.colours[1])
 ```
 
 ### Missing variants per samples
@@ -1627,7 +1730,7 @@ Missing variant calls per sample
 
 ```{r}
 missingnessPerSample <- apply(vcf$genotypesInfo==".,.",2,sum)
-barplot(missingnessPerSample, las=2, main="Missing variants per sample")
+barplot(missingnessPerSample, las=2, main="Missing variants per sample", col=report.colours[1])
 missingnessPerSample <- as.matrix(missingnessPerSample)
 ```
 
@@ -1646,7 +1749,7 @@ t.b.a.
 ### Missing variants per samples
 
 ```{r}
-barplot(apply(vcf$genotypesInfo==".,.",2,sum)/noVariants*100, las=2, main="Missing variants per sample (in %)")
+barplot(apply(vcf$genotypesInfo==".,.",2,sum)/noVariants*100, las=2, main="Missing variants per sample (in %)", col=report.colours[1])
 ```
 
 ### Distribution of filtering criterias
@@ -1693,12 +1796,12 @@ Missing variant calls per sample
 
 ```{r}
 if(refAvail){
-  barplot(apply(vcfRef$genotypesInfo==".,.",2,sum), las=2, main="Missing variants per sample")
+  barplot(apply(vcfRef$genotypesInfo==".,.",2,sum), las=2, main="Missing variants per sample", col=report.colours[1])
 }
 ```
 ```{r}
 if(refAvail){
-  barplot(apply(vcfRef$genotypesInfo==".,.",2,sum)/noVariants.ref*100, las=2, main="Missing variants per sample (in %)")
+  barplot(apply(vcfRef$genotypesInfo==".,.",2,sum)/noVariants.ref*100, las=2, main="Missing variants per sample (in %)", col=report.colours[1])
 }
 ```
 
@@ -1760,7 +1863,7 @@ vcf.PCA <- prcomp(t(tmp))
 palette("default")
 pairs(vcf.PCA$x[,1:3])
 
-if(ncol(sampleInfo)>1){
+if(!is.null(sampleInfo)){
 for(i in 2:ncol(sampleInfo)){
   pairs(vcf.PCA$x[,1:3], col=as.factor(sampleInfo[,i]), pch=20)
 }
@@ -1771,7 +1874,7 @@ for(i in 2:ncol(sampleInfo)){
 cols <- min(ncol(vcf.PCA$x),10)
 pairs(vcf.PCA$x[,1:cols])
 
-if(ncol(sampleInfo)>1){
+if(!is.null(sampleInfo)){
 for(i in 2:ncol(sampleInfo)){
   pairs(vcf.PCA$x[,1:cols], col=as.numeric(as.factor(sampleInfo[,i])), pch=20)
 }
@@ -1799,7 +1902,7 @@ for(i in 2:ncol(sampleInfo)){
 cols <- min(ncol(vcf.PCA$x),10)
 TSNEout <- tsne(vcf.PCA$x[,1:cols], k=5)
 
-if(ncol(sampleInfo)>1){
+if(!is.null(sampleInfo)){
 for(i in 2:ncol(sampleInfo)){
   plot(TSNEout, col=as.numeric(as.factor(sampleInfo[,i])), pch=20)
 }
@@ -1815,7 +1918,7 @@ cols <- min(min(dim(vcf.PCA$x)),10)-1
 
 KPCAres <- kpca(vcf.PCA$x[,1:cols])
 
-if(ncol(sampleInfo)>1){
+if(!is.null(sampleInfo)){
   for(i in 2:ncol(sampleInfo)){
      pairs(rotated(KPCAres)[,1:cols], col=as.numeric(as.factor(sampleInfo[,i])), pch=20)
   }
@@ -1837,7 +1940,7 @@ if(ncol(sampleInfo)>1){
 ```
 
 ### Locally linear embedding (LLE)
-```{r}
+```{r, eval=FALSE}
 # LLE
 cols <- min(ncol(vcf.PCA$x),10)
 
@@ -1872,52 +1975,53 @@ Then, we check if for those particular loci the controls do not have this partic
 accepted mistakes).
 
 ```{r}
-
-if(is.element(colnames(sampleInfo), "casecontrol")){
-  if(ncol(sampleInfo)>1){
-    mmCase <- 2
-    mmControl <- 5
-    vcf.cases <- vcf$genotypes[sampleInfo$casecontrol=="case",]
-    vcf.control <- vcf$genotypes[sampleInfo$casecontrol=="control",]
-    
-    vcf.cases.table <- apply(vcf.cases,2,table)
-    vcf.control.table <- apply(vcf.control,2,table)
-    
-    nCases <- nrow(vcf.cases)
-    nControl <- nrow(vcf.control)
-    
-    candidateLociRef <- c()
-    candidateLociAlt <- c()
-    for(i in 1:length(vcf.cases.table)){
-      tmp <- vcf.cases.table[[i]]
-      homRef <- tmp[names(tmp)=="00"] + tmp[names(tmp)=="03"]
-      homAlt <- tmp[names(tmp)=="02"] + tmp[names(tmp)=="03"]
-      if(length(homRef)==0) homRef <- 0
-      if(length(homAlt)==0) homAlt <- 0
-      if(homRef>=(nCases - mmCase)) candidateLociRef <- c(candidateLociRef, names(vcf.cases.table)[i])
-      if(homAlt>=(nCases - mmCase)) candidateLociAlt <- c(candidateLociAlt, names(vcf.cases.table)[i])
-    }
-    
-    causativeRef <- c()
-    causativeAlt <- c()
-    for(i in 1:length(candidateLociRef)){
-      tmp <- vcf.control.table[[which(names(vcf.control.table)==candidateLociRef[i])]]
-      homRef <- tmp[names(tmp)=="00"] + tmp[names(tmp)=="03"]
-      homAlt <- tmp[names(tmp)=="02"] + tmp[names(tmp)=="03"]
-      if(length(homRef)==0) homRef <- 0
-      if(length(homAlt)==0) homAlt <- 0
-    #  if(homRef>=(nControl - 1)) causativeRef <- c(causativeRef, names(vcf.control.table)[i])
-      if(homAlt>=(nControl - mmControl)) causativeRef <- c(causativeRef, names(vcf.control.table)[i])
-    }
-    
-    for(i in 1:length(candidateLociAlt)){
-      tmp <- vcf.control.table[[which(names(vcf.control.table)==candidateLociAlt[i])]]
-      homRef <- tmp[names(tmp)=="00"] + tmp[names(tmp)=="03"]
-      homAlt <- tmp[names(tmp)=="02"] + tmp[names(tmp)=="03"]
-      if(length(homRef)==0) homRef <- 0
-      if(length(homAlt)==0) homAlt <- 0
-      if(homRef>=(nControl - mmControl)) causativeAlt <- c(causativeAlt, names(vcf.control.table)[i])
-    #  if(homAlt>=(nControl - 1)) causativeAlt <- c(causativeAlt, names(vcf.control.table)[i])
+if(!is.null(sampleInfo)){
+  if(is.element(colnames(sampleInfo), "casecontrol")){
+    if(ncol(sampleInfo)>1){
+      mmCase <- 2
+      mmControl <- 5
+      vcf.cases <- vcf$genotypes[sampleInfo$casecontrol=="case",]
+      vcf.control <- vcf$genotypes[sampleInfo$casecontrol=="control",]
+      
+      vcf.cases.table <- apply(vcf.cases,2,table)
+      vcf.control.table <- apply(vcf.control,2,table)
+      
+      nCases <- nrow(vcf.cases)
+      nControl <- nrow(vcf.control)
+      
+      candidateLociRef <- c()
+      candidateLociAlt <- c()
+      for(i in 1:length(vcf.cases.table)){
+        tmp <- vcf.cases.table[[i]]
+        homRef <- tmp[names(tmp)=="00"] + tmp[names(tmp)=="03"]
+        homAlt <- tmp[names(tmp)=="02"] + tmp[names(tmp)=="03"]
+        if(length(homRef)==0) homRef <- 0
+        if(length(homAlt)==0) homAlt <- 0
+        if(homRef>=(nCases - mmCase)) candidateLociRef <- c(candidateLociRef, names(vcf.cases.table)[i])
+        if(homAlt>=(nCases - mmCase)) candidateLociAlt <- c(candidateLociAlt, names(vcf.cases.table)[i])
+      }
+      
+      causativeRef <- c()
+      causativeAlt <- c()
+      for(i in 1:length(candidateLociRef)){
+        tmp <- vcf.control.table[[which(names(vcf.control.table)==candidateLociRef[i])]]
+        homRef <- tmp[names(tmp)=="00"] + tmp[names(tmp)=="03"]
+        homAlt <- tmp[names(tmp)=="02"] + tmp[names(tmp)=="03"]
+        if(length(homRef)==0) homRef <- 0
+        if(length(homAlt)==0) homAlt <- 0
+      #  if(homRef>=(nControl - 1)) causativeRef <- c(causativeRef, names(vcf.control.table)[i])
+        if(homAlt>=(nControl - mmControl)) causativeRef <- c(causativeRef, names(vcf.control.table)[i])
+      }
+      
+      for(i in 1:length(candidateLociAlt)){
+        tmp <- vcf.control.table[[which(names(vcf.control.table)==candidateLociAlt[i])]]
+        homRef <- tmp[names(tmp)=="00"] + tmp[names(tmp)=="03"]
+        homAlt <- tmp[names(tmp)=="02"] + tmp[names(tmp)=="03"]
+        if(length(homRef)==0) homRef <- 0
+        if(length(homAlt)==0) homAlt <- 0
+        if(homRef>=(nControl - mmControl)) causativeAlt <- c(causativeAlt, names(vcf.control.table)[i])
+      #  if(homAlt>=(nControl - 1)) causativeAlt <- c(causativeAlt, names(vcf.control.table)[i])
+      }
     }
   }
 }
@@ -1926,17 +2030,19 @@ if(is.element(colnames(sampleInfo), "casecontrol")){
 Then we identify the following potentially causative mutations:
 
 ```{r}
-if(is.element(colnames(sampleInfo), "casecontrol")){
-  if(ncol(sampleInfo)>1){
-    if(length(causativeRef)>0){
-      datatable(as.data.frame(causativeRef))
-    } else {
-      cat("No potentially mutations found for homozygeous reference!\n")
-    }
-    if(length(causativeAlt)>0){
-      datatable(as.data.frame(causativeAlt))
-    } else {
-      cat("No potentially mutations found for homozygeous alternative!\n")
+if(!is.null(sampleInfo)){
+  if(is.element(colnames(sampleInfo), "casecontrol")){
+    if(ncol(sampleInfo)>1){
+      if(length(causativeRef)>0){
+        datatable(as.data.frame(causativeRef))
+      } else {
+        cat("No potentially mutations found for homozygeous reference!\n")
+      }
+      if(length(causativeAlt)>0){
+        datatable(as.data.frame(causativeAlt))
+      } else {
+        cat("No potentially mutations found for homozygeous alternative!\n")
+      }
     }
   }
 }

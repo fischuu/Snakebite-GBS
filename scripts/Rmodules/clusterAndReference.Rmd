@@ -1,0 +1,364 @@
+# Cluster and Reference genome
+
+## Preliminary Mock Reference
+
+### To Add
+ * Get statistics on multi-mapping of the reads.
+
+### Basic stats
+```{r import required files, warning=FALSE, }
+prelimMockReference <- importFA(file.path(projFolder,"FASTQ", "TRIMMED", mockReference.file))
+prelimMockClusters <- importFA(file.path(projFolder,"FASTQ", "TRIMMED", mockClusters.file))
+vsearchIN <- importFA(file.path(projFolder,"FASTQ", "TRIMMED", "VsearchIN.fa"))
+#vsearchOUT <- importFA(file.path(projFolder,"FASTQ", "TRIMMED", "VsearchOUT.fa"))
+```
+
+Basic information on the sequences used to build the mock reference:
+```{r mock build stats}
+  out <- summary(vsearchIN)
+  out[,2] <- formatC(out[,2],  format="d", big.mark=",")
+  out_html <- knitr::kable(out, col.names = NULL, "html")
+  kable_styling(out_html, "striped", position = "left")
+```
+
+Basic information on the identified clusters, used as mock reference
+
+```{r summarise mock reference clusters}
+  out <- summary(prelimMockClusters)
+  out[1,1] <- c("No. of Clusters")
+  out[,2] <- formatC(out[,2],  format="d", big.mark=",")
+  out_html <- knitr::kable(out, col.names = NULL, "html")
+  kable_styling(out_html, "striped", position = "left")
+```
+
+Total length of the input fasta to build reference: `r format(sum(nchar(vsearchIN)), big.mark=",")` bp.
+
+Total length of the preliminary Mock Reference Clusters: `r format(sum(nchar(prelimMockClusters)), big.mark=",")` bp.
+
+Total length of the preliminary Mock Reference (Used as reference): `r format(sum(nchar(prelimMockReference)), big.mark=",")` bp.
+
+### Theoretical coverage of Mock per sample
+Given the length of the mock reference assembly and the total number of sequenced bases per sample, we can estimate the theoretical coverage of the mock for each sample
+
+Currently I hard-code here the paired-end reads and assume equal lengths and reads in both pairs, but it should be a good estimate.
+
+```{r mock coverage}
+par(mar=c(10,5,1,1))
+mockLength <- sum(nchar(prelimMockReference))
+mockCov <- (2*mqcStats.trim[,10] * mqcStats.trim[,5])/mockLength
+names(mockCov) <- mqcStats.trim[,1]
+barplot(mockCov, ylab="'x'-fold Coverage", col=viridis(20)[8], las=2)
+lines(c(-100,10000),c(1,1), lty="dotted")
+lines(c(-100,10000),c(5,5), lty="dotted")
+lines(c(-100,10000),c(10,10), lty="dotted")
+```
+
+### Pear Stats
+
+```{r import pear stats}
+pearIn <- readLines(file.path(projFolder, "FASTQ", "TRIMMED", "Pear.log"))
+pearIn <- pearIn[-grep("Assemblying reads", pearIn)]
+startPos <- which(pearIn=="Zhang et al (2014) Bioinformatics 30(5): 614-620 | doi:10.1093/bioinformatics/btt593")+2
+```
+
+### Pear settings used
+
+```{r pear settings}
+tmp <- pearIn[(startPos[1]+2):(startPos[1]+12)]
+tmp <- strsplit(tmp, ": ")
+out <- cbind(gsub("\\.","",sapply(tmp,"[",1)),
+             sapply(tmp,"[",2))
+
+out_html <- knitr::kable(out, col.names = NULL, "html")
+kable_styling(out_html, "striped", position = "left")
+
+```
+
+Number of used samples for the mock reference: `r length(startPos)`.
+
+```{r report Pear stats}
+
+tmp <- pearIn[c(startPos, startPos+1)]
+tmp <- strsplit(tmp, ": ")
+out <- cbind(gsub("\\.","",sapply(tmp,"[",1)),
+             sapply(tmp,"[",2))
+out_html <- knitr::kable(out, col.names = NULL, "html")
+kable_styling(out_html, "striped", position = "left")
+
+mockSamples <- unique(sapply(strsplit(sapply(strsplit(pearIn[c(startPos, startPos+1)],": "),"[", 2),".R"),"[",1))
+
+final("mockSamples")
+
+```
+
+```{r vis atcg distribution}
+# Get the ATCG distribution
+atDist <- matrix(-1, ncol=length(startPos), nrow=4)
+for(i in 1:4){
+  atDist[i,] <- as.numeric(sapply(strsplit(pearIn[startPos+i+16], ": "),"[",2))
+}
+rownames(atDist) <- c("A", "C", "G", "T")
+
+barplot(t(atDist), main="A,C,T,G distribution", col=viridis(20)[8])
+```
+
+### Assembling statistics
+Statistics on how many reads have been assembled (=had a minimum overlap of x-bases (see table above) between R1 and R2), have been discarded ( due to length and/or quality) or were not possible to overlap.
+
+```{r assembling stat}
+tmp <- pearIn[c(startPos+23, startPos+24, startPos+25)]
+pearAssembly <- matrix(sapply(strsplit(tmp,": "),"[",2), ncol=length(startPos), byrow=TRUE)
+rownames(pearAssembly) <- sapply(strsplit(tmp," .."),"[",1)[seq(1,length(tmp), by=length(startPos))]
+colnames(pearAssembly) <- paste("Sample",1:length(startPos))
+
+out_html <- knitr::kable(pearAssembly, col.names = NULL, "html")
+kable_styling(out_html, "striped", position = "left")
+```
+
+The stitching merges the unassembled paired reads together to single reads by adding just 20 T's in between them. Only reads of a certain length are stitched together, namely the rl (set to 100) parameter -19 respective -5
+
+```{r stitching stat}
+tmp <- pearIn[c(startPos+35, startPos+36, startPos+37)]
+stitching <- matrix(sapply(strsplit(tmp,"= "),"[",2), ncol=length(startPos), byrow=TRUE)
+rownames(stitching) <- sapply(strsplit(tmp," ="),"[",1)[seq(1,length(tmp), by=length(startPos))]
+colnames(stitching) <- paste("Sample",1:length(startPos))
+
+out_html <- knitr::kable(stitching, col.names = NULL, "html")
+kable_styling(out_html, "striped", position = "left")
+```
+
+### Discarded reads
+
+In case we used several samples for the mock, the discarded reads are considered together. As a reminder, we
+have here `r length(mockSamples)` samples used to build the mock reference.
+
+```{r import discard fasta}
+if(length(mockSamples)==1){
+  discardedReads <- importFQ(file.path(projFolder,"FASTQ", "TRIMMED", paste(mockSamples,".discarded.fastq",sep="") ))
+} else {
+  discardedReads <- importFQ(file.path(projFolder,"FASTQ", "TRIMMED", paste(mockSamples[1],".discarded.fastq",sep="")))
+  for(i in 2:length(mockSamples)){
+    tmp <- importFQ(file.path(projFolder,"FASTQ", "TRIMMED", paste(mockSamples[i],".discarded.fastq",sep="")))
+    discardedReads$seq <- c(discardedReads$seq, tmp$seq)    
+    discardedReads$qual <- c(discardedReads$qual, tmp$qual)    
+  }
+}
+
+```
+
+Summary on the read length distribution of the discarded reads
+
+```{r summarise discarded reads}
+out <- summary(discardedReads)
+out_html <- knitr::kable(out, col.names = NULL, "html")
+kable_styling(out_html, "striped", position = "left")
+```
+
+Quality values for the first 100,000 sequences. As a rule of thumb, capital letters are good, special characters are bad quality.
+```{r quality measues}
+outQual <- table(unlist(strsplit(discardedReads$qual[1:100000],"")))
+out_html <- knitr::kable(formatC(outQual,  format="d", big.mark=","), "html")
+kable_styling(out_html, "striped", position = "left")
+```
+
+```{r visualize Quality scores}
+barplot(outQual, ylab="Frequency", main="Quality-score distribution", col=report.colours[1])
+```
+
+### Ratio samles used to length Mock reference
+How much were the reads merged down? Length of Mock reference vs the length of all used reads together.
+
+## Mock reference
+
+### Basic stats
+```{r import required files mock, warning=FALSE, }
+finalMockClusters <- importFA(file.path(projFolder,"MockReference","MockReference.fa"))
+```
+
+Basic information for the final mock reference:
+```{r final mock build stats}
+  out <- summary(finalMockClusters)
+  out[,2] <- formatC(out[,2],  format="d", big.mark=",")
+  out_html <- knitr::kable(out, col.names = NULL, "html")
+  kable_styling(out_html, "striped", position = "left")
+```
+
+Total length of the Mock Reference Clusters: `r format(sum(nchar(finalMockClusters)), big.mark=",")` bp.
+
+### Theoretical coverage of Mock per sample
+Given the length of the final mock reference assembly and the total number of sequenced bases per sample, we can estimate the theoretical coverage of the final mock for each sample
+
+```{r final mock coverage}
+par(mar=c(10,5,1,1))
+finalMockLength <- sum(nchar(finalMockClusters))
+mockCov <- 2*mqcStats.trim[,10] * mqcStats.trim[,5]/finalMockLength
+names(mockCov) <- mqcStats.trim[,1]
+barplot(mockCov, ylab="'x'-fold Coverage", col=report.colours[1], las=2)
+lines(c(-100,10000),c(1,1), lty="dotted")
+lines(c(-100,10000),c(10,10), lty="dotted")
+```
+
+
+## Existing Reference
+In case a reference genome was provided, here are a few statistics regarding it
+
+### Basic stats
+
+```{r importRefGenome, warning=FALSE, results="asis"}
+if(refAvail){
+  refGenome <- importFA(getConfigField("genome"))
+}
+```
+
+```{r show ref stats}
+if(refAvail){
+  out <- summary(refGenome)
+  out[1,1] <- c("No. of Chromosomes/Contigs")
+  out[,2] <- formatC(out[,2],  format="d", big.mark=",")
+  out_html <- knitr::kable(out, col.names = NULL, "html")
+  
+  kable_styling(out_html, "striped", position = "left")
+}
+```
+
+
+## Mock vs reference
+
+These are the flagstats from mapping the mock clusters against an existing reference genome. Typical flag stats are:
+* 0: Read aligned against forward strand
+* 16: Read aligned against reverse strand
+* 2048: Supplementary alignment forward
+* 2064: Supplementary alignment reverse
+* 4: Unmapped
+
+```{r samflags}
+if(refAvail){
+samFlagstats <- read.table(file.path(projFolder,"BAM", "Mockref", "mockToRef.sam.samflags"))
+colnames(samFlagstats) <- c("Freq.", "Flag")
+totalLoci <- samFlagstats$V1[samFlagstats$V2==0] + samFlagstats$V1[samFlagstats$V2==16]
+out_html <- knitr::kable(samFlagstats, "html")
+kable_styling(out_html, "striped", position = "left")
+} else {
+  totalLoci <- 0
+}
+```
+
+From there we have `r totalLoci` primary alignments.
+
+```{r bam.merged.bed}
+if(refAvail){
+unmergedLoci <- read.table(file.path(projFolder,"BAM","Mockref","mockToRef.bed"))
+mergedLoci <- read.table(file.path(projFolder,"BAM","Mockref","mockToRef.merged.bed"))
+totalBases <- sum(abs(mergedLoci$V3 - mergedLoci$V2))
+} else {
+  unmergedLoci <- 0
+  mergedLoci <- 0
+  totalBases <- 0
+}
+```
+
+However, in total we have `r formatC(nrow(unmergedLoci),  format="d", big.mark=",")` mapping loci that can be merged down (by intersection of the bed) to `r formatC(nrow(mergedLoci),  format="d", big.mark=",")` if their chromosomal location is intersected.
+Please note, if the difference between these two numbers is too large, it indicates that the mock reference needs to be merged more strict.
+
+In total `r formatC(totalBases, big.mark=",")` bases are covered in the reference genome from mock cluster sequences.
+
+A visualisation of the alignments of the mock clusters to the reference genome
+
+```{r}
+if(refAvail){
+  par(oma=c(8,1,1,0))
+mappedLoci <- read.table(file.path(projFolder,"BAM","Mockref","mockToRef.coverage"))
+barplot(mappedLoci[,2], main="Alignments per Chromosome in Reference", col=report.colours[1], names=mappedLoci[,1],las=2)
+}
+```
+
+```{r SAMbed}
+if(refAvail){
+ SAMLoci <- read.table(file.path(projFolder,"BAM","Mockref","mockToRef.bed"))
+}
+```
+
+This is the length distribution of the sequences of mock reference clusters mapped against the reference genome
+
+```{r}
+if(refAvail){
+  out <- t(as.data.frame(as.matrix((summary(SAMLoci$V3-SAMLoci$V2)))))
+  rownames(out) <- "5-point summary"
+  out_html <- knitr::kable(t(out), "html")
+  kable_styling(out_html, "striped", position = "left")  
+}
+```
+
+Then, this is the average distance from one alignment to the next, per chromosome
+
+```{r}
+if(refAvail){
+chrNames <- unique(SAMLoci$V1)
+avgDist <- c()
+for(i in 1:length(chrNames)){
+  tmp <- SAMLoci[SAMLoci$V1==chrNames[i],]
+  avgDist[i] <- mean(abs(tmp$V2[1:(nrow(tmp)-1)] - tmp$V2[2:(nrow(tmp))]))
+}
+}
+```
+
+```{r}
+if(refAvail){
+barplot(avgDist, main="Avg cluster mapping distance per Chromosome", col=report.colours[1], names=chrNames, las=2)
+}
+```
+
+Coverage of the lined up alignment loci of the mock reference contigs against the reference genome. Ideally, we observe here just a constant coverage of 1, meaning that each contig of the mock reference aligns to a unique place on the reference genome. Having here spikes indicates thaat several mock reference contigs align to one and the same loci along the reference genome and that those contigs are not merged.
+
+```{r}
+if(refAvail){
+  barplot(SAMLoci$V4, main="Mock reference contig alignments on reference genome")
+}
+```
+
+TO BE ADDED
+* Identify loci with more than a certain threshold contigs (e.g. 10), identify the loci on the reference and all mock reference contigs that align to it and then put them in a IGV style manner under each other (bases colour coded, top line the reference and then all the sequences of the mock reference contig)
+* Check if this information can be used to optimise the refinement of the final mock, is there any systematics that creates those multimapping contigs?!
+
+```{r}
+if(refAvail){
+flankingCounts <- read.table(file.path(projFolder,"BAM","Mockref","mockToRef.merged.combined.fa.counts"))
+} else {
+  flankingCounts <- 0
+}
+```
+
+In total we have `r nrow(flankingCounts)` many different flanking sequence combinations (+-6 bases), here is the top 20 for the unmerged set of sequences.
+
+```{r}
+if(refAvail){
+tmp <- flankingCounts[order(flankingCounts$V1, decreasing=TRUE),][1:20,]
+rownames(tmp) <- NULL
+colnames(tmp) <- c("Counts", "Sequence")
+#  out_html <- knitr::kable(tmp, "html")
+#  kable_styling(out_html, "striped", position = "left")  
+datatable(tmp)
+}
+```
+
+```{r}
+if(refAvail){
+mergedFlankingCounts <- read.table(file.path(projFolder,"BAM", "Mockref","mockToRef.merged.combined.fa.counts"))
+} else {
+  mergedFlankingCounts <- 0
+}
+```
+
+In total we have `r nrow(mergedFlankingCounts)` many different flanking sequence combinations (+-6 bases) in the merged set, here is the top 20 for the unmerged set of sequences.
+
+```{r}
+if(refAvail){
+tmp <- mergedFlankingCounts[order(mergedFlankingCounts$V1, decreasing=TRUE),][1:20,]
+rownames(tmp) <- NULL
+colnames(tmp) <- c("Counts", "Sequence")
+datatable(tmp)
+}
+```
+
+WE COULD COUNT HERE STILL HOW MANY SEQUENCES MATCH THE GIVEN ONE WITH ONE SUBSTITUTION ALLOWED.
+

@@ -1,0 +1,591 @@
+
+# Quality checks
+
+In this chapter the results from the FastQC part of the pipeline are presented. First, the basic stats on the very raw data are shown, then the concatenated (in case samples were split across different lanes) and then the final reads, after trimming.
+
+After that, the concatenated reads are comapred against the trimmed reads.
+
+```{r import multiqc data}
+# Import the FastQC/MultiQC output for the RAW data
+rawFastQC.R1 <- read.table(file.path(projFolder,"QC","RAW","multiqc_R1","multiqc_data","multiqc_fastqc.txt"), header=TRUE, sep="\t")
+rawFastQC.R2 <- read.table(file.path(projFolder,"QC","RAW","multiqc_R2","multiqc_data","multiqc_fastqc.txt"), header=TRUE, sep="\t")
+#rawFastQCJSON.R1 <- getFastQCJSON(file.path(projFolder, "QC", "RAW", "multiqc_R1", "multiqc_data", "multiqc_data.json"))
+#rawFastQCJSON.R2 <- getFastQCJSON(file.path(projFolder, "QC", "RAW", "multiqc_R2", "multiqc_data", "multiqc_data.json"))
+
+# Import the FastQC/MultiQC output for the CONCATENATED data
+conFastQC.R1 <- read.table(file.path(projFolder,"QC","CONCATENATED","multiqc_R1","multiqc_data","multiqc_fastqc.txt"), header=TRUE, sep="\t")
+conFastQC.R2 <- read.table(file.path(projFolder,"QC","CONCATENATED","multiqc_R2","multiqc_data","multiqc_fastqc.txt"), header=TRUE, sep="\t")
+conFastQCJSON.R1 <- getFastQCJSON(file.path(projFolder, "QC", "CONCATENATED", "multiqc_R1", "multiqc_data", "multiqc_data.json"))
+conFastQCJSON.R2 <- getFastQCJSON(file.path(projFolder, "QC", "CONCATENATED", "multiqc_R2", "multiqc_data", "multiqc_data.json"))
+
+# Import the FastQC/MultiQC output for the TRIMMED data
+trimmedFastQC.R1 <- read.table(file.path(projFolder,"QC","TRIMMED","multiqc_R1","multiqc_data","multiqc_fastqc.txt"), header=TRUE, sep="\t")
+trimmedFastQC.R2 <- read.table(file.path(projFolder,"QC","TRIMMED","multiqc_R2","multiqc_data","multiqc_fastqc.txt"), header=TRUE, sep="\t")
+trimmedFastQCJSON.R1 <- getFastQCJSON(file.path(projFolder, "QC", "TRIMMED", "multiqc_R1", "multiqc_data", "multiqc_data.json"))
+trimmedFastQCJSON.R2 <- getFastQCJSON(file.path(projFolder, "QC", "TRIMMED", "multiqc_R2", "multiqc_data", "multiqc_data.json"))
+```
+
+
+## Raw data
+These are the reads, as they come from the sequencer, no trimming, no nothing.
+
+### De-duplication percent
+
+```{r raw data duplication percent}
+#par(mar=c(10,5,1,1))
+plotFastQCFeature(rawFastQC.R1, rawFastQC.R2, feature="total_deduplicated_percentage", axes=FALSE)
+abline(h=50, lty="dotted", col="red")
+```
+
+A list of samples over a certain threshold (>50%)
+
+```{r table samples duplication under threshold raw}
+tmp <- cbind(rawFastQC.R1$Sample,rawFastQC.R1["total_deduplicated_percentage"])
+tmp <- tmp[tmp[,2]>50,]
+if(nrow(tmp)>0){
+rownames(tmp) <- 1:nrow(tmp)
+colnames(tmp) <- c("Rawsample", "Total deduplicated percentage")
+
+datatable(tmp)
+}
+```
+
+### GC content
+
+```{r raw data qc content}
+#par(mar=c(10,5,1,1))
+plotFastQCFeature(rawFastQC.R1, rawFastQC.R2, feature="X.GC", axes=FALSE)
+abline(h=60, lty="dotted", col="red")
+abline(h=30, lty="dotted", col="red")
+```
+
+A list of samples under a certain threshold (<30%)
+
+```{r table samples GC content}
+tmp <- cbind(rawFastQC.R1$Sample,rawFastQC.R1["X.GC"])
+tmp <- tmp[tmp[,2]<30,]
+if(nrow(tmp)>0){
+  rownames(tmp) <- 1:nrow(tmp)
+  colnames(tmp) <- c("Rawsample", "GC content")
+  #knitr::kable(tmp) %>% kable_styling
+  datatable(tmp)
+}
+```
+
+### Sequence length
+
+```{r raw data sequence length}
+#par(mar=c(10,5,1,1))
+plotFastQCFeature(rawFastQC.R1, rawFastQC.R2, feature="avg_sequence_length", axes=FALSE)
+tmp <- rawFastQC.R1["avg_sequence_length"]
+tmp <- mean(as.vector(as.matrix((tmp)))) 
+abline(h=tmp*0.9, lty="dotted", col="red")
+```
+
+A list of samples with average sequence length smaller then overall average minus 10%.
+
+```{r table samples sequence length}
+tmp <- rawFastQC.R1["avg_sequence_length"]
+tmp <- mean(as.vector(as.matrix((tmp)))) 
+th <- tmp*0.9
+
+tmp <- cbind(rawFastQC.R1$Sample,rawFastQC.R1["avg_sequence_length"])
+
+tmp <- tmp[tmp[,2]<th,]
+if(nrow(tmp)>0){
+  rownames(tmp) <- 1:nrow(tmp)
+  colnames(tmp) <- c("Rawsample", "Avg sequence length")
+  #knitr::kable(tmp) %>% kable_styling
+  datatable(tmp)
+}
+```
+
+### Total sequences
+
+```{r raw data total sequences}
+#par(mar=c(10,5,1,1))
+plotFastQCFeature(rawFastQC.R1, rawFastQC.R2, feature="Total.Sequences", axes=FALSE)
+```
+
+### Quality value distribution
+```{r}
+qcFiles.R1.raw <- paste0(sampleSheet$rawsample, "_R1_qualdist.txt")
+qcFiles.R2.raw <- paste0(sampleSheet$rawsample, "_R2_qualdist.txt")
+
+qcQual.R1.raw <- vectorToDF.int(trimws(readLines(file.path(projFolder,"QC", "RAW", qcFiles.R1.raw[1]))[-1]))
+qcQual.R2.raw <- vectorToDF.int(trimws(readLines(file.path(projFolder,"QC", "RAW", qcFiles.R2.raw[1]))[-1]))
+
+colnames(qcQual.R1.raw) <- c(gsub("_qualdist.txt","", qcFiles.R1.raw[1]), "Quality")
+colnames(qcQual.R2.raw) <- c(gsub("_qualdist.txt","", qcFiles.R2.raw[1]), "Quality")
+
+for(i in 2:length(qcFiles.R1.raw)){
+    fileIn <- readLines(file.path(projFolder,"QC", "RAW", qcFiles.R1.raw[i]))[-1]
+    if(length(fileIn)>0){
+      tmp <- vectorToDF.int(trimws(fileIn))
+      colnames(tmp) <- c(gsub("_qualdist.txt","", qcFiles.R1.raw[i]), "Quality")
+    } else {
+      tmp <- data.frame(qcQual.R1.raw$Quality, 0)
+      colnames(tmp) <- c("Quality", gsub("_qualdist.txt","", qcFiles.R1.raw[i]))
+    }
+
+      qcQual.R1.raw <- merge(qcQual.R1.raw, tmp, all=TRUE)      
+}
+
+qcQual.R1.raw[is.na(qcQual.R1.raw)] <- 0
+
+for(i in 2:length(qcFiles.R2.raw)){
+    fileIn <- readLines(file.path(projFolder,"QC", "RAW", qcFiles.R2.raw[i]))[-1]
+    if(length(fileIn)>0){
+      tmp <- vectorToDF.int(trimws(fileIn))
+      colnames(tmp) <- c(gsub("_qualdist.txt","", qcFiles.R2.raw[i]), "Quality")
+    } else {
+      tmp <- data.frame(qcQual.R2.raw$Quality, 0)
+      colnames(tmp) <- c("Quality", gsub("_qualdist.txt","", qcFiles.R2.raw[i]))
+    }
+
+      qcQual.R2.raw <- merge(qcQual.R2.raw, tmp, all=TRUE)      
+}
+
+qcQual.R2.raw[is.na(qcQual.R2.raw)] <- 0
+
+```
+
+```{r}
+plotThis <- as.matrix(qcQual.R1.raw[,-1])
+rownames(plotThis) <- as.vector(as.matrix(qcQual.R1.raw[,1]))
+par(mar=c(15,5,2,8), xpd=TRUE)
+barplot(plotThis, las=2, col=1:nrow(plotThis), main="Read 1 Quality scores")
+legend("topright", inset=c(-0.2,0), legend=rownames(plotThis)[(nrow(plotThis)):1], fill=nrow(plotThis):1)
+```
+
+```{r}
+plotThis <- as.matrix(qcQual.R2.raw[,-1])
+rownames(plotThis) <- as.vector(as.matrix(qcQual.R2.raw[,1]))
+par(mar=c(15,5,2,8), xpd=TRUE)
+barplot(plotThis, las=2, col=1:nrow(plotThis), main="Read 2 Quality scores")
+legend("topright", inset=c(-0.2,0), legend=rownames(plotThis)[(nrow(plotThis)):1], fill=nrow(plotThis):1)
+```
+
+### Summary
+```{r raw data summary stats}
+mqcStats.raw <- read.table(file.path(projFolder,"QC","RAW","multiqc_R1", "multiqc_data", "multiqc_fastqc.txt"), header=TRUE, sep="\t")
+tmp <- mqcStats.raw[,-c(1:4,7,11:21)]
+
+totalRawSequences <- sum(mqcStats.raw$Total.Sequences)
+out <- c(totalRawSequences,sd(tmp[,1]),apply(tmp,2,mean))
+names(out) <- c("Tot. number sequences",
+                "SD total sequences",
+                "Avg. total sequences",
+                "Avg. poor quality",
+                "Avg. GC Percent",
+                "Avg. deplication percent",
+                "Avg. sequence length")
+
+out_html <- knitr::kable(formatC(out,  format="d", big.mark=","), col.names = NULL, "html")
+kable_styling(out_html, "striped", position = "left")
+
+out <- t(as.data.frame(as.matrix((summary(tmp[,1])))))
+rownames(out) <- "5-point summary of total sequences"
+out_html <- knitr::kable(formatC(out,  format="d", big.mark=","), "html")
+kable_styling(out_html, "striped", position = "left")
+```
+
+
+## Concatenated data
+In this section samples lanes are concatentated, but no other steps were performed.
+
+### De-Duplication percent
+
+```{r conc data duplication percent}
+#par(mar=c(10,5,1,1))
+plotFastQCFeature(conFastQC.R1, conFastQC.R2, feature="total_deduplicated_percentage", axes=FALSE)
+abline(h=50, lty="dotted", col="red")
+```
+
+A list of samples over a certain threshold (>50%)
+
+```{r table samples duplication under threshold conc}
+tmp <- cbind(conFastQC.R1$Sample,conFastQC.R1["total_deduplicated_percentage"])
+tmp <- tmp[tmp[,2]>50,]
+if(nrow(tmp)>0){
+rownames(tmp) <- 1:nrow(tmp)
+colnames(tmp) <- c("Sample", "Total deduplicated percentage")
+
+datatable(tmp)
+}
+```
+
+### GC content
+
+```{r conc data qc content}
+#par(mar=c(10,5,1,1))
+plotFastQCFeature(conFastQC.R1, conFastQC.R2, feature="X.GC", axes=FALSE)
+abline(h=60, lty="dotted", col="red")
+abline(h=30, lty="dotted", col="red")
+```
+
+A list of samples under a certain threshold (<30%)
+
+```{r table samples GC content conc}
+tmp <- cbind(conFastQC.R1$Sample,conFastQC.R1["X.GC"])
+tmp <- tmp[tmp[,2]<30,]
+if(nrow(tmp)>0){
+  rownames(tmp) <- 1:nrow(tmp)
+  colnames(tmp) <- c("Sample", "GC content")
+  datatable(tmp)
+}
+```
+
+### Sequence length
+
+```{r con data sequence length}
+#par(mar=c(10,5,1,1))
+plotFastQCFeature(conFastQC.R1, conFastQC.R2, feature="avg_sequence_length", axes=FALSE)
+tmp <- conFastQC.R1["avg_sequence_length"]
+tmp <- mean(as.vector(as.matrix((tmp)))) 
+abline(h=tmp*0.9, lty="dotted", col="red")
+```
+
+A list of samples with average sequence length smaller then overall average minus 10%.
+
+```{r table samples sequence length conc}
+tmp <- conFastQC.R1["avg_sequence_length"]
+tmp <- mean(as.vector(as.matrix((tmp)))) 
+th <- tmp*0.9
+
+tmp <- cbind(conFastQC.R1$Sample, conFastQC.R1["avg_sequence_length"])
+
+tmp <- tmp[tmp[,2]<th,]
+if(nrow(tmp)>0){
+  rownames(tmp) <- 1:nrow(tmp)
+  colnames(tmp) <- c("Sample", "Avg sequence length")
+  datatable(tmp)
+}
+```
+
+### Total sequences
+
+```{r con data total sequences}
+par(mar=c(10,5,1,1))
+plotFastQCFeature(conFastQC.R1, conFastQC.R2, feature="Total.Sequences")
+```
+
+### Quality value distribution
+```{r qualityValueDistribution Concatenated data}
+qcFiles.conc <- list.files(file.path(projFolder,"QC", "CONCATENATED"), pattern="*qualdist.txt")
+qcQual.conc <- fread(file.path(projFolder,"QC", "CONCATENATED", qcFiles.conc[1]), skip=1)
+colnames(qcQual.conc) <- c(gsub("_qualdist.txt","", qcFiles.conc[1]), "Quality")
+
+for(i in 2:length(qcFiles.conc)){
+    tmp <- fread(file.path(projFolder,"QC", "CONCATENATED", qcFiles.conc[i]), skip=1)
+    if(nrow(tmp)==0){
+      tmp <- data.frame(V1=0, V2="NA")
+    }
+    colnames(tmp) <- c(gsub("_qualdist.txt","", qcFiles.conc[i]), "Quality")
+    qcQual.conc <- merge(qcQual.conc, tmp, all=TRUE)
+}
+qcQual.conc[is.na(qcQual.conc)] <- 0
+
+```
+
+```{r}
+plotThis <- as.matrix(qcQual.conc[,-1])
+rownames(plotThis) <- as.vector(as.matrix(qcQual.conc[,1]))
+par(mar=c(15,5,2,8), xpd=TRUE)
+barplot(plotThis, las=2, col=1:nrow(plotThis))
+legend("topright", inset=c(-0.2,0), legend=rownames(plotThis)[(nrow(plotThis)):1], fill=nrow(plotThis):1)
+```
+
+### Per base N content (left: R1, right: R2)
+
+```{r con data per base n content}
+par(mar=c(5,5,1,1))
+#plotFastQCJSONFeature(conFastQCJSON.R1, conFastQCJSON.R2, feature="perBaseN")
+
+plotMQCFeature(x=file.path(projFolder,"QC","CONCATENATED","multiqc_R1"),
+               y=file.path(projFolder,"QC","CONCATENATED","multiqc_R2"),
+               feature="fastqc_per_base_n_content_plot")
+```
+
+### Per base quality (left: R1, right: R2)
+```{r con data per base sequence quality}
+par(mar=c(5,5,1,1))
+#plotFastQCJSONFeature(conFastQCJSON.R1, conFastQCJSON.R2, feature="sequenceQuality")
+
+plotMQCFeature(x=file.path(projFolder,"QC","CONCATENATED","multiqc_R1"),
+               y=file.path(projFolder,"QC","CONCATENATED","multiqc_R2"),
+               feature="fastqc_per_base_sequence_quality_plot")
+```
+
+### Summary
+```{r conc data summary stats}
+mqcStats.conc <- read.table(file.path(projFolder,"QC","CONCATENATED","multiqc_R1", "multiqc_data", "multiqc_fastqc.txt"), header=TRUE, sep="\t")
+tmp <- mqcStats.conc[,-c(1:4,7,11:21)]
+
+totalConcSequences <- sum(mqcStats.conc$Total.Sequences)
+out <- c(totalConcSequences,apply(tmp,2,mean))
+names(out) <- c("Tot. number sequences",
+                "Avg. total sequences",
+                "Avg. poor quality",
+                "Avg. GC Percent",
+                "Avg. deplication percent",
+                "Avg. sequence length")
+
+out_html <- knitr::kable(formatC(out,  format="d", big.mark=","), col.names = NULL, "html")
+kable_styling(out_html, "striped", position = "left")
+
+out <- t(as.data.frame(as.matrix((summary(tmp[,1])))))
+rownames(out) <- "5-point summary of total sequences"
+out_html <- knitr::kable(formatC(out,  format="d", big.mark=","), "html")
+kable_styling(out_html, "striped", position = "left")
+```
+
+
+## Trimmed data
+
+### De-Duplication percent
+
+```{r trimmed data duplication percent}
+#par(mar=c(10,5,1,1))
+plotFastQCFeature(trimmedFastQC.R1, trimmedFastQC.R2, feature="total_deduplicated_percentage", axes=FALSE)
+abline(h=50, lty="dotted", col="red")
+```
+
+A list of samples over a certain threshold (>50%)
+
+```{r table samples duplication under threshold trimmed}
+tmp <- cbind(trimmedFastQC.R1$Sample,trimmedFastQC.R1["total_deduplicated_percentage"])
+tmp <- tmp[tmp[,2]>50,]
+if(nrow(tmp)>0){
+rownames(tmp) <- 1:nrow(tmp)
+colnames(tmp) <- c("Sample", "Total deduplicated percentage")
+
+datatable(tmp)
+}
+```
+
+### QC content
+
+```{r trimmed data qc content}
+#par(mar=c(10,5,1,1))
+plotFastQCFeature(trimmedFastQC.R1, trimmedFastQC.R2, feature="X.GC", axes=FALSE)
+abline(h=60, lty="dotted", col="red")
+abline(h=30, lty="dotted", col="red")
+```
+
+A list of samples under a certain threshold (<30%)
+
+```{r table samples GC content trimmed}
+tmp <- cbind(trimmedFastQC.R1$Sample, trimmedFastQC.R1["X.GC"])
+tmp <- tmp[tmp[,2]<30,]
+if(nrow(tmp)>0){
+  rownames(tmp) <- 1:nrow(tmp)
+  colnames(tmp) <- c("Sample", "GC content")
+  #knitr::kable(tmp) %>% kable_styling
+  datatable(tmp)
+}
+```
+### Sequence length
+
+```{r trimmed data sequence length}
+#par(mar=c(10,5,1,1))
+plotFastQCFeature(trimmedFastQC.R1, trimmedFastQC.R2, feature="avg_sequence_length", axes=FALSE)
+tmp <- trimmedFastQC.R1["avg_sequence_length"]
+tmp <- mean(as.vector(as.matrix((tmp)))) 
+abline(h=tmp*0.9, lty="dotted", col="red")
+```
+
+A list of samples with average sequence length smaller then overall average minus 10%.
+
+```{r table samples sequence length trimmed}
+tmp <- trimmedFastQC.R1["avg_sequence_length"]
+tmp <- mean(as.vector(as.matrix((tmp)))) 
+th <- tmp*0.9
+
+tmp <- cbind(trimmedFastQC.R1$Sample, trimmedFastQC.R1["avg_sequence_length"])
+
+tmp <- tmp[tmp[,2]<th,]
+if(nrow(tmp)>0){
+  rownames(tmp) <- 1:nrow(tmp)
+  colnames(tmp) <- c("Sample", "Avg sequence length")
+  #knitr::kable(tmp) %>% kable_styling
+  datatable(tmp)
+}
+```
+
+### Total sequences
+
+```{r trimmed data total sequences}
+par(mar=c(10,5,1,1))
+plotFastQCFeature(trimmedFastQC.R1, trimmedFastQC.R2, feature="Total.Sequences")
+```
+
+```{r}
+totalSequences <- trimmedFastQC.R1[,c(1,5)]
+totalSequences[,1] <- gsub(".R1","",totalSequences[,1])
+```
+
+### Quality value distribution
+```{r qualityValueDistribution Trimmed data}
+qcFiles.trimmed <- list.files(file.path(projFolder,"QC", "TRIMMED"), pattern="*qualdist.txt")
+qcQual.trimmed <- fread(file.path(projFolder,"QC", "TRIMMED", qcFiles.trimmed[1]), skip=1)
+colnames(qcQual.trimmed) <- c(gsub("_qualdist.txt","", qcFiles.trimmed[1]), "Quality")
+
+for(i in 2:length(qcFiles.trimmed)){
+    tmp <- fread(file.path(projFolder,"QC", "TRIMMED", qcFiles.trimmed[i]), skip=1)
+    if(nrow(tmp)==0){
+      tmp <- data.frame(V1=0, V2="NA")
+    }
+    colnames(tmp) <- c(gsub("_qualdist.txt","", qcFiles.trimmed[i]), "Quality")
+    qcQual.trimmed <- merge(qcQual.trimmed, tmp, all=TRUE)
+}
+qcQual.trimmed[is.na(qcQual.trimmed)] <- 0
+```
+
+```{r}
+plotThis <- as.matrix(qcQual.trimmed[,-1])
+rownames(plotThis) <- as.vector(as.matrix(qcQual.trimmed[,1]))
+par(mar=c(15,5,2,8), xpd=TRUE)
+barplot(plotThis, las=2, col=1:nrow(plotThis))
+legend("topright", inset=c(-0.2,0), legend=rownames(plotThis)[(nrow(plotThis)):1], fill=nrow(plotThis):1)
+```
+
+### Per base N content
+
+```{r trimmed data per base n content}
+par(mar=c(5,5,1,1))
+#plotFastQCJSONFeature(conFastQCJSON.R1, conFastQCJSON.R2, feature="perBaseN")
+
+plotMQCFeature(x=file.path(projFolder,"QC","TRIMMED","multiqc_R1"),
+               y=file.path(projFolder,"QC","TRIMMED","multiqc_R2"),
+               feature="fastqc_per_base_n_content_plot")
+```
+
+### Per base quality (left: R1, right: R2)
+```{r trimmed data per base sequence quality}
+par(mar=c(5,5,1,1))
+#plotFastQCJSONFeature(conFastQCJSON.R1, conFastQCJSON.R2, feature="sequenceQuality")
+
+plotMQCFeature(x=file.path(projFolder,"QC","TRIMMED","multiqc_R1"),
+               y=file.path(projFolder,"QC","TRIMMED","multiqc_R2"),
+               feature="fastqc_per_base_sequence_quality_plot")
+```
+
+
+### Length distribution trimmed reads
+From the trimlog we get more statistics on the output of the trimming. Include the trimlog data also here as density plots.
+
+```{r}
+cutLogs.files <- list.files(file.path(projFolder, "logs", "CUTADAPT"), pattern="cutadapt*")
+cutLogs <- suppressWarnings(fread(file.path(projFolder, "logs", "CUTADAPT", cutLogs.files[1]), skip="Overview of removed sequences"))
+cutLogs <- cutLogs[,1:2]
+colnames(cutLogs) <- c("length", gsub(".log", "",cutLogs.files[1]))
+
+for(i in 2:length(cutLogs.files)){
+  tmp <- suppressWarnings(fread(file.path(projFolder, "logs", "CUTADAPT", cutLogs.files[i]), skip="Overview of removed sequences"))
+  tmp <- tmp[,1:2]
+  colnames(tmp) <- c("length", gsub(".log", "", cutLogs.files[i]))
+  
+  cutLogs <- merge(cutLogs, tmp, all=TRUE)
+}
+
+cutLogs[is.na(cutLogs)] <- 0
+```
+
+```{r}
+tmp <- apply(cutLogs[,-1],1,mean)
+names(tmp) <- as.vector(as.matrix(cutLogs[,1]))
+tmp <- sort(tmp, decreasing=TRUE)[1:10]
+tmp2 <- data.frame(names(tmp), tmp)
+out_html <- knitr::kable(tmp2, col.names = c("Trimmed bases", "Avg. freq"), row.names = FALSE, "html")
+kable_styling(out_html, "striped", position = "left")
+```
+
+### Summary
+```{r trimmed data summary stats}
+mqcStats.trim <- read.table(file.path(projFolder,"QC","TRIMMED","multiqc_R1", "multiqc_data", "multiqc_fastqc.txt"), header=TRUE, sep="\t")
+tmp <- mqcStats.trim[,-c(1:4,7,11:21)]
+
+totalTrimSequences <- sum(mqcStats.trim$Total.Sequences)
+out <- c(totalTrimSequences,apply(tmp,2,mean))
+names(out) <- c("Tot. number sequences",
+                "Avg. total sequences",
+                "Avg. poor quality",
+                "Avg. GC Percent",
+                "Avg. deplication percent",
+                "Avg. sequence length")
+
+out_html <- knitr::kable(formatC(out,  format="d", big.mark=","), col.names = NULL, "html")
+kable_styling(out_html, "striped", position = "left")
+
+out <- t(as.data.frame(as.matrix((summary(tmp[,1])))))
+rownames(out) <- "5-point summary of total sequences"
+out_html <- knitr::kable(formatC(out,  format="d", big.mark=","), "html")
+kable_styling(out_html, "striped", position = "left")
+
+```
+
+
+## Concatenated vs. Trimmed
+
+```{r average trimmed and conc}
+conFastQC.avg <- (conFastQC.R1[,-c(1:4,7,11:21)] + conFastQC.R2[,-c(1:4,7,11:21)]) / 2
+trimmedFastQC.avg <- (trimmedFastQC.R1[,-c(1:4,7,11:21)] + trimmedFastQC.R2[,-c(1:4,7,11:21)]) / 2
+conFastQC.avg$Sample <- conFastQC.R1$Sample
+trimmedFastQC.avg$Sample <- trimmedFastQC.R1$Sample
+
+conFastQCJSON.avg <- list()
+conFastQCJSON.avg$sequenceQuality <- (conFastQCJSON.R1$sequenceQuality + conFastQCJSON.R2$sequenceQuality)/2
+conFastQCJSON.avg$perBaseN <- (conFastQCJSON.R1$perBaseN + conFastQCJSON.R2$perBaseN)/2
+trimmedFastQCJSON.avg <- list()
+trimmedFastQCJSON.avg$sequenceQuality <- (trimmedFastQCJSON.R1$sequenceQuality + trimmedFastQCJSON.R2$sequenceQuality)/2
+trimmedFastQCJSON.avg$perBaseN <- (trimmedFastQCJSON.R1$perBaseN + trimmedFastQCJSON.R2$perBaseN)/2
+```
+
+### De-Duplication percent
+
+```{r conctrim data duplication percent}
+par(mar=c(10,5,1,1))
+plotFastQCFeature(conFastQC.avg, trimmedFastQC.avg, labels=c("Conc", "Trimmed"), feature="total_deduplicated_percentage")
+```
+
+### GC content
+
+```{r conctrim data qc content}
+par(mar=c(10,5,1,1))
+plotFastQCFeature(conFastQC.avg, trimmedFastQC.avg, labels=c("Conc", "Trimmed"), feature="X.GC")
+```
+
+### Sequence length
+
+```{r conctrim data sequence length}
+par(mar=c(10,5,1,1))
+plotFastQCFeature(conFastQC.avg, trimmedFastQC.avg, labels=c("Conc", "Trimmed"), feature="avg_sequence_length")
+```
+
+### Total sequences
+
+```{r conctrim data total sequences}
+par(mar=c(10,5,1,1))
+plotFastQCFeature(conFastQC.avg, trimmedFastQC.avg, labels=c("Conc", "Trimmed"), feature="Total.Sequences")
+```
+
+### Per base N content (left: Conc., right: Trimmed)
+```{r contrimm data per base n content}
+par(mar=c(5,5,1,1))
+#plotFastQCJSONFeature(conFastQCJSON.R1, conFastQCJSON.R2, feature="perBaseN")
+
+plotMQCFeature(x=file.path(projFolder,"QC","CONCATENATED","multiqc_R1"),
+               y=file.path(projFolder,"QC","TRIMMED","multiqc_R1"),
+               feature="fastqc_per_base_n_content_plot")
+```
+
+### Per base quality (left: R1, right: R2)
+```{r contrimm data per base sequence quality}
+par(mar=c(5,5,1,1))
+#plotFastQCJSONFeature(conFastQCJSON.R1, conFastQCJSON.R2, feature="sequenceQuality")
+
+plotMQCFeature(x=file.path(projFolder,"QC","CONCATENATED","multiqc_R1"),
+               y=file.path(projFolder,"QC","TRIMMED","multiqc_R1"),
+               feature="fastqc_per_base_sequence_quality_plot")
+```

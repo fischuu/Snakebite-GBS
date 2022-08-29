@@ -381,7 +381,12 @@ MockFlankingToReference_SamToSortedBam:
 ################################################################################
 R_finalReport:
     time: 0-12:00:00
-    job-name: Rreport
+    job-name: Finalreport
+    mem-per-cpu: 80000
+    
+R_QCReport:
+    time: 0-06:00:00
+    job-name: QCreport
     mem-per-cpu: 80000
 
 # Module 8 - Call new data

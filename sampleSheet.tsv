@@ -1,0 +1,5 @@
+rawsample	sample_name	lane	read1	read2	useForMock
+Sample1_test_S12_L001	Sample1_test_S12	L001	Sample1_test_S12_L001_R1_001.fastq.gz	Sample1_test_S12_L001_R2_001.fastq.gz	NO
+Sample1_test_S12_L002	Sample1_test_S12	L002	Sample1_test_S12_L002_R1_001.fastq.gz	Sample1_test_S12_L002_R2_001.fastq.gz	NO
+Sample2_test_S8_L002	Sample2_test_S8	L002	Sample2_test_S8_L002_R1_001.fastq.gz	Sample2_test_S8_L002_R2_001.fastq.gz	YES
+Sample2_test_S8_L001	Sample2_test_S8	L001	Sample2_test_S8_L001_R1_001.fastq.gz	Sample2_test_S8_L001_R2_001.fastq.gz	YES

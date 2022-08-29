@@ -1,0 +1,9 @@
+# General workflow
+
+## Directed acyclic graph (DAG)
+
+The DAG of the used pipeline with rule dependencies.
+
+```{r import workflow, echo=FALSE, fig.cap="Overview of the applied workflow", out.width = '100%'}
+if(file.exists(file.path(projFolder,"workflow.png"))) knitr::include_graphics(file.path(projFolder,"workflow.png"))
+```

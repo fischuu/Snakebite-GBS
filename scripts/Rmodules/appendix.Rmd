@@ -1,0 +1,42 @@
+# Appendix
+
+## Project Setup
+
+### Content of barcodeID.txt
+
+This is the barcodeID.txt that is used in the project:
+```{r import barcodesID.txt}
+barcodesID <- read.table(file.path(projFolder,"barcodesID.txt"))
+colnames(barcodesID) <- c("Index", "SampleID", "UsedForMock")
+```
+
+```{r print barcodesID}
+datatable(barcodesID)
+#  out_html <- knitr::kable(barcodesID, "html")
+#  kable_styling(out_html, "striped", position = "left") 
+```
+
+
+## Pipeline configuration
+This is the configuration file that is used for the project:
+
+```{r import config file}
+pipelineConfig <- readLines(pipelineConfig.file)
+```
+
+```{r print configuration}
+  out_html <- knitr::kable(as.matrix(pipelineConfig), "html")
+  kable_styling(out_html, "striped", position = "left")
+```
+
+## Pipeline environment
+And this is the conda environment configuration
+ 
+```{r import conda file}
+condaFile <- readLines(file.path(pipelineFolder, "GBS.yaml"))
+```
+
+```{r print conda}
+  out_html <- knitr::kable(as.matrix(condaFile), "html")
+  kable_styling(out_html, "striped", position = "left")
+```
