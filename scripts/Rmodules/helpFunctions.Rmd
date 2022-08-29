@@ -154,11 +154,26 @@ plotMQCFeature <- function(x, y, labels, feature){
   colnames(plotData2) <- tmp[-length(tmp)]
   
   for(i in 1:pos1){
-    plotData1[,i] <- sapply(sapply(sapply(data1,"[",2),"[",i),"[",2)
+    tmp <- sapply(sapply(sapply(data1,"[",2),"[",i),"[",2)
+    if(class(tmp)=="list") tmp <- unlist(tmp)
+
+  # In case we have missing data, fill it up with zero
+    missing <- nrow(plotData1) - length(tmp)
+    if(missing>0) tmp <- c(tmp, rep(0, missing))
+
+    plotData1[,i] <- tmp
   }
   
   for(i in 1:pos2){
-    plotData2[,i] <- sapply(sapply(sapply(data2,"[",2),"[",i),"[",2)
+    tmp <- sapply(sapply(sapply(data2,"[",2),"[",i),"[",2)
+    if(class(tmp)=="list") tmp <- unlist(tmp)
+
+    # In case we have missing data, fill it up with zero
+    missing <- nrow(plotData1) - length(tmp)
+    if(missing>0) tmp <- c(tmp, rep(0, missing))
+
+    plotData2[,i] <- tmp
+    
   }
 
   par(mfrow=c(1,2))

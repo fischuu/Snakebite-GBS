@@ -11,8 +11,8 @@ import sys
 ##### Natural Resources Institute Finland (Luke)
 ##### This pipeline is build upon the the GBS-SNP-CROP pipeline:
 ##### https://github.com/halelab/GBS-SNP-CROP
-##### Version: 0.16
-version = "0.16"
+##### Version: 0.17.1
+version = "0.17.1"
 
 ##### set minimum snakemake version #####
 min_version("6.0")
@@ -261,6 +261,17 @@ rule callvariants:
         "%s/MPILEUP/mpileup_finalMock/GSC.MasterMatrix.txt" % (config["project-folder"]),
         "%s/MPILEUP/mpileup_finalMock/variants/GSC.GenoMatrix.txt" % (config["project-folder"]),
         "%s/VCF/FinalSetVariants_finalMock.vcf" % (config["project-folder"])
+
+rule postprocessing:
+    input:
+        "%s/FASTQ/TRIMMED/GSC.vcf.fa" % (config["project-folder"]),
+        "%s/MPILEUP/mpileup_reference/GSC.vcf.fa" % (config["project-folder"]), 
+        "%s/SAM/mockVariantsToReference/mockVariantsToReference.sam" % (config["project-folder"]),
+        "%s/BAM/mockVariantsToReference/mockVariantsToReference.sorted.bam" % (config["project-folder"])
+
+rule finalreport:
+    input:
+        "%s/finalReport.html" % (config["project-folder"])
 
 rule MockEval:
     input:
