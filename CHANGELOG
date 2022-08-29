@@ -4,6 +4,13 @@
 #####                                                                      #####
 ################################################################################
 
+0.17.* UPDATES
+--------------------------------------------------------------------------------
+1:
+
+Previous updates
+--------------------------------------------------------------------------------
+0.16  : * New release with previous changes
 0.15.9: * Added the callvariants rule
 0.15.8: * Added the readalignment rule
 0.15.7: * Exception catching added for QC-Report block "qualityValueDistribution {Concatenated,Trimmed} data"
