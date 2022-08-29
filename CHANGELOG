@@ -4,6 +4,7 @@
 #####                                                                      #####
 ################################################################################
 
+0.16.1: * Small path adjustments
 0.16  : * New release with previous changes
 0.15.9: * Added the callvariants rule
 0.15.8: * Added the readalignment rule
