@@ -589,3 +589,4 @@ plotMQCFeature(x=file.path(projFolder,"QC","CONCATENATED","multiqc_R1"),
                y=file.path(projFolder,"QC","TRIMMED","multiqc_R1"),
                feature="fastqc_per_base_sequence_quality_plot")
 ```
+

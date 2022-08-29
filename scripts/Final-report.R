@@ -5,6 +5,12 @@ if(!is.element("snakemake",ls())){
   refGenome.file <- "hermetiaRef_112020.fasta"
 }
 
+last_n_char <- function(x, n=1){
+  substr(x, nchar(x) - n + 1, nchar(x))
+}
+
+if(last_n_char(pipelineFolder)!="/") pipelineFolder <- paste0(pipelineFolder, "/")
+
 createRMD.command <- paste0("cat ",pipelineFolder,"scripts/Rmodules/final-header.Rmd ",
                                    pipelineFolder,"scripts/Rmodules/helpFunctions.Rmd ",
                                    pipelineFolder,"scripts/Rmodules/generalWorkflow.Rmd ",
@@ -19,8 +25,10 @@ createRMD.command <- paste0("cat ",pipelineFolder,"scripts/Rmodules/final-header
                                    pipelineFolder,"scripts/Rmodules/benchmarks.Rmd ",
                                    pipelineFolder,"scripts/Rmodules/appendix.Rmd ",
                                    pipelineFolder,"scripts/Rmodules/references.Rmd ",
-                                   "> ",pipelineFolder,"scripts/final-report.Rmd")
+                                   "> ",projFolder,"/finalReport.Rmd")
+
+cat(createRMD.command, "\n")
 
 system(createRMD.command)
 
-rmarkdown::render(file.path(pipelineFolder,"scripts","final-report.Rmd"), output_file=file.path(pipelineFolder,"finalReport.html"))
+rmarkdown::render(file.path(projFolder,"finalReport.Rmd"), output_file=file.path(projFolder,"finalReport.html"))

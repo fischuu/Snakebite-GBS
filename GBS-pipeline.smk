@@ -262,6 +262,17 @@ rule callvariants:
         "%s/MPILEUP/mpileup_finalMock/variants/GSC.GenoMatrix.txt" % (config["project-folder"]),
         "%s/VCF/FinalSetVariants_finalMock.vcf" % (config["project-folder"])
 
+rule postprocessing:
+    input:
+        "%s/FASTQ/TRIMMED/GSC.vcf.fa" % (config["project-folder"]),
+        "%s/MPILEUP/mpileup_reference/GSC.vcf.fa" % (config["project-folder"]), 
+        "%s/SAM/mockVariantsToReference/mockVariantsToReference.sam" % (config["project-folder"]),
+        "%s/BAM/mockVariantsToReference/mockVariantsToReference.sorted.bam" % (config["project-folder"])
+
+rule finalreport:
+    input:
+        "%s/finalReport.html" % (config["project-folder"])
+
 rule MockEval:
     input:
         "%s/mockEvalReport.html" % (config["project-folder"])
