@@ -12,7 +12,7 @@ else:
         log:
             "%s/logs/STAR/star_reference_index.log" % (config["project-folder"])
         benchmark:
-            "%s/benchmark/STAR/star_reference_index.benchmark.tsv" % (config["project-folder"])
+            "%s/benchmark/star_create_index.tsv" % (config["project-folder"])
         threads: lambda cores: cpu_count()
         singularity: config["singularity"]["star"]
         params: index=config["genome-star-index"]
@@ -36,7 +36,7 @@ rule Concatenate_lanes:
     log:
         "%s/logs/SHELL/catFastq_{samples}.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/SHELL/{samples}_concatenate.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/Concatenate_lanes.{samples}.tsv" % (config["project-folder"])
     threads: lambda cores: cpu_count()
     params:
         outfolder="%s/FASTQ/CONCATENATED" % (config["project-folder"])
@@ -62,7 +62,7 @@ else:
         log:
             "%s/logs/BWA/bwa-fai-IndexReferenceGenome.log" % (config["project-folder"])
         benchmark:
-            "%s/benchmark/BWA/bwaIndexReferenceGenome.benchmark.tsv" % (config["project-folder"])
+            "%s/benchmark/bwa_create_index.tsv" % (config["project-folder"])
         threads: lambda cores: cpu_count()
         singularity: config["singularity"]["gbs"]
         shell:"""
@@ -81,7 +81,7 @@ rule IndexMockReferenceBWA:
     log:
         "%s/BWA/IndexGMockReference.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/BWA/IndexMockReference.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/IndexMockReferenceBWA.tsv" % (config["project-folder"])
     singularity: config["singularity"]["gbs"]
     shell:"""
         bwa index -a bwtsw {input}
@@ -98,7 +98,7 @@ rule IndexMockReferenceSamtools:
     log:
         "%s/logs/Samtools/IndexGenomeSam.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/Samtools/IndexGenomeSam.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/IndexMockReferenceSamtools.tsv" % (config["project-folder"])
     singularity: config["singularity"]["gbs"]
     shell:"""
         samtools faidx {input}
@@ -116,7 +116,7 @@ rule IndexClustersBWA:
     log:
         "%s/logs/BWA/IndexClusters.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/BWA/IndexClusters.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/IndexClustersBWA.tsv" % (config["project-folder"])
     singularity: config["singularity"]["gbs"]
     shell:"""
         bwa index -a bwtsw {input}
@@ -133,7 +133,7 @@ rule IndexClustersSamtools:
     log:
         "%s/logs/Samtools/IndexClustersSam.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/Samtools/IndexClustersSam.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/IndexClustersSamtools.tsv" % (config["project-folder"])
     singularity: config["singularity"]["gbs"]
     shell:"""
         samtools faidx {input}
@@ -150,7 +150,7 @@ rule IndexFinalMockBWA:
     log:
         "%s/logs/BWA/IndexFinalMock.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/BWA/IndexFinalMock.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/IndexFinalMockBWA.tsv" % (config["project-folder"])
     singularity: config["singularity"]["gbs"]
     shell:"""
         bwa index -a bwtsw {input}
@@ -167,7 +167,7 @@ rule IndexFinalMockSamtools:
     log:
         "%s/logs/Samtools/IndexFinalMockSam.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/Samtools/IndexFinalMockSam.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/IndexFinalMockSamtools.tsv" % (config["project-folder"])
     singularity: config["singularity"]["gbs"]
     shell:"""
         samtools faidx {input}
@@ -190,7 +190,7 @@ else:
             log:
                 "%s/logs/BWA/bwa-fai-IndexMockReferenceGenome.log" % (config["project-folder"])
             benchmark:
-                "%s/benchmark/BWA/bwaIndexMockReferenceGenome.benchmark.tsv" % (config["project-folder"])
+                "%s/benchmark/bwa_create_index_existingMock.tsv" % (config["project-folder"])
             singularity: config["singularity"]["gbs"]
             shell:"""
                     bwa index -a bwtsw {input} 2> {log}
@@ -211,7 +211,7 @@ rule R_createBarcodesID_file:
     log:
         "%s/logs/R/prepareBarcodes.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/R/prepareBarcodes.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/R_createBarcodesID_file.tsv" % (config["project-folder"])
     singularity:
         config["singularity"]["r-gbs"]
     params:
