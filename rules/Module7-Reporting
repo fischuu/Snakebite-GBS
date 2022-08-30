@@ -29,7 +29,7 @@ rule R_finalReport:
     log:
         "%s/logs/R/finalReport.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/R/finalReport.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/R_finalReport.tsv" % (config["project-folder"])
     singularity:
         config["singularity"]["r-gbs"]
     params:
@@ -63,7 +63,7 @@ rule R_QCReport:
     log:
         "%s/logs/R/QC-Report.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/R/QC-Report.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/R_QCReport.tsv" % (config["project-folder"])
     singularity:
         config["singularity"]["r-gbs"]
     params:
@@ -99,7 +99,7 @@ rule R_MockEval:
     log:
         "%s/logs/R/mockEvalReport.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/R/mockEvalReport.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/R_MockEval.tsv" % (config["project-folder"])
     singularity:
         config["singularity"]["r-gbs"]
     params:
