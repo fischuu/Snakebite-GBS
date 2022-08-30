@@ -14,7 +14,7 @@ rule fastqc_quality_control_raw_data:
         R1="%s/logs/FASTQC/fastqc_raw_R1.{rawsamples}.log" % (config["project-folder"]),
         R2="%s/logs/FASTQC/fastqc_raw_R2.{rawsamples}.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/FASTQC/fastqc_raw.{rawsamples}.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/fastqc_quality_control_raw_data.{rawsamples}.tsv" % (config["project-folder"])
     threads: 20
     params:
         outfolder="%s/QC/RAW/" % (config["project-folder"])
@@ -40,7 +40,7 @@ rule multiqc_quality_control_raw_data:
         R1="%s/logs/MULTIQC/multiqc_raw_R1.log" % (config["project-folder"]),
         R2="%s/logs/MULTIQC/multiqc_raw_R2.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/MULTIQC/multiqc_raw.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/multiqc_quality_control_raw_data.tsv" % (config["project-folder"])
     params:
        R1="%s/QC/RAW/*_R1_001_fastqc.zip" % (config["project-folder"]),
        R2="%s/QC/RAW/*_R2_001_fastqc.zip" % (config["project-folder"]),
@@ -66,7 +66,7 @@ rule qualDist_raw_data:
         R1="%s/QC/RAW/{rawsamples}_R1_qualdist.txt" % (config["project-folder"]),
         R2="%s/QC/RAW/{rawsamples}_R2_qualdist.txt" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/SHELL/qualdist_raw.{rawsamples}.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/qualDist_raw_data.{rawsamples}.tsv" % (config["project-folder"])
     params:
         outfolder="%s/QC/RAW/" % (config["project-folder"]),
         pipeFolder=config["pipeline-folder"]
@@ -91,7 +91,7 @@ rule fastqc_quality_control_concatenated_data:
         R1="%s/logs/FASTQC/fastqc_concatenated_R1.{samples}.log" % (config["project-folder"]),
         R2="%s/logs/FASTQC/fastqc_concatenated_R2.{samples}.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/FASTQC/fastqc_concatenated.{samples}.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/fastqc_quality_control_concatenated_data.{samples}.tsv" % (config["project-folder"])
     threads: 20
     params:
         outfolder="%s/QC/CONCATENATED/" % (config["project-folder"])
@@ -117,7 +117,7 @@ rule multiqc_quality_control_concatenated_data:
         R1="%s/logs/MULTIQC/multiqc_concatenated_R1.log" % (config["project-folder"]),
         R2="%s/logs/MULTIQC/multiqc_concatenated_R2.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/MULTIQC/multiqc_concatenated.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/multiqc_quality_control_concatenated_data.tsv" % (config["project-folder"])
     params:
        R1="%s/QC/CONCATENATED/*_R1_001.merged_fastqc.zip" % (config["project-folder"]),
        R2="%s/QC/CONCATENATED/*_R2_001.merged_fastqc.zip" % (config["project-folder"]),
@@ -142,7 +142,7 @@ rule qualDist_concateated_data:
         R1="%s/QC/CONCATENATED/{samples}_R1_qualdist.txt" % (config["project-folder"]),
         R2="%s/QC/CONCATENATED/{samples}_R2_qualdist.txt" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/SHELL/qualdist_concatenated.{samples}.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/qualDist_concateated_data.{samples}.tsv" % (config["project-folder"])
     params:
         outfolder="%s/QC/CONCATENATED/" % (config["project-folder"]),
         pipeFolder=config["pipeline-folder"]
@@ -166,7 +166,7 @@ rule fastqc_quality_control_trimmed_data:
         R1="%s/logs/FASTQC/fastqc_trimmed_R1.{samples}.log" % (config["project-folder"]),
         R2="%s/logs/FASTQC/fastqc_trimmed_R2.{samples}.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/FASTQC/fastqc_trimmed.{samples}.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/fastqc_quality_control_trimmed_data.{samples}.tsv" % (config["project-folder"])
     threads: 20
     params:
         outfolder="%s/QC/TRIMMED/" % (config["project-folder"])
@@ -194,7 +194,7 @@ rule multiqc_quality_control_trimmed_data:
         R1="%s/logs/MULTIQC/multiqc_trimmed_R1.log" % (config["project-folder"]),
         R2="%s/logs/MULTIQC/multiqc_trimmed_R2.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/MULTIQC/multiqc_trimmed.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/multiqc_quality_control_trimmed_data.tsv" % (config["project-folder"])
     params:
        R1="%s/QC/TRIMMED/*.R1_fastqc.zip" % (config["project-folder"]),
        R2="%s/QC/TRIMMED/*.R2_fastqc.zip" % (config["project-folder"]),
@@ -219,7 +219,7 @@ rule qualDist_trimmed_data:
         R1="%s/QC/TRIMMED/{samples}_R1_qualdist.txt" % (config["project-folder"]),
         R2="%s/QC/TRIMMED/{samples}_R2_qualdist.txt" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/SHELL/qualdist_trimmed.{samples}.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/qualDist_trimmed_data.{samples}.tsv" % (config["project-folder"])
     params:
         outfolder="%s/QC/TRIMMED/" % (config["project-folder"]),
         pipeFolder=config["pipeline-folder"]
