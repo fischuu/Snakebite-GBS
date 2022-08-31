@@ -17,7 +17,7 @@ rule ParseMpileup_createCountFiles:
     log:
         "%s/logs/Perl/ParseMpileup_createCountFiles.{samples}.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/Perl/ParseMpileup_createCountFiles.{samples}.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/ParseMpileup_createCountFiles.{samples}.tsv" % (config["project-folder"])
     threads: 1
     conda:"envs/gbs.yaml"
     singularity: config["singularity"]["gbs"]
@@ -45,7 +45,7 @@ else:
         log:
             "%s/logs/Perl/ParseMpileup_createCountFiles_reference.{samples}.log" % (config["project-folder"])
         benchmark:
-            "%s/benchmark/Perl/ParseMpileup_createCountFiles_reference.{samples}.benchmark.tsv" % (config["project-folder"])
+            "%s/benchmark/ParseMpileup_createCountFiles_reference.{samples}.tsv" % (config["project-folder"])
         threads: 1
         conda:"envs/gbs.yaml"
         singularity: config["singularity"]["gbs"]
@@ -71,7 +71,7 @@ rule create_verticalRef:
     log:
        "%s/logs/BASH/create_verticalRef.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/BASH/create_verticalRef.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/create_verticalRef.tsv" % (config["project-folder"])
     params:
         wd="%s/FASTQ/TRIMMED" % config["project-folder"],
         countfolder="%s/FASTQ/TRIMMED" % (config["project-folder"]),
@@ -105,7 +105,7 @@ else:
         log:
            "%s/logs/BASH/create_verticalRef_reference.log" % (config["project-folder"])
         benchmark:
-            "%s/benchmark/BASH/create_verticalRef_reference.benchmark.tsv" % (config["project-folder"])
+            "%s/benchmark/create_verticalRef_reference.tsv" % (config["project-folder"])
         params:
             wd="%s/MPILEUP/mpileup_reference" % config["project-folder"],
             countfolder="%s/MPILEUP/mpileup_reference" % (config["project-folder"]),
@@ -175,7 +175,7 @@ rule create_MasterMatrix_parallel:
     log:
             "%s/logs/BASH/create_MasterMatrix_parallel_{i}.log" % (config["project-folder"])
     benchmark:
-            "%s/benchmark/BASH/create_MasterMatrix_parallel_{i}.benchmark.tsv" % (config["project-folder"])
+            "%s/benchmark/create_MasterMatrix_parallel.{i}.tsv" % (config["project-folder"])
     params:
         p=config["params"]["step6"]["p"],
         wd="%s/FASTQ/TRIMMED/VerticalRefPos" % config["project-folder"],
@@ -202,7 +202,7 @@ else:
         log:
             "%s/logs/BASH/create_MasterMatrix_parallel_reference_{i}.log" % (config["project-folder"])
         benchmark:
-            "%s/benchmark/BASH/create_MasterMatrix_parallel_reference.benchmark_{i}.tsv" % (config["project-folder"])
+            "%s/benchmark/create_MasterMatrix_parallel_reference.{i}.tsv" % (config["project-folder"])
         params:
             p=config["params"]["step6"]["p"],
             wd="%s/MPILEUP/mpileup_reference/VerticalRefPos" % config["project-folder"],
@@ -241,6 +241,8 @@ rule aggregate_MasterMatrix:
         aggregate_inputMasterMatrix
     output:
         "%s/FASTQ/TRIMMED/GSC.MasterMatrix.txt" % (config["project-folder"])
+    benchmark:
+        "%s/benchmark/aggregate_MasterMatrix.tsv" % (config["project-folder"])
     shell:"""
         cat {input} > {output}
     """    
@@ -253,6 +255,8 @@ else:
             aggregate_inputMasterMatrix_reference
         output:
             "%s/MPILEUP/mpileup_reference/GSC.MasterMatrix.txt" % (config["project-folder"])
+        benchmark:
+            "%s/benchmark/aggregate_MasterMatrix_reference.tsv" % (config["project-folder"])
         shell:"""
             cat {input} > {output}
         """    
@@ -284,7 +288,7 @@ rule FilterVariants:
     log:
         "%s/logs/Perl/FilterVariants.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/Perl/FilterVariants.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/FilterVariants.tsv" % (config["project-folder"])
     conda:"envs/gbs.yaml"
     singularity: config["singularity"]["gbs"]
     shell:"""
@@ -336,7 +340,7 @@ else:
         log:
             "%s/logs/Perl/FilterVariants_reference.log" % (config["project-folder"])
         benchmark:
-            "%s/benchmark/Perl/FilterVariants_reference.benchmark.tsv" % (config["project-folder"])
+            "%s/benchmark/FilterVariants_reference.tsv" % (config["project-folder"])
         conda:"envs/gbs.yaml"
         singularity: config["singularity"]["gbs"]
         shell:"""
@@ -381,7 +385,7 @@ rule CreateVCF:
     log:
         "%s/logs/Perl/CreateVCF.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/Perl/CreateVCF.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/CreateVCF.tsv" % (config["project-folder"])
     conda:"envs/gbs.yaml"
     singularity: config["singularity"]["gbs"]
     shell:"""
@@ -422,7 +426,7 @@ else:
         log:
             "%s/logs/Perl/CreateVCF_reference.log" % (config["project-folder"])
         benchmark:
-            "%s/benchmark/Perl/CreateVCF_reference.benchmark.tsv" % (config["project-folder"])
+            "%s/benchmark/CreateVCF_reference.tsv" % (config["project-folder"])
         conda:"envs/gbs.yaml"
         singularity: config["singularity"]["gbs"]
         shell:"""
@@ -459,7 +463,7 @@ rule ParseMpileup_createCountFiles_finalMock:
     log:
         "%s/logs/Perl/ParseMpileup_createCountFiles_finalMock.{samples}.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/Perl/ParseMpileup_createCountFiles_finalMock.{samples}.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/ParseMpileup_createCountFiles_finalMock.{samples}.tsv" % (config["project-folder"])
     threads: 1
     conda:"envs/gbs.yaml"
     singularity: config["singularity"]["gbs"]
@@ -482,7 +486,7 @@ rule create_verticalRef_finalMock:
     log:
        "%s/logs/BASH/create_verticalRef_finalMock.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/BASH/create_verticalRef_finalMock.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/create_verticalRef_finalMock.tsv" % (config["project-folder"])
     params:
         wd="%s/MPILEUP/mpileup_finalMock" % config["project-folder"],
         countfolder="%s/MPILEUP/mpileup_finalMock" % (config["project-folder"]),
@@ -525,9 +529,9 @@ rule create_MasterMatrix_parallel_finalMock:
     output:
         "%s/MPILEUP/mpileup_finalMock/VerticalRefPos/GSC.MasterMatrix_{i}.tsv" % (config["project-folder"])
     log:
-        "%s/logs/BASH/create_MasterMatrix_parallel_finalMock_{i}.log" % (config["project-folder"])
+        "%s/logs/BASH/create_MasterMatrix_parallel_finalMock.{i}.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/BASH/create_MasterMatrix_parallel_finalMock.benchmark_{i}.tsv" % (config["project-folder"])
+        "%s/benchmark/create_MasterMatrix_parallel_finalMock.{i}.tsv" % (config["project-folder"])
     params:
         p=config["params"]["step6"]["p"],
         wd="%s/MPILEUP/mpileup_finalMock/VerticalRefPos" % config["project-folder"],
@@ -552,6 +556,8 @@ rule aggregate_MasterMatrix_finalMock:
         aggregate_inputMasterMatrix_finalMock
     output:
         "%s/MPILEUP/mpileup_finalMock/GSC.MasterMatrix.txt" % (config["project-folder"])
+    benchmark:
+        "%s/benchmark/aggregate_MasterMatrix_finalMock.tsv" % (config["project-folder"])
     shell:"""
         cat {input} > {output}
     """    
@@ -583,7 +589,7 @@ rule FilterVariants_finalMock:
     log:
         "%s/logs/Perl/FilterVariants_finalMock.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/Perl/FilterVariants_finalMock.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/FilterVariants_finalMock.tsv" % (config["project-folder"])
     conda:"envs/gbs.yaml"
     singularity: config["singularity"]["gbs"]
     shell:"""
@@ -627,7 +633,7 @@ rule CreateVCF_finalMock:
     log:
         "%s/logs/Perl/CreateVCF_finalMock.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/Perl/CreateVCF_finalMock.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/CreateVCF_finalMock.tsv" % (config["project-folder"])
     conda:"envs/gbs.yaml"
     singularity: config["singularity"]["gbs"]
     shell:"""

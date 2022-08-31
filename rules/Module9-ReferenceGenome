@@ -12,7 +12,7 @@ else:
         log:
            "%s/logs/Stringtie/stringtie.{samples}.log" % (config["project-folder"])
         benchmark:
-           "%s/benchmark/stringtie.{samples}.benchmark.tsv" % (config["project-folder"])
+           "%s/benchmark/RefGenome_AssembleTranscripts.{samples}.tsv" % (config["project-folder"])
         singularity: config["singularity"]["stringtie"]
         threads: 20
         shell:"""
@@ -30,6 +30,8 @@ else:
            files=expand("%s/Stringtie/{sample}.stringtie.gtf" % (config["project-folder"]), sample=samples)
         output:
            txt="%s/Stringtie/stringtie_gtfs.txt" % (config["project-folder"])
+        benchmark:
+           "%s/benchmark/compose_merge.tsv" % (config["project-folder"])
         params:
            folder="%s/Stringtie/" % (config["project-folder"]),
            pipefolder=config["pipeline-folder"]
@@ -53,7 +55,7 @@ else:
         log:
             "%s/logs/stringtiemerge.log" % (config["project-folder"])
         benchmark:
-            "%s/benchmark/stringtiemerge.benchmark.tsv" % (config["project-folder"])
+            "%s/benchmark/stringtie_merge.tsv" % (config["project-folder"])
         threads: 20
         singularity: config["singularity"]["stringtie"]
         shell:"""
@@ -75,7 +77,7 @@ else:
         log:
             "%s/logs/FC/featureCounts_reference_contigs.{samples}.log" % (config["project-folder"])
         benchmark:
-            "%s/benchmark/FC/featureCounts_reference_contigs.{samples}.benchmark.tsv" % (config["project-folder"])
+            "%s/benchmark/featureCounts_quantify_ReferenceAlignments.{samples}.tsv" % (config["project-folder"])
         threads: 20
         singularity: config["singularity"]["subread"]
         shell:"""

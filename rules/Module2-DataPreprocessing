@@ -15,7 +15,7 @@ rule cutadapt_trim_reads:
     log:
         "%s/logs/CUTADAPT/cutadapt.{samples}.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/CUTADAPT/cutadapt.{samples}.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/cutadapt_trim_reads.{samples}.tsv" % (config["project-folder"])
     threads: 1
     conda:"envs/cutadapt.yaml"
     singularity: config["singularity"]["cutadapt"]
@@ -69,7 +69,7 @@ rule TrimBasedOnQuality:
     log:
         "%s/logs/TRIMMOMATIC/trimmomatic_{samples}.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/TRIMMOMATIC/trimmomatic_{samples}.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/TrimBasedOnQuality.{samples}.tsv" % (config["project-folder"])
     conda:"envs/cutadapt.yaml"
     singularity: config["singularity"]["gbs"]
     shell:"""
@@ -93,7 +93,7 @@ rule SubstituteLowQualityBases:
         R1="%s/logs/FASTQ_MASKER/Fastq_masker_{samples}_R1.log" % (config["project-folder"]),
         R2="%s/logs/FASTQ_MASKER/Fastq_masker_{samples}_R2.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/FASTQ_MASKER/Fastq_masker_{samples}.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/SubstituteLowQualityBases.{samples}.tsv" % (config["project-folder"])
     conda:"envs/gbs.yaml"
     singularity: config["singularity"]["gbs"]
     shell:"""

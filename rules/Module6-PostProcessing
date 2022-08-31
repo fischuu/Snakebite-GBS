@@ -15,7 +15,7 @@ rule MockRef_getVariantFlanking:
     log:
         "%s/logs/BASH/MockRef_getVariantFlanking.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/BASH/MockRef_getVariantFlanking.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/MockRef_getVariantFlanking.tsv" % (config["project-folder"])
     conda:"envs/gbs.yaml"
     singularity: config["singularity"]["gbs"]
     shell:"""
@@ -45,7 +45,7 @@ else:
         log:
             "%s/logs/BASH/Ref_getVariantFlanking.log" % (config["project-folder"])
         benchmark:
-            "%s/benchmark/BASH/Ref_getVariantFlanking.benchmark.tsv" % (config["project-folder"])
+            "%s/benchmark/Ref_getVariantFlanking.tsv" % (config["project-folder"])
         conda:"envs/gbs.yaml"
         singularity: config["singularity"]["gbs"]
         shell:"""
@@ -71,7 +71,7 @@ else:
         log:
             "%s/logs/BWA/AlignMockFlankingToReference.log" % (config["project-folder"])
         benchmark:
-            "%s/benchmark/BWA/AlignMockFlankingToReference.benchmark.tsv" % (config["project-folder"])
+            "%s/benchmark/AlignMockFlankingToReference.tsv" % (config["project-folder"])
         threads: 20
         conda:"envs/gbs.yaml"
         singularity: config["singularity"]["gbs"]
@@ -95,7 +95,7 @@ else:
         log:
             "%s/logs/Samtools/MockFlankingToReference_SamToSortedBam.log" % (config["project-folder"])
         benchmark:
-            "%s/benchmark/Samtools/MockFlankingToReference_SamToSortedBam.benchmark.tsv" % (config["project-folder"])
+            "%s/benchmark/MockFlankingToReference_SamToSortedBam.tsv" % (config["project-folder"])
         threads: lambda cores: 20
         params:
             q=config["params"]["step5d"]["q"],
