@@ -75,9 +75,11 @@ rule create_verticalRef:
     params:
         wd="%s/FASTQ/TRIMMED" % config["project-folder"],
         countfolder="%s/FASTQ/TRIMMED" % (config["project-folder"]),
-        pipefolder=config["pipeline-folder"]
+        pipefolder=config["pipeline-folder"],
+        tmpdir=config["local-scratch"]
     threads: 1
     shell:"""
+        export TMPDIR={params.tmpdir}
         sort -u -m -k2n {input.ref} -o {params.wd}/VerticalRefPos.tmp;
         sort -k2n {params.wd}/VerticalRefPos.tmp | uniq > {output.vref};
         #ls {params.wd}/*count.txt | xargs -n1 basename > {output.co}
@@ -107,9 +109,11 @@ else:
         params:
             wd="%s/MPILEUP/mpileup_reference" % config["project-folder"],
             countfolder="%s/MPILEUP/mpileup_reference" % (config["project-folder"]),
-            pipefolder=config["pipeline-folder"]
+            pipefolder=config["pipeline-folder"],
+            tmpdir=config["local-scratch"]
         threads: 1
         shell:"""
+            export TMPDIR={params.tmpdir}
             sort -u -m -k2n {input.ref} -o {params.wd}/VerticalRefPos.tmp;
             sort -k2n {params.wd}/VerticalRefPos.tmp | uniq > {output.vref};
            # DO not do it that way, it is the wrong order!!!!
@@ -482,9 +486,11 @@ rule create_verticalRef_finalMock:
     params:
         wd="%s/MPILEUP/mpileup_finalMock" % config["project-folder"],
         countfolder="%s/MPILEUP/mpileup_finalMock" % (config["project-folder"]),
-        pipefolder=config["pipeline-folder"]
+        pipefolder=config["pipeline-folder"],
+        tmpdir=config["local-scratch"]
     threads: 1
     shell:"""
+        export TMPDIR={params.tmpdir}
         sort -u -m -k2n {input.ref} -o {params.wd}/VerticalRefPos.tmp;
         sort -k2n {params.wd}/VerticalRefPos.tmp | uniq > {output.vref};
         #ls {params.wd}/*count.txt | xargs -n1 basename > {output.co}

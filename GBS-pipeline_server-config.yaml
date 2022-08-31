@@ -271,11 +271,13 @@ create_verticalRef:
     time: 01:00:00
     job-name:  create_verticalRef
     mem-per-cpu: 16000
+    nvme: 50
 
 create_verticalRef_reference:
     time: 01:00:00
     job-name:  create_verticalRef_reference
     mem-per-cpu: 16000
+    nvme: 50
 
 cut_verticalRef:
     job-name: cut_verticalRef
@@ -356,6 +358,7 @@ create_verticalRef_finalMock:
     time: 01:00:00
     job-name:  create_verticalRef_finalMock
     mem-per-cpu: 16000
+    nvme: 50
 
 # Module 6 - Postprocessing
 ################################################################################
