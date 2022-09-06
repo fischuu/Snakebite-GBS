@@ -6,6 +6,7 @@
 
 0.17.* UPDATES
 --------------------------------------------------------------------------------
+2: Added a server-small config to downscale the server requirements for smaller projects
 1: Define a TMPDIR for the create vertical ref rules, as it seems to crash for large datasets when the system default tmp folder is small
 
 Previous updates

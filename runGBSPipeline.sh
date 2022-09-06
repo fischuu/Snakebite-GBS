@@ -14,7 +14,7 @@ snakemake -s $pipelineFolder/GBS-pipeline.smk \
 snakemake -s $pipelineFolder/GBS-pipeline.smk \
           -j 150 \
           --use-singularity \
-          --singularity-args "-B /scratch,/projappl,/users,/dev/shm:/tmp" \
+          --singularity-args "-B /scratch,/projappl,/users,/dev/shm:/tmp,/run:/run" \
           --configfile $projectFolder/GBS-pipeline_config.yaml \
           --latency-wait 60 \
           --cluster-config $pipelineFolder/GBS-pipeline_server-config.yaml \
