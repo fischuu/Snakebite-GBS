@@ -11,8 +11,8 @@ import sys
 ##### Natural Resources Institute Finland (Luke)
 ##### This pipeline is build upon the the GBS-SNP-CROP pipeline:
 ##### https://github.com/halelab/GBS-SNP-CROP
-##### Version: 0.17.2
-version = "0.17.2"
+##### Version: 0.17.3
+version = "0.17.3"
 
 ##### set minimum snakemake version #####
 min_version("6.0")
@@ -92,6 +92,7 @@ config["genome-star-index"] = config["project-folder"]+"/References/STAR2.7.5a" 
 config["barcodes-script"] = config["pipeline-folder"]+"/scripts/prepareBarcodes.R"
 config["report-script"] = config["pipeline-folder"]+"/scripts/Final-report.R"
 config["qc-script"] = config["pipeline-folder"]+"/scripts/QC-report.R"
+config["variant-script"] = config["pipeline-folder"]+"/scripts/VariantCalling-report.R"
 config["mockeval-script"] = config["pipeline-folder"]+"/scripts/mockeval-report.Rmd"
 config["refinement-script"] = config["pipeline-folder"]+"/scripts/refineMockReference.R"
 config["adapter"]=config["pipeline-folder"]+"/adapter.fa"
@@ -260,7 +261,8 @@ rule callvariants:
         "%s/MPILEUP/mpileup_finalMock/VerticalRefPos.txt" % (config["project-folder"]),
         "%s/MPILEUP/mpileup_finalMock/GSC.MasterMatrix.txt" % (config["project-folder"]),
         "%s/MPILEUP/mpileup_finalMock/variants/GSC.GenoMatrix.txt" % (config["project-folder"]),
-        "%s/VCF/FinalSetVariants_finalMock.vcf" % (config["project-folder"])
+        "%s/VCF/FinalSetVariants_finalMock.vcf" % (config["project-folder"]),
+        "%s/VariantCalling-Report.html" % (config["project-folder"])
 
 rule postprocessing:
     input:

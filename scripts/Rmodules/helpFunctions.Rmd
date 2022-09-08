@@ -40,6 +40,7 @@ if(!is.element("snakemake",ls())){
   pipelineConfig.file <- "/scratch/project_2001746/TestProject/GBS-pipeline_config.yaml"
   refGenome.file <- "hermetiaRef_112020.fasta"
 }
+refGenome.full <- refGenome.file
 refGenome.file <- basename(refGenome.file)
 ifelse(refGenome.file == "", refAvail <- FALSE, refAvail <- TRUE)
 ```
