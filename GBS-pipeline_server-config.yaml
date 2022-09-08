@@ -391,6 +391,11 @@ R_QCReport:
     job-name: QCreport
     mem-per-cpu: 80000
 
+R_VariantCallingReport:
+    time: 0-03:00:00
+    job-name: VariantCallingreport
+    mem-per-cpu: 80000
+
 # Module 8 - Call new data
 ################################################################################
 ExistingMockRefGenome_AlignReads:

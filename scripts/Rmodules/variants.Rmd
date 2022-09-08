@@ -49,14 +49,14 @@ getInfoSummary <- function(x){
 }
 
 if(refAvail){
-  refInfo.file <- paste0(refGenome.file,".fai")
+  refInfo.file <- paste0(refGenome.full,".fai")
   refInfo <- read.table(refInfo.file)
 }
 ```
 
-Import the Result vcfs
 
 ```{r import vcf, echo=FALSE, message=FALSE, warning=FALSE}
+# Import the Result vcfs
 vcf <- importVCF(file.path(projFolder, "MPILEUP", "mpileup_finalMock", "GSC.vcf"), getInfo = TRUE)
 vcfUnfiltered <- importVCF(file.path(projFolder, "MPILEUP", "mpileup_finalMock", "GSC.unfiltered.vcf"), getInfo = TRUE)
 
@@ -73,6 +73,7 @@ if(refAvail){
 
 ### Basic stats
 
+#### Filtered VCF
 Basic stats and combinations for the called variants for filtered calls.
 
 ```{r}
@@ -82,6 +83,7 @@ out <- getBasicStats(vcf)
   kable_styling(out[[2]], "striped", position = "left")  
 ```
 
+#### Unfiltered VCF
 Basic stats and combinations for the called variants for unfiltered calls.
 
 ```{r}
@@ -93,12 +95,14 @@ out <- getBasicStats(vcfUnfiltered)
 
 ### Info Stats
 
+#### Filtered VCF
 Genotype stats for called variants for filtered calls.
 
 ```{r}
 kable_styling(getInfoSummary(vcf), "striped", position = "left")  
 ```
 
+#### Unfiltered VCF
 Genotype stats for called variants for unfiltered calls.
 
 ```{r}
@@ -148,9 +152,12 @@ par(mfrow=c(1,2))
 barplot(apply(vcf$genotypesInfo==".,.",2,sum)/nrow(vcf$map)*100, las=2, main="Missing variants per sample (in %), filtered", col=report.colours[1])
 barplot(apply(vcfUnfiltered$genotypesInfo==".,.",2,sum)/nrow(vcfUnfiltered$map)*100, las=2, main="Missing variants per sample (in %), unfiltered", col=report.colours[1])
 ```
+
 ## Preliminary mock
 
 ### Basic stats
+
+#### Filtered VCF
 
 Basic stats and combinations for the called variants for filtered calls.
 
@@ -161,6 +168,7 @@ kable_styling(out[[1]], "striped", position = "left")
 kable_styling(out[[2]], "striped", position = "left")  
 ```
 
+#### Unfiltered VCF
 Basic stats and combinations for the called variants for unfiltered calls.
 
 ```{r}
@@ -172,12 +180,14 @@ kable_styling(out[[2]], "striped", position = "left")
 
 ### Info Stats
 
+#### Filtered VCF
 Genotype stats for called variants for filtered calls.
 
 ```{r}
 kable_styling(getInfoSummary(vcfGSC), "striped", position = "left")  
 ```
 
+#### Unfiltered VCF
 Genotype stats for called variants for unfiltered calls.
 
 ```{r}
@@ -234,6 +244,7 @@ barplot(apply(vcfGSCUnfiltered$genotypesInfo==".,.",2,sum)/nrow(vcfGSCUnfiltered
 
 ### Basic stats
 
+#### Filtered VCF
 Basic stats and combinations for the called variants for filtered calls.
 
 ```{r}
@@ -245,6 +256,7 @@ out <- getBasicStats(vcfRef)
 }
 ```
 
+#### Unfiltered VCF
 Basic stats and combinations for the called variants for unfiltered calls.
 
 ```{r}
@@ -258,12 +270,14 @@ if(refAvail){
 
 ### Info Stats
 
+#### Filtered VCF
 Genotype stats for called variants for filtered calls.
 
 ```{r}
 kable_styling(getInfoSummary(vcfRef), "striped", position = "left")  
 ```
 
+#### Unfiltered VCF
 Genotype stats for called variants for unfiltered calls.
 
 ```{r}
