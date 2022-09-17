@@ -26,6 +26,28 @@ rawsamples=list(samplesheet.rawsample)
 samples=list(set(list(samplesheet.sample_name)))
 lane=list(samplesheet.lane)
 
+# Get the basename fastq inputs
+possible_ext = [".fastq", ".fq.gz", ".fastq.gz", ".fasta", ".fa", ".fa.gz", ".fasta.gz"]
+ext = ".null"
+
+reads1_tmp = list(samplesheet.read1)
+reads1_trim = []
+for r in reads1_tmp:
+    for e in possible_ext:
+        if r.endswith(e):
+            addThis = r[:-len(e)]
+            reads1_trim += [addThis]
+            ext=e
+
+reads2_tmp = list(samplesheet.read2)
+reads2_trim = []
+for r in reads2_tmp:
+    for e in possible_ext:
+        if r.endswith(e):
+            addThis = r[:-len(e)]
+            reads2_trim += [addThis] 
+            ext=e
+
 #### CONTINUE FROM HERE TO ADD PIPE CONFIG ONTO THE FILE
 #if '--configfile' in sys.argv:
 #    i = sys.argv.index('--configfile')
@@ -43,7 +65,9 @@ workdir: config["project-folder"]
 
 wildcard_constraints:
     rawsamples="|".join(rawsamples),
-    samples="|".join(samples)
+    samples="|".join(samples),
+    reads1_trim="|".join(reads1_trim),
+    reads2_trim="|".join(reads2_trim)
 
 ##### input function definitions ######
 
@@ -71,6 +95,21 @@ def get_raw_input_read2(wildcards):
     reads = samplesheet.loc[wildcards.rawsamples][["read2"]]
     path = config["rawdata-folder"]
     output = [path + "/" + x for x in reads]
+    return output
+
+def get_raw_input_read_bs(wildcards):
+    reads = wildcards.reads + ext
+    output = config["rawdata-folder"] + "/" + reads
+    return output
+
+def get_raw_input_read_bs1(wildcards):
+    reads = wildcards.reads1 + ext
+    output = config["rawdata-folder"] + "/" + reads
+    return output
+
+def get_raw_input_read_bs2(wildcards):
+    reads = wildcards.reads2 + ext
+    output = config["rawdata-folder"] + "/" + reads
     return output
     
 def get_fastq_for_concatenating_read1(wildcards):
@@ -161,6 +200,8 @@ rule all:
         conditionalOut,
       # QC OF RAW AND CONCATENATED FILES
         "%s/QC/RAW/multiqc_R1/" % (config["project-folder"]),
+   #     "%s/QC/RAW/multiqc_R2/" % (config["project-folder"]),
+        expand("%s/QC/RAW/{rawsamples}_R1_qualdist.txt" % (config["project-folder"]), rawsamples=rawsamples),
         "%s/QC/CONCATENATED/multiqc_R1/" % (config["project-folder"]),
         "%s/QC/TRIMMED/multiqc_R1/" % (config["project-folder"]),
       # OUTPUT STEP 4
