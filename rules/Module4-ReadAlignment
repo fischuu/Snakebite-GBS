@@ -179,10 +179,19 @@ rule MockRef_SamToSortedBam:
     conda:"envs/samtools.yaml"
     singularity: config["singularity"]["gbs"]
     shell:"""
-        df -h &> {log}
-        samtools view -b -q {params.q} -f {params.f} -F {params.F} {input} > {output.bam}
-        samtools sort {output.bam} -o {output.sorted}
-        samtools index -c {output.sorted}
+        echo "Available disc space" &> {log}
+        df -h &>> {log}
+        echo "Step 1:" &>> {log}
+        echo "##################################################################" &>> {log}
+        samtools view -b -q {params.q} -f {params.f} -F {params.F} {input} > {output.bam} 2>>{log}
+
+        echo "Step 2:" &>> {log}
+        echo "##################################################################" &>> {log}
+        samtools sort {output.bam} -o {output.sorted} &>>{log}
+
+        echo "Step 3:" &>> {log}
+        echo "##################################################################" &>> {log}
+        samtools index -c {output.sorted} &>>{log}
   	"""
 
 rule MockRefClusters_SamToSortedBam:

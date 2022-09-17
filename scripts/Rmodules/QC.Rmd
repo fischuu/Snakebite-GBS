@@ -8,7 +8,7 @@ After that, the concatenated reads are comapred against the trimmed reads.
 ```{r import multiqc data}
 # Import the FastQC/MultiQC output for the RAW data
 rawFastQC.R1 <- read.table(file.path(projFolder,"QC","RAW","multiqc_R1","multiqc_data","multiqc_fastqc.txt"), header=TRUE, sep="\t")
-rawFastQC.R2 <- read.table(file.path(projFolder,"QC","RAW","multiqc_R2","multiqc_data","multiqc_fastqc.txt"), header=TRUE, sep="\t")
+#rawFastQC.R2 <- read.table(file.path(projFolder,"QC","RAW","multiqc_R2","multiqc_data","multiqc_fastqc.txt"), header=TRUE, sep="\t")
 #rawFastQCJSON.R1 <- getFastQCJSON(file.path(projFolder, "QC", "RAW", "multiqc_R1", "multiqc_data", "multiqc_data.json"))
 #rawFastQCJSON.R2 <- getFastQCJSON(file.path(projFolder, "QC", "RAW", "multiqc_R2", "multiqc_data", "multiqc_data.json"))
 
@@ -33,7 +33,8 @@ These are the reads, as they come from the sequencer, no trimming, no nothing.
 
 ```{r raw data duplication percent}
 #par(mar=c(10,5,1,1))
-plotFastQCFeature(rawFastQC.R1, rawFastQC.R2, feature="total_deduplicated_percentage", axes=FALSE)
+plotFastQCFeature(rawFastQC.R1, rawFastQC.R1, feature="total_deduplicated_percentage", axes=FALSE)
+#plotFastQCFeature(rawFastQC.R1, rawFastQC.R2, feature="total_deduplicated_percentage", axes=FALSE)
 abline(h=50, lty="dotted", col="red")
 ```
 
@@ -54,7 +55,8 @@ datatable(tmp)
 
 ```{r raw data qc content}
 #par(mar=c(10,5,1,1))
-plotFastQCFeature(rawFastQC.R1, rawFastQC.R2, feature="X.GC", axes=FALSE)
+plotFastQCFeature(rawFastQC.R1, rawFastQC.R1, feature="X.GC", axes=FALSE)
+#plotFastQCFeature(rawFastQC.R1, rawFastQC.R2, feature="X.GC", axes=FALSE)
 abline(h=60, lty="dotted", col="red")
 abline(h=30, lty="dotted", col="red")
 ```
@@ -76,7 +78,8 @@ if(nrow(tmp)>0){
 
 ```{r raw data sequence length}
 #par(mar=c(10,5,1,1))
-plotFastQCFeature(rawFastQC.R1, rawFastQC.R2, feature="avg_sequence_length", axes=FALSE)
+plotFastQCFeature(rawFastQC.R1, rawFastQC.R1, feature="avg_sequence_length", axes=FALSE)
+#plotFastQCFeature(rawFastQC.R1, rawFastQC.R2, feature="avg_sequence_length", axes=FALSE)
 tmp <- rawFastQC.R1["avg_sequence_length"]
 tmp <- mean(as.vector(as.matrix((tmp)))) 
 abline(h=tmp*0.9, lty="dotted", col="red")
@@ -104,7 +107,8 @@ if(nrow(tmp)>0){
 
 ```{r raw data total sequences}
 #par(mar=c(10,5,1,1))
-plotFastQCFeature(rawFastQC.R1, rawFastQC.R2, feature="Total.Sequences", axes=FALSE)
+plotFastQCFeature(rawFastQC.R1, rawFastQC.R1, feature="Total.Sequences", axes=FALSE)
+#plotFastQCFeature(rawFastQC.R1, rawFastQC.R2, feature="Total.Sequences", axes=FALSE)
 ```
 
 ### Quality value distribution

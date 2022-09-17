@@ -6,6 +6,7 @@
 
 0.17.* UPDATES
 --------------------------------------------------------------------------------
+6: Input bug in the preparesamplesheet.R script fixed (tab-delimited input enforced)
 5: Removed for the time-being the R2 reads from raw-read FastQC, due to some bug in function.
 4: Created functions to handle individual fastq files in FastQC report
 3: Variant Calling report added
