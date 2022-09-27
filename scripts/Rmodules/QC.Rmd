@@ -114,13 +114,13 @@ plotFastQCFeature(rawFastQC.R1, rawFastQC.R1, feature="Total.Sequences", axes=FA
 ### Quality value distribution
 ```{r}
 qcFiles.R1.raw <- paste0(sampleSheet$rawsample, "_R1_qualdist.txt")
-qcFiles.R2.raw <- paste0(sampleSheet$rawsample, "_R2_qualdist.txt")
+#qcFiles.R2.raw <- paste0(sampleSheet$rawsample, "_R2_qualdist.txt")
 
 qcQual.R1.raw <- vectorToDF.int(trimws(readLines(file.path(projFolder,"QC", "RAW", qcFiles.R1.raw[1]))[-1]))
-qcQual.R2.raw <- vectorToDF.int(trimws(readLines(file.path(projFolder,"QC", "RAW", qcFiles.R2.raw[1]))[-1]))
+#qcQual.R2.raw <- vectorToDF.int(trimws(readLines(file.path(projFolder,"QC", "RAW", qcFiles.R2.raw[1]))[-1]))
 
 colnames(qcQual.R1.raw) <- c(gsub("_qualdist.txt","", qcFiles.R1.raw[1]), "Quality")
-colnames(qcQual.R2.raw) <- c(gsub("_qualdist.txt","", qcFiles.R2.raw[1]), "Quality")
+#colnames(qcQual.R2.raw) <- c(gsub("_qualdist.txt","", qcFiles.R2.raw[1]), "Quality")
 
 for(i in 2:length(qcFiles.R1.raw)){
     fileIn <- readLines(file.path(projFolder,"QC", "RAW", qcFiles.R1.raw[i]))[-1]
@@ -137,20 +137,20 @@ for(i in 2:length(qcFiles.R1.raw)){
 
 qcQual.R1.raw[is.na(qcQual.R1.raw)] <- 0
 
-for(i in 2:length(qcFiles.R2.raw)){
-    fileIn <- readLines(file.path(projFolder,"QC", "RAW", qcFiles.R2.raw[i]))[-1]
-    if(length(fileIn)>0){
-      tmp <- vectorToDF.int(trimws(fileIn))
-      colnames(tmp) <- c(gsub("_qualdist.txt","", qcFiles.R2.raw[i]), "Quality")
-    } else {
-      tmp <- data.frame(qcQual.R2.raw$Quality, 0)
-      colnames(tmp) <- c("Quality", gsub("_qualdist.txt","", qcFiles.R2.raw[i]))
-    }
+#for(i in 2:length(qcFiles.R2.raw)){
+#    fileIn <- readLines(file.path(projFolder,"QC", "RAW", qcFiles.R2.raw[i]))[-1]
+#    if(length(fileIn)>0){
+#      tmp <- vectorToDF.int(trimws(fileIn))
+#      colnames(tmp) <- c(gsub("_qualdist.txt","", qcFiles.R2.raw[i]), "Quality")
+#    } else {
+#      tmp <- data.frame(qcQual.R2.raw$Quality, 0)
+#      colnames(tmp) <- c("Quality", gsub("_qualdist.txt","", qcFiles.R2.raw[i]))
+#    }
 
-      qcQual.R2.raw <- merge(qcQual.R2.raw, tmp, all=TRUE)      
-}
+#      qcQual.R2.raw <- merge(qcQual.R2.raw, tmp, all=TRUE)      
+#}
 
-qcQual.R2.raw[is.na(qcQual.R2.raw)] <- 0
+#qcQual.R2.raw[is.na(qcQual.R2.raw)] <- 0
 
 ```
 
@@ -162,7 +162,7 @@ barplot(plotThis, las=2, col=1:nrow(plotThis), main="Read 1 Quality scores")
 legend("topright", inset=c(-0.2,0), legend=rownames(plotThis)[(nrow(plotThis)):1], fill=nrow(plotThis):1)
 ```
 
-```{r}
+```{r, eval=FALSE}
 plotThis <- as.matrix(qcQual.R2.raw[,-1])
 rownames(plotThis) <- as.vector(as.matrix(qcQual.R2.raw[,1]))
 par(mar=c(15,5,2,8), xpd=TRUE)
