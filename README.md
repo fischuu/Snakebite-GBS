@@ -47,3 +47,7 @@ Here, we ran a previous de-novo approach and obtained from there a set of varian
 
 ## Reference genome and variant set available
 A reference genome as well as a set of variants is available.
+
+# FUNDING
+The development of this pipeline received funding from the ARCTAQUA project (https://site.nord.no/arctaqua/) and GENOTYPE, Natural Resources Institute Finland (LUKE) (https://www.luke.fi) 
+
