@@ -37,6 +37,7 @@ else:
             bam=temp("%s/FASTQ/TRIMMED/alignments_reference/{samples}.bam" % (config["project-folder"])),
             sorted="%s/FASTQ/TRIMMED/alignments_reference/{samples}.sorted.bam" % (config["project-folder"]),
             pp=temp("%s/FASTQ/TRIMMED/alignments_reference/{samples}.sorted.pp.bam" % (config["project-folder"])),
+            numberPairs=temp("%s/FASTQ/TRIMMED/alignments_reference/{samples}.name_sorted.bam.wcl" % (config["project-folder"])),
             namesorted=temp("%s/FASTQ/TRIMMED/alignments_reference/{samples}.name_sorted.bam" % (config["project-folder"]))
         log:
             "%s/logs/Samtools/RefGenome_SamToSortedBam.{samples}.log" % (config["project-folder"])
@@ -58,6 +59,8 @@ else:
             
             samtools view -bf 0x2 {output.sorted} > {output.pp}
             samtools sort -n {output.pp} -o {output.namesorted}
+            
+            samtools view {output.namesorted} | wc -l > {output.numberPairs}
 
       	"""
 
@@ -69,11 +72,12 @@ else:
         Get Flanking sites from individual alignments.
         """
         input:
-            "%s/FASTQ/TRIMMED/alignments_reference/{samples}.name_sorted.bam" % (config["project-folder"])
+            bam="%s/FASTQ/TRIMMED/alignments_reference/{samples}.name_sorted.bam" % (config["project-folder"]),
+            numberPairs="%s/FASTQ/TRIMMED/alignments_reference/{samples}.name_sorted.bam.wcl" % (config["project-folder"])
         output:
             pa="%s/FASTQ/TRIMMED/alignments_reference/{samples}.paired_alignments" % (config["project-folder"]),
             left="%s/FASTQ/TRIMMED/alignments_reference/{samples}.flanking_left" % (config["project-folder"]),
-            right="%s/FASTQ/TRIMMED/alignments_reference/{samples}.flankin_right" % (config["project-folder"])
+            right="%s/FASTQ/TRIMMED/alignments_reference/{samples}.flanking_right" % (config["project-folder"])
         log:
             "%s/logs/RefGenome_GetAlignmentFlanking.{samples}.log" % (config["project-folder"])
         benchmark:
@@ -82,9 +86,18 @@ else:
             pipefolder=config["pipeline-folder"]
         singularity: config["singularity"]["gbs"]
         shell:"""
-            bedtools bamtobed -bedpe -i {input} > {output.pa}
-            {params.pipefolder}/scripts/getFlankingLeft.sh {output.pa} {output.left}
-            {params.pipefolder}/scripts/getFlankingRight.sh {output.pa} {output.right}
+        
+            lines=$(cut -f1 {input.numberPairs})
+            
+            if [ "$lines" -eq "0" ]; then
+                touch {output.pa}
+                touch {output.left}
+                touch {output.right}
+            else
+                bedtools bamtobed -bedpe -i {input.bam} > {output.pa} 2> {log}
+                {params.pipefolder}/scripts/getFlankingLeft.sh {output.pa} {output.left} 2>> {log}
+                {params.pipefolder}/scripts/getFlankingRight.sh {output.pa} {output.right} 2>> {log}
+            fi
        	"""
 
 if config["genome"] == "":
