@@ -23,7 +23,8 @@ rule R_finalReport:
         finalSetVariants="%s/VCF/FinalSetVariants_finalMock.vcf" % (config["project-folder"]),
         fsRef=expand("%s/FASTQ/TRIMMED/alignments_reference/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
         cRef=expand("%s/FASTQ/TRIMMED/alignments_reference/{samples}.coverage" % (config["project-folder"]), samples=samples),
-        cFinalMock=expand("%s/BAM/alignments_finalMock/{samples}.coverage" % (config["project-folder"]), samples=samples)
+        cFinalMock=expand("%s/BAM/alignments_finalMock/{samples}.coverage" % (config["project-folder"]), samples=samples),
+        pa=expand("%s/FASTQ/TRIMMED/alignments_reference/{samples}.paired_alignments" % (config["project-folder"]), samples=samples)
     output:
         "%s/finalReport.html" % (config["project-folder"])
     log:
