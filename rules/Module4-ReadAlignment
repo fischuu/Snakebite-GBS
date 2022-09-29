@@ -71,8 +71,8 @@ else:
         input:
             "%s/FASTQ/TRIMMED/alignments_reference/{samples}.name_sorted.bam" % (config["project-folder"])
         output:
-            pa="%s/FASTQ/TRIMMED/alignments_reference/{samples}.paired_alignments" % (config["project-folder"])
-            left="%s/FASTQ/TRIMMED/alignments_reference/{samples}.flanking_left" % (config["project-folder"])
+            pa="%s/FASTQ/TRIMMED/alignments_reference/{samples}.paired_alignments" % (config["project-folder"]),
+            left="%s/FASTQ/TRIMMED/alignments_reference/{samples}.flanking_left" % (config["project-folder"]),
             right="%s/FASTQ/TRIMMED/alignments_reference/{samples}.flankin_right" % (config["project-folder"])
         log:
             "%s/logs/RefGenome_GetAlignmentFlanking.{samples}.log" % (config["project-folder"])
@@ -86,9 +86,6 @@ else:
             {params.pipefolder}/scripts/getFlankingLeft.sh {output.pa} {output.left}
             {params.pipefolder}/scripts/getFlankingRight.sh {output.pa} {output.right}
        	"""
-
-
-config["singularity"]["star"])
 
 if config["genome"] == "":
     pass
