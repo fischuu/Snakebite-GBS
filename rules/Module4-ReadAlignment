@@ -35,7 +35,9 @@ else:
             "%s/FASTQ/TRIMMED/alignments_reference/{samples}.sam" % (config["project-folder"])
         output:
             bam=temp("%s/FASTQ/TRIMMED/alignments_reference/{samples}.bam" % (config["project-folder"])),
-            sorted="%s/FASTQ/TRIMMED/alignments_reference/{samples}.sorted.bam" % (config["project-folder"])
+            sorted="%s/FASTQ/TRIMMED/alignments_reference/{samples}.sorted.bam" % (config["project-folder"]),
+            pp=temp("%s/FASTQ/TRIMMED/alignments_reference/{samples}.sorted.pp.bam" % (config["project-folder"])),
+            namesorted=temp("%s/FASTQ/TRIMMED/alignments_reference/{samples}.name_sorted.bam" % (config["project-folder"]))
         log:
             "%s/logs/Samtools/RefGenome_SamToSortedBam.{samples}.log" % (config["project-folder"])
         benchmark:
@@ -53,7 +55,40 @@ else:
             samtools view -b -q {params.q} -f {params.f} -F {params.F} {input} > {output.bam}
             samtools sort {output.bam} -o {output.sorted}
             samtools index -c {output.sorted}
+            
+            samtools view -bf 0x2 {output.sorted} > {output.pp}
+            samtools sort -n {output.pp} -o {output.namesorted}
+
       	"""
+
+if config["genome"] == "":
+    pass
+else:
+    rule RefGenome_GetAlignmentFlanking:
+        """
+        Get Flanking sites from individual alignments.
+        """
+        input:
+            "%s/FASTQ/TRIMMED/alignments_reference/{samples}.name_sorted.bam" % (config["project-folder"])
+        output:
+            pa="%s/FASTQ/TRIMMED/alignments_reference/{samples}.paired_alignments" % (config["project-folder"])
+            left="%s/FASTQ/TRIMMED/alignments_reference/{samples}.flanking_left" % (config["project-folder"])
+            right="%s/FASTQ/TRIMMED/alignments_reference/{samples}.flankin_right" % (config["project-folder"])
+        log:
+            "%s/logs/RefGenome_GetAlignmentFlanking.{samples}.log" % (config["project-folder"])
+        benchmark:
+            "%s/benchmark/RefGenome_GetAlignmentFlanking.{samples}.tsv" % (config["project-folder"])
+        params:
+            pipefolder=config["pipeline-folder"]
+        singularity: config["singularity"]["gbs"]
+        shell:"""
+            bedtools bamtobed -bedpe -i {input} > {output.pa}
+            {params.pipefolder}/scripts/getFlankingLeft.sh {output.pa} {output.left}
+            {params.pipefolder}/scripts/getFlankingRight.sh {output.pa} {output.right}
+       	"""
+
+
+config["singularity"]["star"])
 
 if config["genome"] == "":
     pass

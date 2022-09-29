@@ -139,6 +139,7 @@ config["barcodes-file"] = config["project-folder"]+"/barcodesID.txt"
 
 ##### Singularity container #####
 config["singularity"] = {}
+config["singularity"]["bedtools"] = "docker://fischuu/bedtools:2.30-0.1"
 config["singularity"]["star"] = "docker://fischuu/star:2.7.5a"
 config["singularity"]["gbs"] = "docker://fischuu/gbs:0.2"
 config["singularity"]["cutadapt"] = "docker://fischuu/cutadapt:2.8-0.3"
@@ -163,6 +164,7 @@ print("##### server-config   : "+config["server-config"])
 print("#####")
 print("##### Singularity configuration")
 print("##### --------------------------------")
+print("##### bdtools   : "+config["singularity"]["bedtools"])
 print("##### star      : "+config["singularity"]["star"])
 print("##### gbs       : "+config["singularity"]["gbs"])
 print("##### cutadapt  : "+config["singularity"]["cutadapt"])
