@@ -1,7 +1,7 @@
 pipelineFolder="/users/fischerd/git/Pipeline-GBS"
 projectFolder="/scratch/project_2001746/TestProject"
 
-module load bioconda/3
+module load snakemake
 
 export SINGULARITY_TMPDIR="/scratch/project/tmp"
 export SINGULARITY_CACHEDIR="/scratch/project/tmp"
