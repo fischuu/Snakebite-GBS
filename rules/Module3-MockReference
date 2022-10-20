@@ -205,7 +205,8 @@ rule refine_mock_reference:
         "%s/logs/R/refine_mock_reference.log" % (config["project-folder"])
     benchmark:
         "%s/benchmark/R/refine_mock_reference.benchmark.tsv" % (config["project-folder"])
-    singularity: config["singularity"]["r-gbs"]
+    singularity: 
+        "docker://fischuu/r-gbs:3.6.3-0.2"
     params:
        projFolder=config["project-folder"],
        pipeFolder=config["pipeline-folder"],
