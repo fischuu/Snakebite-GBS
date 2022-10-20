@@ -6,6 +6,7 @@
 
 0.17.* UPDATES
 --------------------------------------------------------------------------------
+9: Fixed hard-coded link to docker container in Module 3 (r-gbs)
 8: Special case caught, in case a reference aligned bam is empty
 7: Flanking sites from individual alignments are now extracted
 6: Input bug in the preparesamplesheet.R script fixed (tab-delimited input enforced)
