@@ -342,6 +342,7 @@ rule FinalMockRef_AlignReads:
     """
     input:
         reference="%s/MockReference/MockReference.fa" % (config["project-folder"]),
+        index="%s/MockReference/MockReference.fa.fai" % (config["project-folder"]),
         refFiles="%s/MockReference/MockReference.fa.bwt" % (config["project-folder"]),
         R1="%s/FASTQ/TRIMMED/{samples}.R1.fq.gz" % (config["project-folder"]),
         R2="%s/FASTQ/TRIMMED/{samples}.R2.fq.gz" % (config["project-folder"]),
@@ -393,7 +394,8 @@ rule FinalMockRef_SortedBamToMpileup:
     """
     input:
         bam="%s/BAM/alignments_finalMock/{samples}.sorted.bam" % (config["project-folder"]),
-        reference="%s/MockReference/MockReference.fa" % (config["project-folder"])
+        reference="%s/MockReference/MockReference.fa" % (config["project-folder"]),
+        index="%s/MockReference/MockReference.fa.fai" % (config["project-folder"])
     output:
         bam="%s/MPILEUP/mpileup_finalMock/{samples}.mpileup" % (config["project-folder"])
     log:

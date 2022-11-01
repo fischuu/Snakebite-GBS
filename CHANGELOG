@@ -6,6 +6,7 @@
 
 0.17.* UPDATES
 --------------------------------------------------------------------------------
+10: Added a fasta-index dependency to avoid crashes in case fasta index was not created before stats are calculated
 9: Fixed hard-coded link to docker container in Module 3 (r-gbs)
 8: Special case caught, in case a reference aligned bam is empty
 7: Flanking sites from individual alignments are now extracted

@@ -41,11 +41,11 @@ rule Concatenate_lanes:
     params:
         outfolder="%s/FASTQ/CONCATENATED" % (config["project-folder"])
     shell:"""
-        mkdir -p {params.outfolder}
-        cat {input.R1} > {output.R1} 2> {log}
-        ls {input.R1} > {output.R1Report} 2> {log}
-        cat {input.R2} > {output.R2} 2> {log}
-        ls {input.R2} > {output.R2Report} 2> {log}
+        mkdir -p {params.outfolder} &> {log}
+        cat {input.R1} > {output.R1} 2>> {log}
+        ls {input.R1} > {output.R1Report} 2>> {log}
+        cat {input.R2} > {output.R2} 2>> {log}
+        ls {input.R2} > {output.R2Report} 2>> {log}
   	"""
 
 if config["genome"] == "":
