@@ -163,7 +163,7 @@ rule IndexFinalMockSamtools:
     input:
         "%s/MockReference/MockReference.fa" % (config["project-folder"])
     output:
-        "%s/MockReference/MockReference.fai" % (config["project-folder"])
+        "%s/MockReference/MockReference.fa.fai" % (config["project-folder"])
     log:
         "%s/logs/Samtools/IndexFinalMockSam.log" % (config["project-folder"])
     benchmark:
