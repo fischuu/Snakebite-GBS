@@ -1,5 +1,3 @@
-# QC - rules for lane-wise data
-################################################################################
 rule fastqc_quality_control_raw_data_r1:
     """
     Quality control of lane-wise fastq files (FASTQC).
@@ -9,42 +7,21 @@ rule fastqc_quality_control_raw_data_r1:
     output:
         "%s/QC/RAW/{reads1}_fastqc.zip" % (config["project-folder"])
     log:
-        "%s/logs/FASTQC/fastqc_raw_R1.{reads1}.log" % (config["project-folder"]),
+        "%s/logs/fastqc_quality_control_raw_data_r1.{reads1}.log" % (config["project-folder"]),
     benchmark:
-        "%s/benchmark/fastqc_quality_control_raw_data.{reads1}.tsv" % (config["project-folder"])
-    threads: 20
+        "%s/benchmark/fastqc_quality_control_raw_data_r1.{reads1}.tsv" % (config["project-folder"])
+    threads: cluster["fastqc_quality_control_raw_data_r1"]["cpus-per-task"]
+    resources:
+        time=cluster["fastqc_quality_control_raw_data_r1"]["time"],
+        mem=cluster["fastqc_quality_control_raw_data_r1"]["mem-per-cpu"]
     params:
         outfolder="%s/QC/RAW/" % (config["project-folder"])
-    conda:"envs/gbs.yaml"
     singularity: config["singularity"]["gbs"]
     shell:"""
         mkdir -p {params.outfolder};
         fastqc -t {threads} -o {params.outfolder} --extract {input} &> {log};
     """
 
-#rule fastqc_quality_control_raw_data_r2:
-#    """
-#    Quality control of lane-wise fastq files (FASTQC).
-#    """
-#    input:
-#        get_raw_input_read_bs2
-#    output:
-#        "%s/QC/RAW/{reads2}_fastqc.zip" % (config["project-folder"])
-#    log:
-#        "%s/logs/FASTQC/fastqc_raw_R2.{reads2}.log" % (config["project-folder"])
-#    benchmark:
-#        "%s/benchmark/fastqc_quality_control_raw_data.{reads2}.tsv" % (config["project-folder"])
-#    threads: 20
-#    params:
-#        outfolder="%s/QC/RAW/" % (config["project-folder"])
-#    conda:"envs/gbs.yaml"
-#    singularity: config["singularity"]["gbs"]
-#    shell:"""
-#        mkdir -p {params.outfolder};
-#        fastqc -t {threads} -o {params.outfolder} --extract {input} &> {log};
-#    """
-
-  
 rule multiqc_quality_control_raw_data_r1:
     """
     Quality control of lane-wise fastq files in lr1(MULTIQC).
@@ -54,45 +31,22 @@ rule multiqc_quality_control_raw_data_r1:
     output:
         directory("%s/QC/RAW/multiqc_R1/" % (config["project-folder"])),
     log:
-        "%s/logs/MULTIQC/multiqc_raw_R1.log" % (config["project-folder"]),
+        "%s/logs/multiqc_quality_control_raw_data_r1.log" % (config["project-folder"]),
     benchmark:
         "%s/benchmark/multiqc_quality_control_raw_data_r1.tsv" % (config["project-folder"])
     params:
        zip= lambda wildcards: "%s/QC/RAW/{wildcards.reads1}_fastqc.zip" % (config["project-folder"]),
        tmpdir=config["tmpdir"]
-    threads: 1
-    conda:"envs/gbs.yaml"
+    threads: cluster["multiqc_quality_control_raw_data_r1"]["cpus-per-task"]
+    resources:
+        time=cluster["multiqc_quality_control_raw_data_r1"]["time"],
+        mem=cluster["multiqc_quality_control_raw_data_r1"]["mem-per-cpu"]
     singularity: config["singularity"]["gbs"]
     shell:"""
         export TMPDIR={params.tmpdir}
         echo $TMPDIR
         multiqc -f --interactive -o {output} {input} &> {log};
     """
-
-#rule multiqc_quality_control_raw_data_r2:
-#    """
-#    Quality control of lane-wise fastq files in lr1(MULTIQC).
-#    """
-#    input:
-#        expand("%s/QC/RAW/{reads2}_fastqc.zip" % (config["project-folder"]), reads2=reads2_trim),
-#    output:
-#        directory("%s/QC/RAW/multiqc_R2/" % (config["project-folder"])),
-#    log:
-#        "%s/logs/MULTIQC/multiqc_raw_R2.log" % (config["project-folder"]),
-#    benchmark:
-#        "%s/benchmark/multiqc_quality_control_raw_data_r2.tsv" % (config["project-folder"])
-#    params:
-#       zip="%s/QC/RAW/{reads2}_fastqc.zip" % (config["project-folder"]),
-#       tmpdir=config["tmpdir"]
-#    threads: 1
-#    conda:"envs/gbs.yaml"
-#    singularity: config["singularity"]["gbs"]
-#    shell:"""
-#        export TMPDIR={params.tmpdir}
-#        echo $TMPDIR
-#        multiqc -f --interactive -o {output} {wildcards.reads}"_fastq_zip" &> {log.R1};
-#    """
-
 
 rule qualDist_raw_data:
     """

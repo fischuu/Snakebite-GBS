@@ -5,14 +5,15 @@ import glob
 import re
 import os
 import sys
+import yaml
 
 ##### GBS-snakemake pipeline #####
 ##### Daniel Fischer (daniel.fischer@luke.fi)
 ##### Natural Resources Institute Finland (Luke)
 ##### This pipeline is build upon the the GBS-SNP-CROP pipeline:
 ##### https://github.com/halelab/GBS-SNP-CROP
-##### Version: 0.17.10
-version = "0.17.10"
+##### Version: 0.17.11
+version = "0.17.11"
 
 ##### set minimum snakemake version #####
 min_version("6.0")
@@ -48,6 +49,10 @@ for r in reads2_tmp:
             reads2_trim += [addThis] 
             ext=e
 
+mockSamples = list(samplesheet.useForMock)
+samplesUsedForMock = str(mockSamples.count('YES'))
+
+
 #### CONTINUE FROM HERE TO ADD PIPE CONFIG ONTO THE FILE
 #if '--configfile' in sys.argv:
 #    i = sys.argv.index('--configfile')
@@ -60,6 +65,12 @@ for r in reads2_tmp:
 #    config["server-config"] = sys.argv[i + 1]
 #else:
 #    config["server-config"] = ""
+
+##### Extract the cluster resource requests from the server config #####
+cluster=dict()
+if os.path.exists(config["server-config"]):
+    with open(config["server-config"]) as yml:
+        cluster = yaml.load(yml, Loader=yaml.FullLoader)
 
 workdir: config["project-folder"]
 
@@ -176,10 +187,11 @@ print("##### stringtie : "+config["singularity"]["stringtie"])
 print("#####")
 print("##### Runtime-configurations")
 print("##### --------------------------------")
-print("##### genome           : "+ config["genome"])
-print("##### existing mock    : "+ config["mockreference"])
-print("##### Sample sheet     : "+ config["samplesheet-file"])
-print("##### Rawdata folder   : "+ config["rawdata-folder"])
+print("##### genome                : "+ config["genome"])
+print("##### existing mock         : "+ config["mockreference"])
+print("##### Sample sheet          : "+ config["samplesheet-file"])
+print("##### Rawdata folder        : "+ config["rawdata-folder"])
+print("##### Samples to build mock : " + samplesUsedForMock)
 print("#####")
 print("##### Derived runtime parameters")
 print("##### --------------------------------")
@@ -245,6 +257,7 @@ rule all:
 rule preparations:
     input:
         "%s/chrName.txt" % (config["genome-star-index"]),
+        config["genome-bwa-index"],
         expand("%s/FASTQ/CONCATENATED/{samples}_R1_001.merged.fastq.gz" % (config["project-folder"]), samples=samples),
         expand("%s/FASTQ/CONCATENATED/{samples}_R2_001.merged.fastq.gz" % (config["project-folder"]), samples=samples),
         config["barcodes-file"]
