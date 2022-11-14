@@ -21,6 +21,7 @@ rule R_finalReport:
         fsFinal=expand("%s/BAM/alignments_finalMock/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
         fsFinalVsRef="%s/BAM/FinalMockref/mockToRef.sam.flagstat" % (config["project-folder"]),
         finalSetVariants="%s/VCF/FinalSetVariants_finalMock.vcf" % (config["project-folder"]),
+        unfinalVcf="%s/FASTQ/TRIMMED/GSC.vcf" % (config["project-folder"]),
         fsRef=expand("%s/FASTQ/TRIMMED/alignments_reference/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
         cRef=expand("%s/FASTQ/TRIMMED/alignments_reference/{samples}.coverage" % (config["project-folder"]), samples=samples),
         cFinalMock=expand("%s/BAM/alignments_finalMock/{samples}.coverage" % (config["project-folder"]), samples=samples),
@@ -93,6 +94,7 @@ rule R_VariantCallingReport:
         script=config["variant-script"],
         mockvcf="%s/VCF/FinalSetVariants_finalMock.vcf" % (config["project-folder"]),
         refvcf="%s/VCF/FinalSetVariants_referenceGenome.vcf" % (config["project-folder"]),
+        unfinalVcf="%s/FASTQ/TRIMMED/GSC.vcf" % (config["project-folder"])
     output:
         "%s/VariantCalling-Report.html" % (config["project-folder"])
     log:

@@ -6,6 +6,7 @@
 
 0.17.* UPDATES
 --------------------------------------------------------------------------------
+12: Dependency of preliminary mock vcf added to the report to avoid errors
 11: QC module cleaned up (needs still a little)
 10: Added a fasta-index dependency to avoid crashes in case fasta index was not created before stats are calculated
 9: Fixed hard-coded link to docker container in Module 3 (r-gbs)
