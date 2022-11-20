@@ -1,6 +1,10 @@
 # Pipeline-GBS
 The snakemake pipeline based on GBS-SNP-Crop and further extended.
 
+# DAG
+The visual overview of the various rules of the pipeline
+![alt text](https://github.com/fischuu/Pipeline-GBS/blob/main/workflow.png?raw=true)
+
 # Configuration
 The pipeline parameter configuration takes place in the file
 
