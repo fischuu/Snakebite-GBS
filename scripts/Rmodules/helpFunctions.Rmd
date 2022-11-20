@@ -74,8 +74,9 @@ getConfigField <- function(x, from=pipelineConfig){
   if(length(x)==1){
     pos <- grep(x, from)
     out <- from[pos]
-    
-    out <- gsub(x, "", out)
+   
+    out <- trimws(out)
+    out <- gsub(paste0("^",x), "", out)
     out <- gsub('\"','',out)
     out <- gsub(' ','',out)
     out <- gsub(':','',out)

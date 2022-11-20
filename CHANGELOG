@@ -6,6 +6,7 @@
 
 0.17.* UPDATES
 --------------------------------------------------------------------------------
+13: Caught the special case, if the "genome" is also part of the filename of "genome" that produced an error
 12: Dependency of preliminary mock vcf added to the report to avoid errors
 11: QC module cleaned up (needs still a little)
 10: Added a fasta-index dependency to avoid crashes in case fasta index was not created before stats are calculated
