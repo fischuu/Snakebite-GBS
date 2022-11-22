@@ -112,5 +112,5 @@ params:
   step9:
     flanking: 25
   stringtie:
-    tpm: 3
+    tpm: 0     # minimum tpm for merging alingment loci (sanmple loci aligned to reference genome, just for QC)
   

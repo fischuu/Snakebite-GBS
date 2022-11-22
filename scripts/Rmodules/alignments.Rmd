@@ -392,10 +392,61 @@ Then we have the identified clusters per chromosome on the reference genome
 barplot(table(string.merge$V1), las=2, col=report.colours[1])
 ```
 
+### Individual assessments
+
+Now we check for the alignments per sample
+
+```{r import individual alignments, echo=FALSE, message=FALSE}
+gtf.files <- list.files(file.path(projFolder, "Stringtie"), pattern="*.gtf$")
+gtf.files <- gtf.files[-which(gtf.files=="merged_STRG.gtf")]
+
+gtf.names <- gsub(".stringtie.gtf", "", gtf.files)
+
+gtfs <- list()
+gtfs[[1]] <- importGTF(file.path(projFolder, "Stringtie", gtf.files[1]), level="transcript")
+
+for(i in 2:length(gtf.files)){
+  gtfs[[i]] <- importGTF(file.path(projFolder, "Stringtie", gtf.files[i]), level="transcript")
+}
+
+names(gtfs) <- gtf.names
+```
+
+Visualisation, how many alignments loci do the different samples have along the reference genome
+
+```{r, fig.width=10}
+par(mar=c(7,5,0,0))
+barplot(sapply(gtfs, nrow), las=2)
+```
+
+Now we will check how the reads from different samples distribute across the indivisual aligned loci (which have been merged together). Idially, we want to see here that all samples have reads from all mapping loci, which is of course not possible but there should be "some consistency".
+
+```{r}
+fcFiles <- list.files(file.path(projFolder, "QUANTIFICATION", "Reference_contigs"), pattern="*.txt$")
+
+fc.quant <- importFeatureCounts(file.path(projFolder, "QUANTIFICATION", "Reference_contigs", fcFiles[1]))
+fc.names <- gsub("_reference_contigs_fc.txt", "", fcFiles)
+for(i in 2:length(fcFiles)){
+  tmp <- importFeatureCounts(file.path(projFolder, "QUANTIFICATION", "Reference_contigs", fcFiles[i]))
+  
+  fc.quant$expValues <- merge(fc.quant$expValues, tmp$expValues)
+}
+
+colnames(fc.quant$expValues) <- fc.names
+```
+
+Basic visualisation, binary, if a sample has reads on a locus we plot it dar red, otherwise light yellow. Ideally, this is now just a red block.
+
+```{r, fig.width=10}
+image(fc.quant$expValues>0)
+```
+
+NEED TO CONTINUE HERE STILL, THERE IS PLENTY OF ADDITIONAL VISUALISATIONS POSSIBLE!!!
+
 TO BE ADDED:
 * Visualisation, how are loci distributed across the chromosomes ("dots on chromosome lines")
 * quantifications per contig, across samples
-* flanking side sequences of the indified loci
+* flanking side sequences of the identified loci 
 * Intersection with the mock reference contig alignments against reference genome
 * ...
 

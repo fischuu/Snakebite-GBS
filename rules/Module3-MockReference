@@ -330,3 +330,37 @@ else:
             paste -d '+' {output.leftFA} {output.rightFA} > {output.FA}
             sed '/^>/d' {output.FA} | awk '{{ print toupper($0) }}' | sort | uniq -c > {output.FACounts}
       	"""
+
+
+
+if config["genome"] == "":
+    pass
+else:  	
+    rule Mockrefloci_vs_samplealignments:
+        """
+        Intersect positions of mock reference on reference against the sample alignments
+        """
+        input:
+            ref=config["genome"],
+            bed="%s/BAM/FinalMockref/mockToRef.bed" % (config["project-folder"]),
+            gtf="%s/Stringtie/{samples}.stringtie.gtf" % (config["project-folder"]),
+            left="%s/FASTQ/TRIMMED/alignments_reference/{samples}.flanking_left" % (config["project-folder"]),
+            right="%s/FASTQ/TRIMMED/alignments_reference/{samples}.flanking_right" % (config["project-folder"])
+        output:
+            is="%s/Stringtie/{samples}.intersected_with_mockOnRef_loci.is" % (config["project-folder"]),
+            left="%s/FASTQ/TRIMMED/alignments_reference/{samples}.flanking_left.fa" % (config["project-folder"]),
+            right="%s/FASTQ/TRIMMED/alignments_reference/{samples}.flanking_right.fa" % (config["project-folder"])
+        log:
+            "%s/logs/Mockrefloci_vs_samplealignments.{samples}.log" % (config["project-folder"])
+        benchmark:
+            "%s/benchmark/Mockrefloci_vs_samplealignments.{samples}.tsv" % (config["project-folder"])
+        params: tmpdir=config["tmpdir"]
+        threads: lambda cores: cpu_count()
+        singularity: config["singularity"]["gbs"]
+        shell:"""
+            bedtools intersect -wa -a {input.bed} -b {input.gtf} > {output.is}
+            TMPDIR={params.tmpdir}
+
+            bedtools getfasta -fi {input.ref} -bed {input.left} > {output.leftFA}
+            bedtools getfasta -fi {input.ref} -bed {input.right} > {output.rightFA}
+        """

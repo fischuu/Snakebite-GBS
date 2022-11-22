@@ -309,12 +309,29 @@ barplot(avgDist, main="Avg cluster mapping distance per Chromosome", col=report.
 }
 ```
 
-Coverage of the lined up alignment loci of the mock reference contigs against the reference genome. Ideally, we observe here just a constant coverage of 1, meaning that each contig of the mock reference aligns to a unique place on the reference genome. Having here spikes indicates thaat several mock reference contigs align to one and the same loci along the reference genome and that those contigs are not merged.
+
+Coverage of the lined up alignment loci of the mock reference contigs against the reference genome. Ideally, we observe here just a constant coverage of 1, meaning that each contig of the mock reference aligns to a unique place on the reference genome. Having here spikes indicates that several mock reference contigs align to one and the same loci along the reference genome and that those contigs are not merged.
 
 ```{r}
 if(refAvail){
   barplot(SAMLoci$V4, main="Mock reference contig alignments on reference genome")
 }
+```
+
+In summary, we have the following quantities of alignments of mock reference contigs against various loci on the reference genome. Value 1 means here, only a single mock reference cluster aligns to a particular reference genome locus, two means, there are two different mock reference clusters that align to a reference genome locu and so forth.
+
+```{r summaryTable cluster to ref genome}
+  #rownames(out) <- "5-point summary"
+  #out_html <- knitr::kable(t(out), "html")
+  #kable_styling(out_html, "striped", position = "left")  
+
+  out <- table(SAMLoci$V4)
+# Split the table
+  printRows <- length(out)%/%10  
+  for(i in 1:printRows){
+    out_html <- knitr::kable(t(out[((i-1)*10+1):(i*10)]), "html")
+    print(kable_styling(out_html, "striped", position = "left") ) 
+  }
 ```
 
 TO BE ADDED
