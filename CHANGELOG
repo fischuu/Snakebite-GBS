@@ -6,6 +6,7 @@
 
 0.17.* UPDATES
 --------------------------------------------------------------------------------
+15: Missing percentages are now always displayed on a scale between 0 and 100%
 14: summaryTable cluster to reference genome added to the final report
 13: Caught the special case, if the "genome" is also part of the filename of "genome" that produced an error
 12: Dependency of preliminary mock vcf added to the report to avoid errors
