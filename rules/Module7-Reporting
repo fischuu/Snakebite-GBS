@@ -26,9 +26,9 @@ rule R_finalReport:
         cRef=expand("%s/FASTQ/TRIMMED/alignments_reference/{samples}.coverage" % (config["project-folder"]), samples=samples),
         cFinalMock=expand("%s/BAM/alignments_finalMock/{samples}.coverage" % (config["project-folder"]), samples=samples),
         pa=expand("%s/FASTQ/TRIMMED/alignments_reference/{samples}.paired_alignments" % (config["project-folder"]), samples=samples),
-        isSample="%s/Stringtie/{samples}.intersected_with_mockOnRef_loci.is" % (config["project-folder"]),
-        leftSample="%s/FASTQ/TRIMMED/alignments_reference/{samples}.flanking_left.fa" % (config["project-folder"]),
-        rightSample="%s/FASTQ/TRIMMED/alignments_reference/{samples}.flanking_right.fa" % (config["project-folder"])
+        isSample=expand("%s/Stringtie/{samples}.intersected_with_mockOnRef_loci.is" % (config["project-folder"]), samples=samples),
+        leftSample=expand("%s/FASTQ/TRIMMED/alignments_reference/{samples}.flanking_left.fa" % (config["project-folder"]), samples=samples),
+        rightSample=expand("%s/FASTQ/TRIMMED/alignments_reference/{samples}.flanking_right.fa" % (config["project-folder"]), samples=samples)
     output:
         "%s/finalReport.html" % (config["project-folder"])
     log:

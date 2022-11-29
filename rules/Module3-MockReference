@@ -347,7 +347,7 @@ else:
             left="%s/FASTQ/TRIMMED/alignments_reference/{samples}.flanking_left" % (config["project-folder"]),
             right="%s/FASTQ/TRIMMED/alignments_reference/{samples}.flanking_right" % (config["project-folder"])
         output:
-            is="%s/Stringtie/{samples}.intersected_with_mockOnRef_loci.is" % (config["project-folder"]),
+            inter="%s/Stringtie/{samples}.intersected_with_mockOnRef_loci.is" % (config["project-folder"]),
             left="%s/FASTQ/TRIMMED/alignments_reference/{samples}.flanking_left.fa" % (config["project-folder"]),
             right="%s/FASTQ/TRIMMED/alignments_reference/{samples}.flanking_right.fa" % (config["project-folder"])
         log:
@@ -358,9 +358,9 @@ else:
         threads: lambda cores: cpu_count()
         singularity: config["singularity"]["gbs"]
         shell:"""
-            bedtools intersect -wa -a {input.bed} -b {input.gtf} > {output.is}
+            bedtools intersect -wa -a {input.bed} -b {input.gtf} > {output.inter}
             TMPDIR={params.tmpdir}
 
-            bedtools getfasta -fi {input.ref} -bed {input.left} > {output.leftFA}
-            bedtools getfasta -fi {input.ref} -bed {input.right} > {output.rightFA}
+            bedtools getfasta -fi {input.ref} -bed {input.left} > {output.left}
+            bedtools getfasta -fi {input.ref} -bed {input.right} > {output.right}
         """

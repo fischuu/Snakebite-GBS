@@ -57,15 +57,28 @@ datatable(tmp)
 #par(mar=c(10,5,1,1))
 plotFastQCFeature(rawFastQC.R1, rawFastQC.R1, feature="X.GC", axes=FALSE)
 #plotFastQCFeature(rawFastQC.R1, rawFastQC.R2, feature="X.GC", axes=FALSE)
-abline(h=60, lty="dotted", col="red")
-abline(h=30, lty="dotted", col="red")
+abline(h=50, lty="dotted", col="red")
+abline(h=35, lty="dotted", col="red")
 ```
 
-A list of samples under a certain threshold (<30%)
+A list of samples under a certain threshold (<35%)
 
 ```{r table samples GC content}
 tmp <- cbind(rawFastQC.R1$Sample,rawFastQC.R1["X.GC"])
-tmp <- tmp[tmp[,2]<30,]
+tmp <- tmp[tmp[,2]<35,]
+if(nrow(tmp)>0){
+  rownames(tmp) <- 1:nrow(tmp)
+  colnames(tmp) <- c("Rawsample", "GC content")
+  #knitr::kable(tmp) %>% kable_styling
+  datatable(tmp)
+}
+```
+
+A list of samples above a certain threshold (>50%)
+
+```{r table samples GC content}
+tmp <- cbind(rawFastQC.R1$Sample,rawFastQC.R1["X.GC"])
+tmp <- tmp[tmp[,2]>50,]
 if(nrow(tmp)>0){
   rownames(tmp) <- 1:nrow(tmp)
   colnames(tmp) <- c("Rawsample", "GC content")
@@ -224,15 +237,27 @@ datatable(tmp)
 ```{r conc data qc content}
 #par(mar=c(10,5,1,1))
 plotFastQCFeature(conFastQC.R1, conFastQC.R2, feature="X.GC", axes=FALSE)
-abline(h=60, lty="dotted", col="red")
-abline(h=30, lty="dotted", col="red")
+abline(h=50, lty="dotted", col="red")
+abline(h=35, lty="dotted", col="red")
 ```
 
-A list of samples under a certain threshold (<30%)
+A list of samples under a certain threshold (<35%)
 
 ```{r table samples GC content conc}
 tmp <- cbind(conFastQC.R1$Sample,conFastQC.R1["X.GC"])
-tmp <- tmp[tmp[,2]<30,]
+tmp <- tmp[tmp[,2]<35,]
+if(nrow(tmp)>0){
+  rownames(tmp) <- 1:nrow(tmp)
+  colnames(tmp) <- c("Sample", "GC content")
+  datatable(tmp)
+}
+```
+
+A list of samples above a certain threshold (>50%)
+
+```{r table samples GC content conc}
+tmp <- cbind(conFastQC.R1$Sample,conFastQC.R1["X.GC"])
+tmp <- tmp[tmp[,2]>50,]
 if(nrow(tmp)>0){
   rownames(tmp) <- 1:nrow(tmp)
   colnames(tmp) <- c("Sample", "GC content")
@@ -373,15 +398,15 @@ datatable(tmp)
 ```{r trimmed data qc content}
 #par(mar=c(10,5,1,1))
 plotFastQCFeature(trimmedFastQC.R1, trimmedFastQC.R2, feature="X.GC", axes=FALSE)
-abline(h=60, lty="dotted", col="red")
-abline(h=30, lty="dotted", col="red")
+abline(h=50, lty="dotted", col="red")
+abline(h=35, lty="dotted", col="red")
 ```
 
-A list of samples under a certain threshold (<30%)
+A list of samples under a certain threshold (<35%)
 
 ```{r table samples GC content trimmed}
 tmp <- cbind(trimmedFastQC.R1$Sample, trimmedFastQC.R1["X.GC"])
-tmp <- tmp[tmp[,2]<30,]
+tmp <- tmp[tmp[,2]<35,]
 if(nrow(tmp)>0){
   rownames(tmp) <- 1:nrow(tmp)
   colnames(tmp) <- c("Sample", "GC content")
@@ -389,6 +414,20 @@ if(nrow(tmp)>0){
   datatable(tmp)
 }
 ```
+
+A list of samples above a certain threshold (>50%)
+
+```{r table samples GC content trimmed}
+tmp <- cbind(trimmedFastQC.R1$Sample, trimmedFastQC.R1["X.GC"])
+tmp <- tmp[tmp[,2]>50,]
+if(nrow(tmp)>0){
+  rownames(tmp) <- 1:nrow(tmp)
+  colnames(tmp) <- c("Sample", "GC content")
+  #knitr::kable(tmp) %>% kable_styling
+  datatable(tmp)
+}
+```
+
 ### Sequence length
 
 ```{r trimmed data sequence length}
