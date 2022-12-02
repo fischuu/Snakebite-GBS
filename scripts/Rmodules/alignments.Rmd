@@ -370,6 +370,50 @@ barplot(mapStats[1,] / (apply(mapStats,2,sum)), ylim=c(0,1), ylab="Mapping in Pe
 
 The average mapping rate on the reference genome is `r mean(refGenome.mappingStats)`.
 
+Now we check still the precise coverage per sample for the sake of simplicity I do it here for the first three samples only and also only for the first 50  chromosomes
+
+```{r}
+mpile_files <- list.files(file.path(projFolder, "MPILEUP", "mpileup_reference"), pattern="*.mpileup")
+covData <- fread(file.path(projFolder, "MPILEUP", "mpileup_reference", mpile_files[10]), sep="\t")
+```
+
+```{r, fig.width=20, fig.height=10}
+mpile_files <- list.files(file.path(projFolder, "MPILEUP", "mpileup_reference"), pattern="*.mpileup")
+
+pdf(file.path(projFolder,"coverage.pdf"), width=20, height=10)
+
+for(sam in 1:10){
+  par(mfrow=c(4,10),
+  mar=c(1,1,1,1))
+  
+  covData <- fread(file.path(projFolder, "MPILEUP", "mpileup_reference", mpile_files[sam]), sep="\t")
+  chrNames <- names(table(covData[,1]))
+  chrNames <- chrNames[1:min(49, length(chrNames))]
+
+  for(i in 1:40){
+  #for(i in 1:length(chrNames)){
+    tmpChr <- chrNames[i]
+    
+    tmpData <- covData[which(covData[,1]==tmpChr),]
+    
+     out <- stepMean(x=tmpData$V2, y=tmpData$V4, step=30000)
+     plotcol <- rep("black", length(out))
+     plotcol[out[,2]>20] <- "red"
+     plotcol[out[,2]<10] <- "blue"
+     
+     if(is.element(i, c(1,11,21,31))){
+        plot(out, col=plotcol, xaxt="n", ylim=c(0,40), main=paste0("Chr ",i))  
+     } else {
+        plot(out, col=plotcol, xaxt="n",yaxt="n", ylim=c(0,40), main=paste0("Chr ",i))     
+     }
+  }
+}
+
+dev.off()
+
+
+```
+
 ### Read alignments
 The aligned reads are interpreted as "transcripts" and via Stringtie novel transcripts are detected to identify the common alignments via stringtie merge
 
