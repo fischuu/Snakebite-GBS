@@ -46,6 +46,24 @@ ifelse(refGenome.file == "", refAvail <- FALSE, refAvail <- TRUE)
 ```
 
 ```{r help functions}
+  gini <- function (x, w=NULL){
+    
+    if (is.null(w))
+      w <- rep(1, length(x))
+    x.sort <- sort(x)
+    x.order <- order(x)
+    x <- x.sort
+    n <- length(x)
+    w <- w[x.order]/sum(w)
+    w.c <- cumsum(w)
+    xw.c <- cumsum(w * x)
+    xw.c <- xw.c/xw.c[n]
+    Gini <- t(xw.c[-1]) %*% w.c[-n] - t(xw.c[-n]) %*% w.c[-1]
+    res <- Gini * 1/(1 - sum(w^2))
+    
+    return( pmax(0, res))
+  }
+
 vectorToDF.int <- function(x, sep=" ", names=NULL, autoCoerc=TRUE){
   x.split <- strsplit(x, sep)
   no.columns <- length(x.split[[1]])

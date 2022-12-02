@@ -408,17 +408,20 @@ gtfs[[1]] <- importGTF(file.path(projFolder, "Stringtie", gtf.files[1]), level="
 samples_without_loci <- c()
 remove_those <- c()
 for(i in 2:length(gtf.files)){
-  number_loci <- sum(substr(readLines(file.path(projFolder, "Stringtie", gtf.files[i]), n=10),1,1)!="#")>0
-  if(number_loci>0) gtfs[[i]] <- importGTF(file.path(projFolder, "Stringtie", gtf.files[i]), level="transcript")
   
-  samples_without_loci <- c(samples_without_loci, gtf.names[i])
-  if(number_loci>0) remove_those <- c(remove_those, i)
+  number_loci <- sum(substr(readLines(file.path(projFolder, "Stringtie", gtf.files[i]), n=10),1,1)!="#")
+  if(number_loci>0){
+    gtfs[[i]] <- importGTF(file.path(projFolder, "Stringtie", gtf.files[i]), level="transcript")
+  } else {
+    samples_without_loci <- c(samples_without_loci, gtf.names[i])
+    remove_those <- c(remove_those, i)
+  }
 }
 
-gtfs <- gtfs[-remove_those]
-
-
-names(gtfs) <- gtf.names[-remove_those]
+if(length(remove_those)>0){
+  gtfs <- gtfs[-remove_those]
+  names(gtfs) <- gtf.names[-remove_those]
+}
 ```
 
 In case there were samples without any identified alignment locus on the reference genome, they are printed here:
@@ -427,7 +430,8 @@ In case there were samples without any identified alignment locus on the referen
 
 ```
 
-Visualisation, how many alignments loci do the different samples have along the reference genome
+Visualisation, how many alignment loci do the different samples have along the reference genome, ideally you see here a block that represents also the in-situ prediction for the amount of cut-sites with the
+specific contig length after size-selection.
 
 ```{r, fig.width=10}
 par(mar=c(7,5,0,0))
@@ -450,10 +454,43 @@ for(i in 2:length(fcFiles)){
 colnames(fc.quant$expValues) <- fc.names
 ```
 
-Basic visualisation, binary, if a sample has reads on a locus we plot it dark red, otherwise light yellow. Ideally, this is now just a red block.
+Typically, we have plenty of loci, so a simple image is not feasible. Hence, we create here a image of the (Spearman-)correlation matrix between the loci. In case that the read alignments are equal, it would be one.
 
 ```{r, fig.width=10}
-image(fc.quant$expValues>0)
+loci_cor <- cor(fc.quant$expValues[, -1], method="spearman")
+image(loci_cor)
+```
+
+Then, we check the pair-wise similarities of loci between the samples. If two samples have common reads exactly in ll their alignment loci, the value would be 1, if they do not share a single locus, the value is 0
+
+```{r}
+loci_similarity <- matrix(0, ncol=ncol(fc.quant$expValues), nrow=ncol(fc.quant$expValues))
+for(i in 1:(ncol(fc.quant$expValues)-1)){
+  for(j in (i+1):ncol(fc.quant$expValues)){
+    reads1 <- fc.quant$expValues[,i]>0
+    reads2 <- fc.quant$expValues[,j]>0
+    loci_similarity[i,j] <- sum((reads1 + reads2)==2)/length(reads1)
+    loci_similarity[j,i] <- sum((reads1 + reads2)==2)/length(reads2)
+  }
+}
+```
+
+```{r}
+image(loci_similarity)
+```
+
+Further, we need to check, how equally the reads are distributed per sample. For that, we calculate the Gini coefficient for each sample. In case that the reads are equally distributed across the alignment loci (per sample), that sample has a gini coefficient of one. In case that all reads originate from a single locus the Gini coefficient is roughly one.
+
+```{}
+gini_sample <- c()
+for(i in 1:ncol(fc.quant$expValues)){
+  tmpExpr <- fc.quant$expValues[,i]
+  tmpExpr <- tmpExpr[tmpExpr>0]
+  gini_sample[i] <- gini(tmpExpr)
+}
+
+barplot(gini_sample)
+
 ```
 
 NEED TO CONTINUE HERE STILL, THERE IS PLENTY OF ADDITIONAL VISUALISATIONS POSSIBLE!!!

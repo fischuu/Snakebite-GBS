@@ -6,6 +6,8 @@
 
 0.17.* UPDATES
 --------------------------------------------------------------------------------
+19: Added the Gini coefficient to represent the concentration of reads against the different alignment loci
+18: Added the correlation plot for th loci aligned to reference genome
 17: Critical bugfix in 'Mockrefloci_vs_samplealignments' that crashed the pipeline byt wrong output-filename
 16: QC diverging samples are now printed for upper and lower throeshols in finalReport
 15: Missing percentages are now always displayed on a scale between 0 and 100%
