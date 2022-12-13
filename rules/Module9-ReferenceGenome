@@ -17,6 +17,9 @@ else:
         threads: 20
         shell:"""
             stringtie {input} -p {threads} -v -o {output} 2> {log};
+            
+          # stringtie does not create strict gtf-files (they include a header), so I remove them
+            sed -i '/^#/d' {output}
       	"""
 
 if config["genome"] == "":
@@ -60,6 +63,10 @@ else:
         singularity: config["singularity"]["stringtie"]
         shell:"""
             stringtie --merge -F 0 -T {params.tpm} -o {output} {input.gtfs} 2> {log};
+
+          # stringtie does not create strict gtf-files (they include a header), so I remove them
+            sed -i '/^#/d' {output}
+
         """
 
 if config["genome"] == "":

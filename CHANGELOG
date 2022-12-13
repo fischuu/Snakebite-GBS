@@ -6,6 +6,8 @@
 
 0.17.* UPDATES
 --------------------------------------------------------------------------------
+22: flanking bed files are now tab-delimted, as reqired by bedtools
+21: Header lines removed from Stringtie output to ensure strict gtf compatability
 20: Variant calling missingnes in percentages are now displayed on a fixed 0-100 scale
 19: Added the Gini coefficient to represent the concentration of reads against the different alignment loci
 18: Added the correlation plot for th loci aligned to reference genome
