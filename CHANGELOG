@@ -6,6 +6,7 @@
 
 0.17.* UPDATES
 --------------------------------------------------------------------------------
+23: Bugfix, flanking sequence extraction ignored the first alignment
 22: flanking bed files are now tab-delimted, as reqired by bedtools
 21: Header lines removed from Stringtie output to ensure strict gtf compatability
 20: Variant calling missingnes in percentages are now displayed on a fixed 0-100 scale
