@@ -149,8 +149,8 @@ missingnessPerSample <- as.matrix(missingnessPerSample)
 
 ```{r, fig.width=10}
 par(mfrow=c(1,2))
-barplot(apply(vcf$genotypesInfo==".,.",2,sum)/nrow(vcf$map)*100, las=2, main="Missing variants per sample (in %), filtered", col=report.colours[1])
-barplot(apply(vcfUnfiltered$genotypesInfo==".,.",2,sum)/nrow(vcfUnfiltered$map)*100, las=2, main="Missing variants per sample (in %), unfiltered", col=report.colours[1])
+barplot(apply(vcf$genotypesInfo==".,.",2,sum)/nrow(vcf$map)*100, las=2, main="Missing variants per sample (in %), filtered", col=report.colours[1], ylim=c(0,100))
+barplot(apply(vcfUnfiltered$genotypesInfo==".,.",2,sum)/nrow(vcfUnfiltered$map)*100, las=2, main="Missing variants per sample (in %), unfiltered", col=report.colours[1], ylim=c(0,100))
 ```
 
 ## Preliminary mock
