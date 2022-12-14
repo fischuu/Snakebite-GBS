@@ -515,7 +515,33 @@ for(i in 2:length(fcFiles)){
   fc.quant$expValues <- merge(fc.quant$expValues, tmp$expValues)
 }
 
-colnames(fc.quant$expValues) <- fc.names
+colnames(fc.quant$expValues) <- c("Locus", fc.names)
+```
+
+Display how the reads and loci harmonise. For that we create a dataframe that displays the following. Each columns says what is the minimum number of samples with that feature and the
+rows are the number of reads of a certain locus. That means, if e.g. row number 4 and column 6 says 38,931 that would mean, there are 38,931 loci where six or more samples have at least
+four reads.
+
+```{r}
+readDist <- matrix(0, ncol=ncol(fc.quant$expValues), nrow=201)
+
+for(i in 1:201){
+  readDist[i,] <- table(factor(apply(fc.quant$expValues[,-1]>(i-1),1,sum), levels=0:(ncol(fc.quant$expValues)-1)))
+}
+```
+
+```{r}
+rdn <- ncol(readDist)
+out <- t(apply(readDist[1:50,rdn:1],1,cumsum))[,rdn:1]
+
+colnames(out) <- 0:(rdn-1)
+rownames(out) <- 1:50
+knitr::kable(out, row.names = TRUE)%>%  
+ kable_styling(bootstrap_options = c("hover", "condensed", "responsive"), 
+  latex_options = c("striped", "condensed", "HOLD_position", "repeat_header"),
+  repeat_header_text = "(huhu)",
+  full_width = F, fixed_thead = T) %>%  
+ row_spec(0, bold=T, monospace=F, color="white", background="#7B7B7B")
 ```
 
 Typically, we have plenty of loci, so a simple image is not feasible. Hence, we create here a image of the (Spearman-)correlation matrix between the loci. In case that the read alignments are equal, it would be one.
@@ -542,19 +568,113 @@ for(i in 1:(ncol(fc.quant$expValues)-1)){
 ```{r}
 image(loci_similarity)
 ```
+### Alignment flanking sites
 
-Further, we need to check, how equally the reads are distributed per sample. For that, we calculate the Gini coefficient for each sample. In case that the reads are equally distributed across the alignment loci (per sample), that sample has a gini coefficient of one. In case that all reads originate from a single locus the Gini coefficient is roughly one.
+We consider the flanking sites of the aligned reads.
 
-```{r, eval=FALSE}
-gini_sample <- c()
-for(i in 1:ncol(fc.quant$expValues)){
-  tmpExpr <- fc.quant$expValues[,i]
-  tmpExpr <- tmpExpr[tmpExpr>0]
-  gini_sample[i] <- gini(tmpExpr)
+```{r}
+out <- data.frame(Enzyme1 = enz1,
+                  Enzyme1_reverse = revcomp(enz1),
+                  Enzyme2 = enz2,
+                  Enzyme2_reverse = revcomp(enz2))
+rownames(out) <- c("Sequence")
+knitr::kable(t(out))
+```
+
+```{r}
+flankingLeft.list <- list.files(file.path(projFolder,"FASTQ", "TRIMMED", "alignments_reference"), pattern="*left.fa")
+flankingRight.list <- list.files(file.path(projFolder,"FASTQ", "TRIMMED", "alignments_reference"), pattern="*right.fa")
+flankingLeft <- list()
+flankingRight <- list()
+
+for(i in 1:length(flankingLeft.list)){
+  flankingLeft[[i]] <- importFA(file.path(projFolder,"FASTQ", "TRIMMED", "alignments_reference", flankingLeft.list[i]))
+  flankingRight[[i]] <- importFA(file.path(projFolder,"FASTQ", "TRIMMED", "alignments_reference", flankingRight.list[i]))
 }
 
-barplot(gini_sample)
 
+```
+
+First, the distributions per sample of the most abundant flanking sequence (top-10)
+
+This table is as we take it from the data:
+
+```{r}
+flankSeqLeft <- list()
+for(i in 1:length(flankingLeft))
+flankSeqLeft[[i]] <- sort(table(flankingLeft[[i]]), decreasing = TRUE)[1:10]/length(flankingLeft[[i]])
+```
+
+```{r}
+out <- paste0(names(flankSeqLeft[[1]]), " - ",round(flankSeqLeft[[1]]*100,1),"%")
+for(i in 2:length(flankSeqLeft)){
+  out <- cbind(out, paste0(names(flankSeqLeft[[i]]), " - ",round(flankSeqLeft[[i]]*100,1),"%"))
+}
+colnames(out) <- gsub(".flanking_left.fa","",flankingLeft.list)
+data.table(out)
+```
+```{r}
+flankSeqRight <- list()
+for(i in 1:length(flankingRight))
+flankSeqRight[[i]] <- sort(table(flankingRight[[i]]), decreasing = TRUE)[1:10]/length(flankingRight[[i]])
+```
+
+```{r}
+out <- paste0(names(flankSeqRight[[1]]), " - ",round(flankSeqRight[[1]]*100,1),"%")
+for(i in 2:length(flankSeqRight)){
+  out <- cbind(out, paste0(names(flankSeqRight[[i]]), " - ",round(flankSeqRight[[i]]*100,1),"%"))
+}
+colnames(out) <- gsub(".flanking_right.fa","",flankingRight.list)
+data.table(out)
+
+```
+And finally still the top10 combinations
+
+```{r}
+
+tmp <- paste(flankingLeft[[1]], flankingRight[[1]], sep="-")
+tmp2 <- sort(table(tmp), decreasing=TRUE)[1:10]/length(tmp)
+out <- paste0(names(tmp2), " - ",round(tmp2*100,1),"%")
+
+for(i in 2:length(flankingLeft)){
+   tmp <- paste(flankingLeft[[i]], flankingRight[[i]], sep="-")
+   tmp2 <- sort(table(tmp), decreasing=TRUE)[1:10]/length(tmp)
+   out <- cbind(out, paste0(names(tmp2), " - ",round(tmp2*100,1),"%"))
+}
+colnames(out) <- gsub(".flanking_right.fa","",flankingRight.list)
+data.table(out)
+
+```
+
+For that we try now to what percent we find which combination in the samples. First the top ten 
+
+```{r}
+hitsLeft1 <- list()
+hitsLeft2 <- list()
+hitsLeft3 <- list()
+hitsLeft4 <- list()
+for(i in 1:length(flankingLeft)){
+  hitsLeft1[[i]] <- as.vector(adist(enz1, flankingLeft[[i]]))
+  hitsLeft2[[i]] <- as.vector(adist(enz2, flankingLeft[[i]]))
+  hitsLeft3[[i]] <- as.vector(adist(revcomp(enz1), flankingLeft[[i]]))
+  hitsLeft4[[i]] <- as.vector(adist(revcomp(enz2), flankingLeft[[i]]))
+}
+
+hitsRight1 <- list()
+hitsRight2 <- list()
+hitsRight3 <- list()
+hitsRight4 <- list()
+
+for(i in 1:length(flankingLeft)){
+  hitsRight1[[i]] <- as.vector(adist(enz1, flankingRight[[i]]))
+  hitsRight2[[i]] <- as.vector(adist(enz2, flankingRight[[i]]))
+  hitsRight3[[i]] <- as.vector(adist(revcomp(enz1), flankingRight[[i]]))
+  hitsRight4[[i]] <- as.vector(adist(revcomp(enz2), flankingRight[[i]]))
+}
+```
+
+```{r}
+out <- matrix(0)
 ```
 
 NEED TO CONTINUE HERE STILL, THERE IS PLENTY OF ADDITIONAL VISUALISATIONS POSSIBLE!!!
@@ -564,5 +684,5 @@ TO BE ADDED:
 * quantifications per contig, across samples
 * flanking side sequences of the identified loci 
 * Intersection with the mock reference contig alignments against reference genome
-* ...
+* Check, how those loci from above table 1.50 relate to the in-situ processed digestion. Further, check how many reads align to "real spots" compared to non-wished ones.
 

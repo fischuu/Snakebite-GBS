@@ -16,7 +16,7 @@ else:
         singularity: config["singularity"]["stringtie"]
         threads: 20
         shell:"""
-            stringtie {input} -p {threads} -v -o {output} 2> {log};
+            stringtie -m 50 -s 1 {input} -p {threads} -v -o {output} 2> {log};
             
           # stringtie does not create strict gtf-files (they include a header), so I remove them
             sed -i '/^#/d' {output}

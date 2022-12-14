@@ -6,6 +6,7 @@
 
 0.17.* UPDATES
 --------------------------------------------------------------------------------
+26: Chapter "Individual analysis" added to the finalReport
 25: FinalReport: The ACGT-plot was improved in readability
 24: FinalReport: Total sequences stats report now table with samples with less than 100k reads 
 23: Bugfix, flanking sequence extraction ignored the first alignment
