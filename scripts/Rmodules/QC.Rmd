@@ -118,10 +118,31 @@ if(nrow(tmp)>0){
 
 ### Total sequences
 
+### Total sequences
+
 ```{r raw data total sequences}
 #par(mar=c(10,5,1,1))
 plotFastQCFeature(rawFastQC.R1, rawFastQC.R1, feature="Total.Sequences", axes=FALSE)
 #plotFastQCFeature(rawFastQC.R1, rawFastQC.R2, feature="Total.Sequences", axes=FALSE)
+abline(h=100000, lty="dotted", col="red")
+```
+
+A list of samples with less than 100k reads
+
+```{r table samples sequence length}
+tmp <- rawFastQC.R1["Total.Sequences"]
+tmp <- mean(as.vector(as.matrix((tmp)))) 
+th <- 100000
+
+tmp <- cbind(rawFastQC.R1$Sample,rawFastQC.R1["Total.Sequences"])
+
+tmp <- tmp[tmp[,2]<th,]
+if(nrow(tmp)>0){
+  rownames(tmp) <- 1:nrow(tmp)
+  colnames(tmp) <- c("Rawsample", "Total sequences")
+  #knitr::kable(tmp) %>% kable_styling
+  datatable(tmp)
+}
 ```
 
 ### Quality value distribution

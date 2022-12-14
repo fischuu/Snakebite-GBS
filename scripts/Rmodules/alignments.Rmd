@@ -370,17 +370,14 @@ barplot(mapStats[1,] / (apply(mapStats,2,sum)), ylim=c(0,1), ylab="Mapping in Pe
 
 The average mapping rate on the reference genome is `r mean(refGenome.mappingStats)`.
 
-Now we check still the precise coverage per sample for the sake of simplicity I do it here for the first three samples only and also only for the first 50  chromosomes
+Now we check still the precise coverage per sample for the sake of simplicity I do it here for the first sample only and also only for the first at most 50 chromosome
 
 ```{r}
 mpile_files <- list.files(file.path(projFolder, "MPILEUP", "mpileup_reference"), pattern="*.mpileup")
 covData <- fread(file.path(projFolder, "MPILEUP", "mpileup_reference", mpile_files[10]), sep="\t")
 ```
-
 ```{r, fig.width=20, fig.height=10}
 mpile_files <- list.files(file.path(projFolder, "MPILEUP", "mpileup_reference"), pattern="*.mpileup")
-
-pdf(file.path(projFolder,"coverage.pdf"), width=20, height=10)
 
 for(sam in 1:10){
   par(mfrow=c(4,10),
@@ -390,8 +387,9 @@ for(sam in 1:10){
   chrNames <- names(table(covData[,1]))
   chrNames <- chrNames[1:min(49, length(chrNames))]
 
-  for(i in 1:40){
-  #for(i in 1:length(chrNames)){
+  maxChr <- min(length(chrNames), 20)
+  
+  for(i in 1:maxChr){
     tmpChr <- chrNames[i]
     
     tmpData <- covData[which(covData[,1]==tmpChr),]
@@ -408,10 +406,6 @@ for(sam in 1:10){
      }
   }
 }
-
-dev.off()
-
-
 ```
 
 ### Read alignments
@@ -428,6 +422,18 @@ Length distribution of identified contigs across the reference genome
   out <- data.frame(names(tmp), as.vector(tmp))
   out_html <- knitr::kable(out, col.names = NULL, "html")
   kable_styling(out_html, "striped", position = "left")
+```
+
+Here, we have the alignment length distribution of the reads in a histrogram. Axis labels are to be read in groups of 100, meaning a bar between 200 and 300 tells how many string merge loci had a total length between 200 and 300 bp.
+
+```{r}
+x <- abs(string.merge$V5 - string.merge$V4)
+bin_width <- 100
+nbins <- seq(min(x) - bin_width,
+             max(x) + bin_width,
+             by = bin_width)
+hist(x, las=2, col=report.colours[1], breaks=nbins, xaxt="n", main="Alignment length distribution")
+axis(1, nbins)
 ```
 
 Then we have the identified clusters per chromosome on the reference genome
@@ -465,13 +471,9 @@ for(i in 2:length(gtf.files)){
 if(length(remove_those)>0){
   gtfs <- gtfs[-remove_those]
   names(gtfs) <- gtf.names[-remove_those]
+} else {
+  names(gtfs) <- gtf.names
 }
-```
-
-In case there were samples without any identified alignment locus on the reference genome, they are printed here:
-
-```{r}
-
 ```
 
 Visualisation, how many alignment loci do the different samples have along the reference genome, ideally you see here a block that represents also the in-situ prediction for the amount of cut-sites with the
@@ -479,8 +481,26 @@ specific contig length after size-selection.
 
 ```{r, fig.width=10}
 par(mar=c(7,5,0,0))
-barplot(sapply(gtfs, nrow), las=2)
+gtfRows <- sapply(gtfs, nrow)
+barplot(gtfRows, las=2, col=report.colours[1])
 ```
+
+And now the same with the overall amount of identified loci in relation
+
+```{r, fig.width=10}
+par(mar=c(7,5,0,0))
+allLoci <- c(length(string.merge$V1), gtfRows)
+names(allLoci) <- c("All loci", names(gtfRows))
+barplot(allLoci, las=2, col=c(report.colours[2], rep(report.colours[1],length(gtfRows))))
+```
+
+And also the percentage, how many overall loci have alignments from each sample
+
+```{r, fig.width=10}
+par(mar=c(7,5,0,0))
+barplot(allLoci/allLoci[1], las=2, col=c(report.colours[2], rep(report.colours[1],length(gtfRows))), ylim=c(0,1))
+```
+
 
 Now we will check how the reads from different samples distribute across the individual aligned loci (which have been merged together). Ideally, we want to see here that all samples have reads from all mapping loci, which is of course not possible but there should be "some consistency".
 
@@ -525,7 +545,7 @@ image(loci_similarity)
 
 Further, we need to check, how equally the reads are distributed per sample. For that, we calculate the Gini coefficient for each sample. In case that the reads are equally distributed across the alignment loci (per sample), that sample has a gini coefficient of one. In case that all reads originate from a single locus the Gini coefficient is roughly one.
 
-```{}
+```{r, eval=FALSE}
 gini_sample <- c()
 for(i in 1:ncol(fc.quant$expValues)){
   tmpExpr <- fc.quant$expValues[,i]

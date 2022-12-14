@@ -92,6 +92,8 @@ final("mockSamples")
 
 ```
 
+The ACGT-distribution across the samples used for building the mock reference.
+
 ```{r vis atcg distribution}
 # Get the ATCG distribution
 atDist <- matrix(-1, ncol=length(startPos), nrow=4)
@@ -100,7 +102,7 @@ for(i in 1:4){
 }
 rownames(atDist) <- c("A", "C", "G", "T")
 
-barplot(t(atDist), main="A,C,T,G distribution", col=viridis(20)[8])
+barplot(t(atDist), main="A,C,T,G distribution", col=viridis(ncol(atDist)), beside = TRUE)
 ```
 
 ### Assembling statistics

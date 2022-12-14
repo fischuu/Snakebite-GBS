@@ -6,6 +6,8 @@
 
 0.17.* UPDATES
 --------------------------------------------------------------------------------
+25: FinalReport: The ACGT-plot was improved in readability
+24: FinalReport: Total sequences stats report now table with samples with less than 100k reads 
 23: Bugfix, flanking sequence extraction ignored the first alignment
 22: flanking bed files are now tab-delimted, as reqired by bedtools
 21: Header lines removed from Stringtie output to ensure strict gtf compatability
