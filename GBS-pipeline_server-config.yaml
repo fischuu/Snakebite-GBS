@@ -181,6 +181,10 @@ refine_mock_reference:
     job-name: refine_mock_reference
     mem-per-cpu: 64000
 
+Mockrefloci_vs_samplealignments:
+    time: 05:00:00
+    job-name: FinalMockVsRef_AlignmentStats
+
 # Module 4 - Read alignment
 ################################################################################   
 RefGenome_AlignReads:
