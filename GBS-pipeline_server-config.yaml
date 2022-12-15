@@ -183,7 +183,7 @@ refine_mock_reference:
 
 Mockrefloci_vs_samplealignments:
     time: 05:00:00
-    job-name: FinalMockVsRef_AlignmentStats
+    job-name: Mockrefloci_vs_samplealignments
 
 # Module 4 - Read alignment
 ################################################################################   
