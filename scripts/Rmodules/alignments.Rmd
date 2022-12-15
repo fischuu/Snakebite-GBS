@@ -429,7 +429,7 @@ Here, we have the alignment length distribution of the reads in a histrogram. Ax
 ```{r}
 x <- abs(string.merge$V5 - string.merge$V4)
 bin_width <- 100
-nbins <- seq(min(x) - bin_width,
+nbins <- seq(0,
              max(x) + bin_width,
              by = bin_width)
 hist(x, las=2, col=report.colours[1], breaks=nbins, xaxt="n", main="Alignment length distribution")
@@ -516,6 +516,78 @@ for(i in 2:length(fcFiles)){
 }
 
 colnames(fc.quant$expValues) <- c("Locus", fc.names)
+```
+
+Visualisation of the pair-wise expression values. As this can be rather large, we do it for the first 4 samples only
+
+```{r, fig.width=10}
+tmp <- fc.quant$expValues[,2:min(ncol(fc.quant$expValues), 4)]
+tmp <- tmp[apply(tmp, 1, sum)>0,]
+pairs(tmp)
+```
+
+Concentration measure of reads against merged loci.
+
+```{r final lorenz}
+plot(cumsum(sort(fc.quant$expValues[,2] / sum(fc.quant$expValues[,2]))), type="l", xlab="Cluster", ylab="Concentration")
+for(i in 3:ncol(fc.quant$expValues)){
+  lines(cumsum(sort(fc.quant$expValues[,i] / sum(fc.quant$expValues[,i]))))
+}
+```
+
+Concentration measure of reads against merged loci, without zero-locations per sample.
+
+```{r final lorenz}
+tmpData <- fc.quant$expValues[,2]
+tmpData <- tmpData[tmpData!=0]
+plot(cumsum(sort(tmpData / sum(tmpData))), type="l", xlab="Cluster", ylab="Concentration", xlim=c(0, max(apply(fc.quant$expValues[,-1]>0,2,sum))))
+
+for(i in 3:ncol(fc.quant$expValues)){
+    tmpData <- fc.quant$expValues[,i]
+    tmpData <- tmpData[tmpData!=0]
+
+    lines(cumsum(sort(tmpData / sum(tmpData))))
+}
+```
+
+A table of the most covered locations
+
+```{r}
+tmp <- fc.quant$expValues[,-1]
+totCov <- apply(tmp,1,sum)
+rownames(tmp) <- fc.quant$expValues[,1]
+tmp[order(totCov, decreasing = TRUE)[1:50],]
+```
+
+Usually locations with lots of coverage are not considered. We check, how many reads those locations accumulate and if we loose many reads to them. Here, we check locations with a higher coverage than 200 reads.
+
+```{r}
+hcLocations <- vector(mode="numeric", length=ncol(fc.quant$expValues)-1)
+hcCoverage <- vector(mode="numeric", length=ncol(fc.quant$expValues)-1)
+names(hcLocations) <- colnames(fc.quant$expValues)[-1]
+names(hcCoverage) <- colnames(fc.quant$expValues)[-1]
+
+for(i in 2:ncol(fc.quant$expValues)){
+  hcLocations[i-1] <- sum(fc.quant$expValues[,i]>200)
+  hcCoverage[i-1] <- sum(fc.quant$expValues[fc.quant$expValues[,i]>200,i])
+}
+
+```
+
+```{r, fig.width=10}
+par(mar=c(8,4,2,0))
+barplot(hcLocations , col=report.colours[1], las=2, main="High-coverage locations")
+```
+
+```{r, fig.width=10}
+par(mar=c(8,5,2,0))
+barplot(hcCoverage , col=report.colours[1], las=2, main="High-coverage location reads")
+```
+
+```{r, fig.width=10}
+par(mar=c(8,5,2,0))
+plotData <- hcCoverage/apply(fc.quant$expValues[,-1],2,sum)*100
+barplot(plotData , col=report.colours[1], las=2, main="High-coverage location reads (in percent)")
 ```
 
 Display how the reads and loci harmonise. For that we create a dataframe that displays the following. Each columns says what is the minimum number of samples with that feature and the
@@ -633,12 +705,12 @@ And finally still the top10 combinations
 ```{r}
 
 tmp <- paste(flankingLeft[[1]], flankingRight[[1]], sep="-")
-tmp2 <- sort(table(tmp), decreasing=TRUE)[1:10]/length(tmp)
+tmp2 <- sort(table(tmp), decreasing=TRUE)[1:20]/length(tmp)
 out <- paste0(names(tmp2), " - ",round(tmp2*100,1),"%")
 
 for(i in 2:length(flankingLeft)){
    tmp <- paste(flankingLeft[[i]], flankingRight[[i]], sep="-")
-   tmp2 <- sort(table(tmp), decreasing=TRUE)[1:10]/length(tmp)
+   tmp2 <- sort(table(tmp), decreasing=TRUE)[1:20]/length(tmp)
    out <- cbind(out, paste0(names(tmp2), " - ",round(tmp2*100,1),"%"))
 }
 colnames(out) <- gsub(".flanking_right.fa","",flankingRight.list)
@@ -648,7 +720,7 @@ data.table(out)
 
 For that we try now to what percent we find which combination in the samples. First the top ten 
 
-```{r}
+```{r, eval=FALSE}
 hitsLeft1 <- list()
 hitsLeft2 <- list()
 hitsLeft3 <- list()
@@ -672,12 +744,6 @@ for(i in 1:length(flankingLeft)){
   hitsRight4[[i]] <- as.vector(adist(revcomp(enz2), flankingRight[[i]]))
 }
 ```
-
-```{r}
-out <- matrix(0)
-```
-
-NEED TO CONTINUE HERE STILL, THERE IS PLENTY OF ADDITIONAL VISUALISATIONS POSSIBLE!!!
 
 TO BE ADDED:
 * Visualisation, how are loci distributed across the chromosomes ("dots on chromosome lines")

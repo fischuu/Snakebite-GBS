@@ -42,8 +42,8 @@ rule R_finalReport:
        pipeFolder=config["pipeline-folder"],
        pipeConfig=config["pipeline-config"],
        refGenome=config["genome"],
-       enz1=config["enz1,"],
-       enz2=config["enz2,"]
+       enz1=config["enz1"],
+       enz2=config["enz2"]
     shell:"""
        R -e "projFolder <- '{params.projFolder}'; \
              pipelineFolder <- '{params.pipeFolder}'; \

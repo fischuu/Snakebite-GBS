@@ -248,24 +248,20 @@ barplot(apply(vcfGSCUnfiltered$genotypesInfo==".,.",2,sum)/nrow(vcfGSCUnfiltered
 Basic stats and combinations for the called variants for filtered calls.
 
 ```{r}
-if(refAvail){
-out <- getBasicStats(vcfRef)
-  kable_styling(out[[1]], "striped", position = "left")  
-  
-  kable_styling(out[[2]], "striped", position = "left") 
-}
+
+if(refAvail) out <- getBasicStats(vcfRef)
+if(refAvail) kable_styling(out[[1]], "striped", position = "left")  
+if(refAvail) kable_styling(out[[2]], "striped", position = "left") 
+
 ```
 
 #### Unfiltered VCF
 Basic stats and combinations for the called variants for unfiltered calls.
 
 ```{r}
-if(refAvail){
-  out <- getBasicStats(vcfRefUnfiltered)
-    kable_styling(out[[1]], "striped", position = "left")  
-
-    kable_styling(out[[2]], "striped", position = "left") 
-}
+if(refAvail) out <- getBasicStats(vcfRefUnfiltered)
+if(refAvail) kable_styling(out[[1]], "striped", position = "left")  
+if(refAvail) kable_styling(out[[2]], "striped", position = "left") 
 ```
 
 ### Info Stats
@@ -336,6 +332,6 @@ missingnessPerSample <- as.matrix(missingnessPerSample)
 
 ```{r, fig.width=10}
 par(mfrow=c(1,2))
-barplot(apply(vcfRef$genotypesInfo==".,.",2,sum)/nrow(vcfRef$map)*100, las=2, main="Missing variants per sample (in %), filtered", col=report.colours[1])
-barplot(apply(vcfRefUnfiltered$genotypesInfo==".,.",2,sum)/nrow(vcfRefUnfiltered$map)*100, las=2, main="Missing variants per sample (in %), unfiltered", col=report.colours[1])
+barplot(apply(vcfRef$genotypesInfo==".,.",2,sum)/nrow(vcfRef$map)*100, las=2, main="Missing variants per sample (in %), filtered", col=report.colours[1], ylim=c(0,100))
+barplot(apply(vcfRefUnfiltered$genotypesInfo==".,.",2,sum)/nrow(vcfRefUnfiltered$map)*100, las=2, main="Missing variants per sample (in %), unfiltered", col=report.colours[1], ylim=c(0,100))
 ```
