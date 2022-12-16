@@ -63,7 +63,7 @@ abline(h=35, lty="dotted", col="red")
 
 A list of samples under a certain threshold (<35%)
 
-```{r table samples GC content}
+```{r table samples GC content below}
 tmp <- cbind(rawFastQC.R1$Sample,rawFastQC.R1["X.GC"])
 tmp <- tmp[tmp[,2]<35,]
 if(nrow(tmp)>0){
@@ -76,7 +76,7 @@ if(nrow(tmp)>0){
 
 A list of samples above a certain threshold (>50%)
 
-```{r table samples GC content}
+```{r table samples GC content above}
 tmp <- cbind(rawFastQC.R1$Sample,rawFastQC.R1["X.GC"])
 tmp <- tmp[tmp[,2]>50,]
 if(nrow(tmp)>0){
@@ -264,7 +264,7 @@ abline(h=35, lty="dotted", col="red")
 
 A list of samples under a certain threshold (<35%)
 
-```{r table samples GC content conc}
+```{r table samples GC content conc below}
 tmp <- cbind(conFastQC.R1$Sample,conFastQC.R1["X.GC"])
 tmp <- tmp[tmp[,2]<35,]
 if(nrow(tmp)>0){
@@ -276,7 +276,7 @@ if(nrow(tmp)>0){
 
 A list of samples above a certain threshold (>50%)
 
-```{r table samples GC content conc}
+```{r table samples GC content conc above}
 tmp <- cbind(conFastQC.R1$Sample,conFastQC.R1["X.GC"])
 tmp <- tmp[tmp[,2]>50,]
 if(nrow(tmp)>0){
@@ -425,7 +425,7 @@ abline(h=35, lty="dotted", col="red")
 
 A list of samples under a certain threshold (<35%)
 
-```{r table samples GC content trimmed}
+```{r table samples GC content trimmed below}
 tmp <- cbind(trimmedFastQC.R1$Sample, trimmedFastQC.R1["X.GC"])
 tmp <- tmp[tmp[,2]<35,]
 if(nrow(tmp)>0){
@@ -438,7 +438,7 @@ if(nrow(tmp)>0){
 
 A list of samples above a certain threshold (>50%)
 
-```{r table samples GC content trimmed}
+```{r table samples GC content trimmed above}
 tmp <- cbind(trimmedFastQC.R1$Sample, trimmedFastQC.R1["X.GC"])
 tmp <- tmp[tmp[,2]>50,]
 if(nrow(tmp)>0){
