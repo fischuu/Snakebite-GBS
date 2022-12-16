@@ -18,7 +18,32 @@ version = "0.17.27"
 ##### set minimum snakemake version #####
 min_version("6.0")
 
-##### Sample sheets #####
+##### Fill the configuration lines for relative paths
+# project-folder should not end with "/", so remove it
+
+if config["project-folder"][-1] == '/':
+   config["project-folder"]=config["project-folder"][:-1]
+   
+if(config["pipeline-config"][0]!='/'):
+    config["pipeline-config"] = config["project-folder"] + '/' + config["pipeline-config"]
+
+if(config["server-config"][0]!='/'):
+    config["server-config"] = config["project-folder"] + '/' + config["server-config"]
+
+if(config["rawdata-folder"][0]!='/'):
+    config["rawdata-folder"] = config["project-folder"] + '/' + config["rawdata-folder"]
+
+if(config["samplesheet-file"][0]!='/'):
+    config["samplesheet-file"] = config["project-folder"] + '/' + config["samplesheet-file"]
+    
+if(config["genome"][0]!='/'):
+    config["genome"] = config["project-folder"] + '/' + config["genome"]
+
+if(config["local-scratch"][0]!='/'):
+    config["local-scratch"] = config["project-folder"] + '/' + config["local-scratch"]
+
+if(config["tmpdir"][0]!='/'):
+    config["tmpdir"] = config["project-folder"] + '/' + config["tmpdir"]
 
 ##### load config and sample sheets #####
 
