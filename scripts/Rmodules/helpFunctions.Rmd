@@ -35,10 +35,10 @@ mockReference.file <- "GSC.MR.Genome.fa"
 # R -e "rmarkdown::render('./scripts/workflow-report.Rmd',output_file='./finalReport.html')"
 
 if(!is.element("snakemake",ls())){
-  projFolder <- "/scratch/project_2001746/TestProject"
-  pipelineFolder <- "~/git/Pipeline-GBS/"
-  pipelineConfig.file <- "/scratch/project_2001746/TestProject/GBS-pipeline_config.yaml"
-  refGenome.file <- "hermetiaRef_112020.fasta"
+  projFolder <- ""
+  pipelineFolder <- ""
+  pipelineConfig.file <- ""
+  refGenome.file <- ""
 }
 refGenome.full <- refGenome.file
 refGenome.file <- basename(refGenome.file)
