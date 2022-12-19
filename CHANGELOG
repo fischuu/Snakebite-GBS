@@ -6,6 +6,7 @@
 
 0.17.* UPDATES
 --------------------------------------------------------------------------------
+30: Internal improvement: Duplicated Chunk names in report-knitr files are allowed
 29: Paths in the configuration file can now be relative
 28: Special case for flanking site determination caught (in case alignment starts at base 0, bed could have been negativ)
 27: FinalReport polished and more statistics added

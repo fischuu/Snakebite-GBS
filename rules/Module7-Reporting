@@ -52,6 +52,7 @@ rule R_finalReport:
              enz1 <- '{params.enz1}'; \
              enz2 <- '{params.enz2}'; \
              snakemake <- TRUE;\
+             options(knitr.duplicate.label = 'allow');\
              source('{input.script}')" &> {log}
     """
     
@@ -90,6 +91,7 @@ rule R_QCReport:
              refGenome.file <- '{params.refGenome}'; \
              pipelineConfig.file <- '{params.pipeConfig}'; \
              snakemake <- TRUE;\
+             options(knitr.duplicate.label = 'allow');\
              source('{input.script}')" &> {log}
     """
     
@@ -125,6 +127,7 @@ rule R_VariantCallingReport:
              refGenome.file <- '{params.refGenome}'; \
              pipelineConfig.file <- '{params.pipeConfig}'; \
              snakemake <- TRUE;\
+             options(knitr.duplicate.label = 'allow');\
              source('{input.script}')" &> {log}
     """
 
@@ -155,5 +158,6 @@ rule R_MockEval:
              pipelineFolder <- '{params.pipeFolder}'; \
              pipelineConfig.file <- '{params.pipeConfig}'; \
              snakemake <- TRUE;\
+             options(knitr.duplicate.label = 'allow');\
              rmarkdown::render('{input.script}',output_file='{output}')" &> {log}
     """
