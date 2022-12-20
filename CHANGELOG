@@ -6,6 +6,9 @@
 
 0.17.* UPDATES
 --------------------------------------------------------------------------------
+35: QC tables display now the full dataset, without any threshold
+34: QC tables can now be exported
+33: Server config information added to the reports
 32: QC plots now show ommit the missing R2 output (and do not duplicate R1 to pretend it to be R2)
 31: Expection added in finalReport in case FastQC/MultiQC report different binnings in their reports for R1 and R2
 30: Internal improvement: Duplicated Chunk names in report-knitr files are allowed

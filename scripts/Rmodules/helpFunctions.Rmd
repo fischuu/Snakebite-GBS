@@ -38,6 +38,7 @@ if(!is.element("snakemake",ls())){
   projFolder <- ""
   pipelineFolder <- ""
   pipelineConfig.file <- ""
+  serverConfig.file <- ""
   refGenome.file <- ""
 }
 refGenome.full <- refGenome.file

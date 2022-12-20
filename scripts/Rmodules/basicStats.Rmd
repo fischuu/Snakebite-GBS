@@ -26,6 +26,7 @@ if(sampleInfo.file!="") sampleInfo <- read.table(sampleInfo.file, sep="\t", head
 projectFolder.info <- getConfigField("project-folder")
 pipelineFolder.info <- getConfigField("pipeline-folder")
 pipelineConfig.info <- pipelineConfig.file
+serverConfig.info <- serverConfig.file
 
 groupingNames <- "No file with sample information provided ('sampleinfo-file'-field)!"
 numberGroupingNames <- 0
@@ -47,6 +48,7 @@ out <- data.frame(c("Number of raw-samples",
                     "Project folder",
                     "Pipeline folder",
                     "Pipeline config",
+                    "Server config",
                     "Enzyme 1 sequence",
                     "Enzyme 2 sequence"),
                   c(length(unique(sampleSheet$rawsample)),
@@ -60,6 +62,7 @@ out <- data.frame(c("Number of raw-samples",
                     projectFolder.info,
                     pipelineFolder.info,
                     pipelineConfig.info,
+                    serverConfig.info,
                     enz1,
                     enz2))
 

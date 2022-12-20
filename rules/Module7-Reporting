@@ -41,6 +41,7 @@ rule R_finalReport:
        projFolder=config["project-folder"],
        pipeFolder=config["pipeline-folder"],
        pipeConfig=config["pipeline-config"],
+       serverConfig=config["server-config"],
        refGenome=config["genome"],
        enz1=config["enz1"],
        enz2=config["enz2"]
@@ -49,6 +50,7 @@ rule R_finalReport:
              pipelineFolder <- '{params.pipeFolder}'; \
              refGenome.file <- '{params.refGenome}'; \
              pipelineConfig.file <- '{params.pipeConfig}'; \
+             serverConfig.file <- '{params.serverConfig}'; \
              enz1 <- '{params.enz1}'; \
              enz2 <- '{params.enz2}'; \
              snakemake <- TRUE;\
@@ -80,6 +82,7 @@ rule R_QCReport:
        projFolder=config["project-folder"],
        pipeFolder=config["pipeline-folder"],
        pipeConfig=config["pipeline-config"],
+       serverConfig=config["server-config"],
        refGenome=config["genome"]
     shell:"""
        echo "Creating the QC-Report"
@@ -90,6 +93,7 @@ rule R_QCReport:
              pipelineFolder <- '{params.pipeFolder}'; \
              refGenome.file <- '{params.refGenome}'; \
              pipelineConfig.file <- '{params.pipeConfig}'; \
+             serverConfig.file <- '{params.serverConfig}'; \
              snakemake <- TRUE;\
              options(knitr.duplicate.label = 'allow');\
              source('{input.script}')" &> {log}
@@ -116,6 +120,7 @@ rule R_VariantCallingReport:
        projFolder=config["project-folder"],
        pipeFolder=config["pipeline-folder"],
        pipeConfig=config["pipeline-config"],
+       serverConfig=config["server-config"],
        refGenome=config["genome"]
     shell:"""
        echo "Creating the VariantCalling-Report"
@@ -126,6 +131,7 @@ rule R_VariantCallingReport:
              pipelineFolder <- '{params.pipeFolder}'; \
              refGenome.file <- '{params.refGenome}'; \
              pipelineConfig.file <- '{params.pipeConfig}'; \
+             serverConfig.file <- '{params.serverConfig}'; \
              snakemake <- TRUE;\
              options(knitr.duplicate.label = 'allow');\
              source('{input.script}')" &> {log}
@@ -152,11 +158,13 @@ rule R_MockEval:
     params:
        projFolder=config["project-folder"],
        pipeFolder=config["pipeline-folder"],
-       pipeConfig=config["pipeline-config"]
+       pipeConfig=config["pipeline-config"],
+       serverConfig=config["server-config"]
     shell:"""
        R -e "projFolder <- '{params.projFolder}'; \
              pipelineFolder <- '{params.pipeFolder}'; \
              pipelineConfig.file <- '{params.pipeConfig}'; \
+             serverConfig.file <- '{params.serverConfig}'; \
              snakemake <- TRUE;\
              options(knitr.duplicate.label = 'allow');\
              rmarkdown::render('{input.script}',output_file='{output}')" &> {log}

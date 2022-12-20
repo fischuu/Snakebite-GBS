@@ -42,12 +42,16 @@ A list of samples over a certain threshold (>20%)
 
 ```{r table samples duplication under threshold raw}
 tmp <- cbind(rawFastQC.R1$Sample,rawFastQC.R1["total_deduplicated_percentage"])
-tmp <- tmp[tmp[,2]>20,]
+#tmp <- tmp[tmp[,2]>20,]
 if(nrow(tmp)>0){
 rownames(tmp) <- 1:nrow(tmp)
 colnames(tmp) <- c("Rawsample", "Total deduplicated percentage")
 
-datatable(tmp)
+datatable(tmp, extensions = 'Buttons',
+            options = list(dom = 'Blfrtip',
+                           buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                           lengthMenu = list(c(10,25,50,-1),
+                                             c(10,25,50,"All"))))
 }
 ```
 
@@ -61,29 +65,20 @@ abline(h=50, lty="dotted", col="red")
 abline(h=35, lty="dotted", col="red")
 ```
 
-A list of samples under a certain threshold (<35%)
+Complete list of samples with corresponding values
 
 ```{r table samples GC content below}
 tmp <- cbind(rawFastQC.R1$Sample,rawFastQC.R1["X.GC"])
-tmp <- tmp[tmp[,2]<35,]
+#tmp <- tmp[tmp[,2]<35,]
 if(nrow(tmp)>0){
   rownames(tmp) <- 1:nrow(tmp)
   colnames(tmp) <- c("Rawsample", "GC content")
   #knitr::kable(tmp) %>% kable_styling
-  datatable(tmp)
-}
-```
-
-A list of samples above a certain threshold (>50%)
-
-```{r table samples GC content above}
-tmp <- cbind(rawFastQC.R1$Sample,rawFastQC.R1["X.GC"])
-tmp <- tmp[tmp[,2]>50,]
-if(nrow(tmp)>0){
-  rownames(tmp) <- 1:nrow(tmp)
-  colnames(tmp) <- c("Rawsample", "GC content")
-  #knitr::kable(tmp) %>% kable_styling
-  datatable(tmp)
+  datatable(tmp, extensions = 'Buttons',
+            options = list(dom = 'Blfrtip',
+                           buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                           lengthMenu = list(c(10,25,50,-1),
+                                             c(10,25,50,"All"))))
 }
 ```
 
@@ -98,7 +93,7 @@ tmp <- mean(as.vector(as.matrix((tmp))))
 abline(h=tmp*0.9, lty="dotted", col="red")
 ```
 
-A list of samples with average sequence length smaller then overall average minus 10%.
+A complete list of samples
 
 ```{r table samples sequence length}
 tmp <- rawFastQC.R1["avg_sequence_length"]
@@ -107,12 +102,16 @@ th <- tmp*0.9
 
 tmp <- cbind(rawFastQC.R1$Sample,rawFastQC.R1["avg_sequence_length"])
 
-tmp <- tmp[tmp[,2]<th,]
+#tmp <- tmp[tmp[,2]<th,]
 if(nrow(tmp)>0){
   rownames(tmp) <- 1:nrow(tmp)
   colnames(tmp) <- c("Rawsample", "Avg sequence length")
   #knitr::kable(tmp) %>% kable_styling
-  datatable(tmp)
+  datatable(tmp, extensions = 'Buttons',
+            options = list(dom = 'Blfrtip',
+                           buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                           lengthMenu = list(c(10,25,50,-1),
+                                             c(10,25,50,"All"))))
 }
 ```
 
@@ -127,7 +126,7 @@ plotFastQCFeature(rawFastQC.R1, feature="Total.Sequences", axes=FALSE)
 abline(h=100000, lty="dotted", col="red")
 ```
 
-A list of samples with less than 100k reads
+A list of reads per raw data file
 
 ```{r table samples sequence length}
 tmp <- rawFastQC.R1["Total.Sequences"]
@@ -136,12 +135,16 @@ th <- 100000
 
 tmp <- cbind(rawFastQC.R1$Sample,rawFastQC.R1["Total.Sequences"])
 
-tmp <- tmp[tmp[,2]<th,]
+#tmp <- tmp[tmp[,2]<th,]
 if(nrow(tmp)>0){
   rownames(tmp) <- 1:nrow(tmp)
   colnames(tmp) <- c("Rawsample", "Total sequences")
   #knitr::kable(tmp) %>% kable_styling
-  datatable(tmp)
+  datatable(tmp, extensions = 'Buttons',
+            options = list(dom = 'Blfrtip',
+                           buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                           lengthMenu = list(c(10,25,50,-1),
+                                             c(10,25,50,"All"))))
 }
 ```
 
@@ -196,14 +199,6 @@ barplot(plotThis, las=2, col=1:nrow(plotThis), main="Read 1 Quality scores")
 legend("topright", inset=c(-0.2,0), legend=rownames(plotThis)[(nrow(plotThis)):1], fill=nrow(plotThis):1)
 ```
 
-```{r, eval=FALSE}
-plotThis <- as.matrix(qcQual.R2.raw[,-1])
-rownames(plotThis) <- as.vector(as.matrix(qcQual.R2.raw[,1]))
-par(mar=c(15,5,2,8), xpd=TRUE)
-barplot(plotThis, las=2, col=1:nrow(plotThis), main="Read 2 Quality scores")
-legend("topright", inset=c(-0.2,0), legend=rownames(plotThis)[(nrow(plotThis)):1], fill=nrow(plotThis):1)
-```
-
 ### Summary
 ```{r raw data summary stats}
 mqcStats.raw <- read.table(file.path(projFolder,"QC","RAW","multiqc_R1", "multiqc_data", "multiqc_fastqc.txt"), header=TRUE, sep="\t")
@@ -216,7 +211,7 @@ names(out) <- c("Tot. number sequences",
                 "Avg. total sequences",
                 "Avg. poor quality",
                 "Avg. GC Percent",
-                "Avg. deplication percent",
+                "Avg. deduplication percent",
                 "Avg. sequence length")
 
 out_html <- knitr::kable(formatC(out,  format="d", big.mark=","), col.names = NULL, "html")
@@ -244,12 +239,16 @@ A list of samples over a certain threshold (>20%)
 
 ```{r table samples duplication under threshold conc}
 tmp <- cbind(conFastQC.R1$Sample,conFastQC.R1["total_deduplicated_percentage"])
-tmp <- tmp[tmp[,2]>20,]
+#tmp <- tmp[tmp[,2]>20,]
 if(nrow(tmp)>0){
 rownames(tmp) <- 1:nrow(tmp)
 colnames(tmp) <- c("Sample", "Total deduplicated percentage")
 
-datatable(tmp)
+datatable(tmp, extensions = 'Buttons',
+            options = list(dom = 'Blfrtip',
+                           buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                           lengthMenu = list(c(10,25,50,-1),
+                                             c(10,25,50,"All"))))
 }
 ```
 
@@ -266,23 +265,15 @@ A list of samples under a certain threshold (<35%)
 
 ```{r table samples GC content conc below}
 tmp <- cbind(conFastQC.R1$Sample,conFastQC.R1["X.GC"])
-tmp <- tmp[tmp[,2]<35,]
+#tmp <- tmp[tmp[,2]<35,]
 if(nrow(tmp)>0){
   rownames(tmp) <- 1:nrow(tmp)
   colnames(tmp) <- c("Sample", "GC content")
-  datatable(tmp)
-}
-```
-
-A list of samples above a certain threshold (>50%)
-
-```{r table samples GC content conc above}
-tmp <- cbind(conFastQC.R1$Sample,conFastQC.R1["X.GC"])
-tmp <- tmp[tmp[,2]>50,]
-if(nrow(tmp)>0){
-  rownames(tmp) <- 1:nrow(tmp)
-  colnames(tmp) <- c("Sample", "GC content")
-  datatable(tmp)
+  datatable(tmp, extensions = 'Buttons',
+            options = list(dom = 'Blfrtip',
+                           buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                           lengthMenu = list(c(10,25,50,-1),
+                                             c(10,25,50,"All"))))
 }
 ```
 
@@ -305,11 +296,15 @@ th <- tmp*0.9
 
 tmp <- cbind(conFastQC.R1$Sample, conFastQC.R1["avg_sequence_length"])
 
-tmp <- tmp[tmp[,2]<th,]
+#tmp <- tmp[tmp[,2]<th,]
 if(nrow(tmp)>0){
   rownames(tmp) <- 1:nrow(tmp)
   colnames(tmp) <- c("Sample", "Avg sequence length")
-  datatable(tmp)
+  datatable(tmp, extensions = 'Buttons',
+            options = list(dom = 'Blfrtip',
+                           buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                           lengthMenu = list(c(10,25,50,-1),
+                                             c(10,25,50,"All"))))
 }
 ```
 
@@ -318,6 +313,28 @@ if(nrow(tmp)>0){
 ```{r con data total sequences}
 par(mar=c(10,5,1,1))
 plotFastQCFeature(conFastQC.R1, conFastQC.R2, feature="Total.Sequences")
+```
+
+A list of reads per sample
+
+```{r table samples sequence length}
+tmp <- conFastQC.R1["Total.Sequences"]
+tmp <- mean(as.vector(as.matrix((tmp)))) 
+th <- 100000
+
+tmp <- cbind(conFastQC.R1$Sample,conFastQC.R1["Total.Sequences"])
+
+#tmp <- tmp[tmp[,2]<th,]
+if(nrow(tmp)>0){
+  rownames(tmp) <- 1:nrow(tmp)
+  colnames(tmp) <- c("Sample", "Total sequences")
+  #knitr::kable(tmp) %>% kable_styling
+  datatable(tmp, extensions = 'Buttons',
+            options = list(dom = 'Blfrtip',
+                           buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                           lengthMenu = list(c(10,25,50,-1),
+                                             c(10,25,50,"All"))))
+}
 ```
 
 ### Quality value distribution
@@ -405,12 +422,16 @@ A list of samples over a certain threshold (>20%)
 
 ```{r table samples duplication under threshold trimmed}
 tmp <- cbind(trimmedFastQC.R1$Sample,trimmedFastQC.R1["total_deduplicated_percentage"])
-tmp <- tmp[tmp[,2]>20,]
+#tmp <- tmp[tmp[,2]>20,]
 if(nrow(tmp)>0){
 rownames(tmp) <- 1:nrow(tmp)
 colnames(tmp) <- c("Sample", "Total deduplicated percentage")
 
-datatable(tmp)
+datatable(tmp, extensions = 'Buttons',
+            options = list(dom = 'Blfrtip',
+                           buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                           lengthMenu = list(c(10,25,50,-1),
+                                             c(10,25,50,"All"))))
 }
 ```
 
@@ -427,25 +448,16 @@ A list of samples under a certain threshold (<35%)
 
 ```{r table samples GC content trimmed below}
 tmp <- cbind(trimmedFastQC.R1$Sample, trimmedFastQC.R1["X.GC"])
-tmp <- tmp[tmp[,2]<35,]
+#tmp <- tmp[tmp[,2]<35,]
 if(nrow(tmp)>0){
   rownames(tmp) <- 1:nrow(tmp)
   colnames(tmp) <- c("Sample", "GC content")
   #knitr::kable(tmp) %>% kable_styling
-  datatable(tmp)
-}
-```
-
-A list of samples above a certain threshold (>50%)
-
-```{r table samples GC content trimmed above}
-tmp <- cbind(trimmedFastQC.R1$Sample, trimmedFastQC.R1["X.GC"])
-tmp <- tmp[tmp[,2]>50,]
-if(nrow(tmp)>0){
-  rownames(tmp) <- 1:nrow(tmp)
-  colnames(tmp) <- c("Sample", "GC content")
-  #knitr::kable(tmp) %>% kable_styling
-  datatable(tmp)
+  datatable(tmp, extensions = 'Buttons',
+            options = list(dom = 'Blfrtip',
+                           buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                           lengthMenu = list(c(10,25,50,-1),
+                                             c(10,25,50,"All"))))
 }
 ```
 
@@ -468,12 +480,16 @@ th <- tmp*0.9
 
 tmp <- cbind(trimmedFastQC.R1$Sample, trimmedFastQC.R1["avg_sequence_length"])
 
-tmp <- tmp[tmp[,2]<th,]
+#tmp <- tmp[tmp[,2]<th,]
 if(nrow(tmp)>0){
   rownames(tmp) <- 1:nrow(tmp)
   colnames(tmp) <- c("Sample", "Avg sequence length")
   #knitr::kable(tmp) %>% kable_styling
-  datatable(tmp)
+  datatable(tmp, extensions = 'Buttons',
+            options = list(dom = 'Blfrtip',
+                           buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                           lengthMenu = list(c(10,25,50,-1),
+                                             c(10,25,50,"All"))))
 }
 ```
 
@@ -482,6 +498,28 @@ if(nrow(tmp)>0){
 ```{r trimmed data total sequences}
 par(mar=c(10,5,1,1))
 plotFastQCFeature(trimmedFastQC.R1, trimmedFastQC.R2, feature="Total.Sequences")
+```
+
+A list of reads per sample (trimmed)
+
+```{r table samples sequence length}
+tmp <- trimmedFastQC.R1["Total.Sequences"]
+tmp <- mean(as.vector(as.matrix((tmp)))) 
+th <- 100000
+
+tmp <- cbind(trimmedFastQC.R1$Sample,trimmedFastQC.R1["Total.Sequences"])
+
+#tmp <- tmp[tmp[,2]<th,]
+if(nrow(tmp)>0){
+  rownames(tmp) <- 1:nrow(tmp)
+  colnames(tmp) <- c("Sample", "Total sequences (trimmed)")
+  #knitr::kable(tmp) %>% kable_styling
+  datatable(tmp, extensions = 'Buttons',
+            options = list(dom = 'Blfrtip',
+                           buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                           lengthMenu = list(c(10,25,50,-1),
+                                             c(10,25,50,"All"))))
+}
 ```
 
 ```{r}
