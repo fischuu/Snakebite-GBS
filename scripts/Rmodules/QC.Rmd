@@ -27,22 +27,22 @@ trimmedFastQCJSON.R2 <- getFastQCJSON(file.path(projFolder, "QC", "TRIMMED", "mu
 
 
 ## Raw data
-These are the reads, as they come from the sequencer, no trimming, no nothing.
+These are the reads, as they come from the sequencer, no trimming, no nothing. Warning, currently here is only R1 plotted!!
 
 ### De-duplication percent
 
 ```{r raw data duplication percent}
 #par(mar=c(10,5,1,1))
-plotFastQCFeature(rawFastQC.R1, rawFastQC.R1, feature="total_deduplicated_percentage", axes=FALSE)
+plotFastQCFeature(rawFastQC.R1, feature="total_deduplicated_percentage", axes=FALSE)
 #plotFastQCFeature(rawFastQC.R1, rawFastQC.R2, feature="total_deduplicated_percentage", axes=FALSE)
-abline(h=50, lty="dotted", col="red")
+abline(h=20, lty="dotted", col="red")
 ```
 
-A list of samples over a certain threshold (>50%)
+A list of samples over a certain threshold (>20%)
 
 ```{r table samples duplication under threshold raw}
 tmp <- cbind(rawFastQC.R1$Sample,rawFastQC.R1["total_deduplicated_percentage"])
-tmp <- tmp[tmp[,2]>50,]
+tmp <- tmp[tmp[,2]>20,]
 if(nrow(tmp)>0){
 rownames(tmp) <- 1:nrow(tmp)
 colnames(tmp) <- c("Rawsample", "Total deduplicated percentage")
@@ -55,7 +55,7 @@ datatable(tmp)
 
 ```{r raw data qc content}
 #par(mar=c(10,5,1,1))
-plotFastQCFeature(rawFastQC.R1, rawFastQC.R1, feature="X.GC", axes=FALSE)
+plotFastQCFeature(rawFastQC.R1, feature="X.GC", axes=FALSE)
 #plotFastQCFeature(rawFastQC.R1, rawFastQC.R2, feature="X.GC", axes=FALSE)
 abline(h=50, lty="dotted", col="red")
 abline(h=35, lty="dotted", col="red")
@@ -91,7 +91,7 @@ if(nrow(tmp)>0){
 
 ```{r raw data sequence length}
 #par(mar=c(10,5,1,1))
-plotFastQCFeature(rawFastQC.R1, rawFastQC.R1, feature="avg_sequence_length", axes=FALSE)
+plotFastQCFeature(rawFastQC.R1, feature="avg_sequence_length", axes=FALSE)
 #plotFastQCFeature(rawFastQC.R1, rawFastQC.R2, feature="avg_sequence_length", axes=FALSE)
 tmp <- rawFastQC.R1["avg_sequence_length"]
 tmp <- mean(as.vector(as.matrix((tmp)))) 
@@ -122,7 +122,7 @@ if(nrow(tmp)>0){
 
 ```{r raw data total sequences}
 #par(mar=c(10,5,1,1))
-plotFastQCFeature(rawFastQC.R1, rawFastQC.R1, feature="Total.Sequences", axes=FALSE)
+plotFastQCFeature(rawFastQC.R1, feature="Total.Sequences", axes=FALSE)
 #plotFastQCFeature(rawFastQC.R1, rawFastQC.R2, feature="Total.Sequences", axes=FALSE)
 abline(h=100000, lty="dotted", col="red")
 ```
@@ -237,14 +237,14 @@ In this section samples lanes are concatentated, but no other steps were perform
 ```{r conc data duplication percent}
 #par(mar=c(10,5,1,1))
 plotFastQCFeature(conFastQC.R1, conFastQC.R2, feature="total_deduplicated_percentage", axes=FALSE)
-abline(h=50, lty="dotted", col="red")
+abline(h=20, lty="dotted", col="red")
 ```
 
-A list of samples over a certain threshold (>50%)
+A list of samples over a certain threshold (>20%)
 
 ```{r table samples duplication under threshold conc}
 tmp <- cbind(conFastQC.R1$Sample,conFastQC.R1["total_deduplicated_percentage"])
-tmp <- tmp[tmp[,2]>50,]
+tmp <- tmp[tmp[,2]>20,]
 if(nrow(tmp)>0){
 rownames(tmp) <- 1:nrow(tmp)
 colnames(tmp) <- c("Sample", "Total deduplicated percentage")
@@ -398,14 +398,14 @@ kable_styling(out_html, "striped", position = "left")
 ```{r trimmed data duplication percent}
 #par(mar=c(10,5,1,1))
 plotFastQCFeature(trimmedFastQC.R1, trimmedFastQC.R2, feature="total_deduplicated_percentage", axes=FALSE)
-abline(h=50, lty="dotted", col="red")
+abline(h=20, lty="dotted", col="red")
 ```
 
-A list of samples over a certain threshold (>50%)
+A list of samples over a certain threshold (>20%)
 
 ```{r table samples duplication under threshold trimmed}
 tmp <- cbind(trimmedFastQC.R1$Sample,trimmedFastQC.R1["total_deduplicated_percentage"])
-tmp <- tmp[tmp[,2]>50,]
+tmp <- tmp[tmp[,2]>20,]
 if(nrow(tmp)>0){
 rownames(tmp) <- 1:nrow(tmp)
 colnames(tmp) <- c("Sample", "Total deduplicated percentage")
@@ -599,11 +599,39 @@ conFastQC.avg$Sample <- conFastQC.R1$Sample
 trimmedFastQC.avg$Sample <- trimmedFastQC.R1$Sample
 
 conFastQCJSON.avg <- list()
-conFastQCJSON.avg$sequenceQuality <- (conFastQCJSON.R1$sequenceQuality + conFastQCJSON.R2$sequenceQuality)/2
-conFastQCJSON.avg$perBaseN <- (conFastQCJSON.R1$perBaseN + conFastQCJSON.R2$perBaseN)/2
+
+if(nrow(conFastQCJSON.R1$sequenceQuality)!=nrow(conFastQCJSON.R2$sequenceQuality)){
+  conFastQCJSON.avg$sequenceQuality <- conFastQCJSON.R1$sequenceQuality
+  warning("Different lengths in conFastQCJSON.R1$sequenceQuality and conFastQCJSON.R2$sequenceQuality, please check the multiQC outputs for issues!")
+} else {
+  conFastQCJSON.avg$sequenceQuality <- (conFastQCJSON.R1$sequenceQuality + conFastQCJSON.R2$sequenceQuality)/2  
+}
+
+if(nrow(conFastQCJSON.R1$perBaseN)!=nrow(conFastQCJSON.R2$perBaseN)){
+  conFastQCJSON.avg$perBaseN <- conFastQCJSON.R1$perBaseN
+  warning("Different lengths in conFastQCJSON.R1$perBaseN and conFastQCJSON.R2$perBaseN, please check the multiQC outputs for issues!")
+} else {
+  conFastQCJSON.avg$perBaseN <- (conFastQCJSON.R1$perBaseN + conFastQCJSON.R2$perBaseN)/2  
+}
+
+
 trimmedFastQCJSON.avg <- list()
-trimmedFastQCJSON.avg$sequenceQuality <- (trimmedFastQCJSON.R1$sequenceQuality + trimmedFastQCJSON.R2$sequenceQuality)/2
-trimmedFastQCJSON.avg$perBaseN <- (trimmedFastQCJSON.R1$perBaseN + trimmedFastQCJSON.R2$perBaseN)/2
+
+if(nrow(trimmedFastQCJSON.R1$sequenceQuality)!=nrow(trimmedFastQCJSON.R2$sequenceQuality)){
+  trimmedFastQCJSON.avg$sequenceQuality <- trimmedFastQCJSON.R1$sequenceQuality
+  warning("Different lengths in trimmedFastQCJSON.R1$sequenceQuality and trimmedFastQCJSON.R2$sequenceQuality, please check the multiQC outputs for issues!")
+} else {
+  trimmedFastQCJSON.avg$sequenceQuality <- (trimmedFastQCJSON.R1$sequenceQuality + trimmedFastQCJSON.R2$sequenceQuality)/2  
+}
+
+if(nrow(trimmedFastQCJSON.R1$perBaseN)!=nrow(trimmedFastQCJSON.R2$perBaseN)){
+  trimmedFastQCJSON.avg$perBaseN <- trimmedFastQCJSON.R1$perBaseN
+  warning("Different lengths in trimmedFastQCJSON.R1$perBaseN and trimmedFastQCJSON.R2$perBaseN, please check the multiQC outputs for issues!")
+} else {
+  trimmedFastQCJSON.avg$perBaseN <- (trimmedFastQCJSON.R1$perBaseN + trimmedFastQCJSON.R2$perBaseN)/2  
+}
+
+
 ```
 
 ### De-Duplication percent
