@@ -1,7 +1,6 @@
 
 ```{r setup, include=FALSE}
 .libPaths()
-#.libPaths(c("/projappl/project_2001746/R/libraries", .libPaths()))
 #library("knitr")
 library("GenomicTools")
 library("Luke")
@@ -20,17 +19,21 @@ library("kernlab")
 #library("RDRToolbox")
 library("destiny")
 library("ggplot2")
+
 options(scipen=999,
         stringsAsFactors=FALSE)
+
 knitr::opts_chunk$set(echo = FALSE,
                       cache = FALSE,
                       cache.lazy = FALSE,
                       dev = c('png', 'pdf'),
                       fig.align = 'center', fig.height = 5, fig.width = 8.5)
+
 report.colours <-c("#FF8200", "#00B5E2", "#78BE20", "#7F3F98", "#E13C98", "#0033A0", "#54585A")
 
 mockClusters.file <- "GSC.MR.Clusters.fa"
 mockReference.file <- "GSC.MR.Genome.fa"
+
 # To run locally on terminal type this command in the pipeline folder:
 # R -e "rmarkdown::render('./scripts/workflow-report.Rmd',output_file='./finalReport.html')"
 

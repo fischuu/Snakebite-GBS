@@ -3,7 +3,7 @@
 
 In this chapter the results from the FastQC part of the pipeline are presented. First, the basic stats on the very raw data are shown, then the concatenated (in case samples were split across different lanes) and then the final reads, after trimming.
 
-After that, the concatenated reads are comapred against the trimmed reads.
+After that, the concatenated reads are compared against the trimmed reads.
 
 ```{r import multiqc data}
 # Import the FastQC/MultiQC output for the RAW data
@@ -27,9 +27,11 @@ trimmedFastQCJSON.R2 <- getFastQCJSON(file.path(projFolder, "QC", "TRIMMED", "mu
 
 
 ## Raw data
-These are the reads, as they come from the sequencer, no trimming, no nothing. Warning, currently here is only R1 plotted!!
+These are the reads as they come from the sequencer, no trimming, no nothing. Warning, currently here is only R1 plotted!!
 
 ### De-duplication percent
+
+The de-duplication percentage gives the amount of data that remains, if duplicted would be removed. As GBS sequences highlly depends on a similar patterns, we aim here for a very low percentage and values too high may indicate problems in the library preparation or sequencing. 
 
 ```{r raw data duplication percent}
 #par(mar=c(10,5,1,1))
@@ -37,8 +39,7 @@ plotFastQCFeature(rawFastQC.R1, feature="total_deduplicated_percentage", axes=FA
 #plotFastQCFeature(rawFastQC.R1, rawFastQC.R2, feature="total_deduplicated_percentage", axes=FALSE)
 abline(h=20, lty="dotted", col="red")
 ```
-
-A list of samples over a certain threshold (>20%)
+All values in tabular form
 
 ```{r table samples duplication under threshold raw}
 tmp <- cbind(rawFastQC.R1$Sample,rawFastQC.R1["total_deduplicated_percentage"])
@@ -114,8 +115,6 @@ if(nrow(tmp)>0){
                                              c(10,25,50,"All"))))
 }
 ```
-
-### Total sequences
 
 ### Total sequences
 
@@ -225,9 +224,10 @@ kable_styling(out_html, "striped", position = "left")
 
 
 ## Concatenated data
-In this section samples lanes are concatentated, but no other steps were performed.
+In this section, lanes per sample are concatentated, but no other steps were performed. In essence, the results here are the combined results from above.
 
 ### De-Duplication percent
+The de-duplication percentage gives the amount of data that remains, if duplicted would be removed. As GBS sequences highlly depends on a similar patterns, we aim here for a very low percentage and values too high may indicate problems in the library preparation or sequencing.
 
 ```{r conc data duplication percent}
 #par(mar=c(10,5,1,1))
@@ -235,7 +235,7 @@ plotFastQCFeature(conFastQC.R1, conFastQC.R2, feature="total_deduplicated_percen
 abline(h=20, lty="dotted", col="red")
 ```
 
-A list of samples over a certain threshold (>20%)
+Table view of de-duplication percentage.
 
 ```{r table samples duplication under threshold conc}
 tmp <- cbind(conFastQC.R1$Sample,conFastQC.R1["total_deduplicated_percentage"])
@@ -287,7 +287,7 @@ tmp <- mean(as.vector(as.matrix((tmp))))
 abline(h=tmp*0.9, lty="dotted", col="red")
 ```
 
-A list of samples with average sequence length smaller then overall average minus 10%.
+A tabular view of the samples sequencing lengths
 
 ```{r table samples sequence length conc}
 tmp <- conFastQC.R1["avg_sequence_length"]
@@ -411,6 +411,7 @@ kable_styling(out_html, "striped", position = "left")
 ## Trimmed data
 
 ### De-Duplication percent
+The de-duplication percentage gives the amount of data that remains, if duplicted would be removed. As GBS sequences highlly depends on a similar patterns, we aim here for a very low percentage and values too high may indicate problems in the library preparation or sequencing.
 
 ```{r trimmed data duplication percent}
 #par(mar=c(10,5,1,1))
@@ -418,10 +419,11 @@ plotFastQCFeature(trimmedFastQC.R1, trimmedFastQC.R2, feature="total_deduplicate
 abline(h=20, lty="dotted", col="red")
 ```
 
-A list of samples over a certain threshold (>20%)
+The tabular list of samples.
 
 ```{r table samples duplication under threshold trimmed}
 tmp <- cbind(trimmedFastQC.R1$Sample,trimmedFastQC.R1["total_deduplicated_percentage"])
+dedup.Data <- tmp
 #tmp <- tmp[tmp[,2]>20,]
 if(nrow(tmp)>0){
 rownames(tmp) <- 1:nrow(tmp)
@@ -444,7 +446,7 @@ abline(h=50, lty="dotted", col="red")
 abline(h=35, lty="dotted", col="red")
 ```
 
-A list of samples under a certain threshold (<35%)
+The tabular list of samples.
 
 ```{r table samples GC content trimmed below}
 tmp <- cbind(trimmedFastQC.R1$Sample, trimmedFastQC.R1["X.GC"])
@@ -504,6 +506,8 @@ A list of reads per sample (trimmed)
 
 ```{r table samples sequence length}
 tmp <- trimmedFastQC.R1["Total.Sequences"]
+totalTrimmedSeq <- as.vector(t(trimmedFastQC.R1["Total.Sequences"]))
+names(totalTrimmedSeq) <- trimmedFastQC.R1$Sample
 tmp <- mean(as.vector(as.matrix((tmp)))) 
 th <- 100000
 
@@ -575,7 +579,8 @@ plotMQCFeature(x=file.path(projFolder,"QC","TRIMMED","multiqc_R1"),
 
 
 ### Length distribution trimmed reads
-From the trimlog we get more statistics on the output of the trimming. Include the trimlog data also here as density plots.
+
+From the trimlog we get more statistics on the output of the trimming. Include the trimlog data also here as density plots. Here we see, how many bases on the average per sample were trimmed. 
 
 ```{r}
 cutLogs.files <- list.files(file.path(projFolder, "logs", "CUTADAPT"), pattern="cutadapt*")
@@ -602,6 +607,15 @@ tmp2 <- data.frame(names(tmp), tmp)
 out_html <- knitr::kable(tmp2, col.names = c("Trimmed bases", "Avg. freq"), row.names = FALSE, "html")
 kable_styling(out_html, "striped", position = "left")
 ```
+
+### De-duplication vs. Coverage
+
+```{r}
+ddvc <- cbind(dedup.Data, totalTrimmedSeq)
+plot(ddvc[,2], ddvc[,3], col=report.colours[1], ylab="Total trimmed sequences", xlab="De-duplication (in %)")
+```
+
+
 
 ### Summary
 ```{r trimmed data summary stats}

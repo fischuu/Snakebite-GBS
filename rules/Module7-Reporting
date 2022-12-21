@@ -83,7 +83,9 @@ rule R_QCReport:
        pipeFolder=config["pipeline-folder"],
        pipeConfig=config["pipeline-config"],
        serverConfig=config["server-config"],
-       refGenome=config["genome"]
+       refGenome=config["genome"],
+       enz1=config["enz1"],
+       enz2=config["enz2"]
     shell:"""
        echo "Creating the QC-Report"
        echo "###################################################################"
@@ -94,6 +96,8 @@ rule R_QCReport:
              refGenome.file <- '{params.refGenome}'; \
              pipelineConfig.file <- '{params.pipeConfig}'; \
              serverConfig.file <- '{params.serverConfig}'; \
+             enz1 <- '{params.enz1}'; \
+             enz2 <- '{params.enz2}'; \
              snakemake <- TRUE;\
              options(knitr.duplicate.label = 'allow');\
              source('{input.script}')" &> {log}
@@ -121,7 +125,9 @@ rule R_VariantCallingReport:
        pipeFolder=config["pipeline-folder"],
        pipeConfig=config["pipeline-config"],
        serverConfig=config["server-config"],
-       refGenome=config["genome"]
+       refGenome=config["genome"],
+       enz1=config["enz1"],
+       enz2=config["enz2"]
     shell:"""
        echo "Creating the VariantCalling-Report"
        echo "###################################################################"
@@ -132,6 +138,8 @@ rule R_VariantCallingReport:
              refGenome.file <- '{params.refGenome}'; \
              pipelineConfig.file <- '{params.pipeConfig}'; \
              serverConfig.file <- '{params.serverConfig}'; \
+             enz1 <- '{params.enz1}'; \
+             enz2 <- '{params.enz2}'; \
              snakemake <- TRUE;\
              options(knitr.duplicate.label = 'allow');\
              source('{input.script}')" &> {log}
@@ -159,12 +167,16 @@ rule R_MockEval:
        projFolder=config["project-folder"],
        pipeFolder=config["pipeline-folder"],
        pipeConfig=config["pipeline-config"],
-       serverConfig=config["server-config"]
+       serverConfig=config["server-config"],
+       enz1=config["enz1"],
+       enz2=config["enz2"]
     shell:"""
        R -e "projFolder <- '{params.projFolder}'; \
              pipelineFolder <- '{params.pipeFolder}'; \
              pipelineConfig.file <- '{params.pipeConfig}'; \
              serverConfig.file <- '{params.serverConfig}'; \
+             enz1 <- '{params.enz1}'; \
+             enz2 <- '{params.enz2}'; \
              snakemake <- TRUE;\
              options(knitr.duplicate.label = 'allow');\
              rmarkdown::render('{input.script}',output_file='{output}')" &> {log}

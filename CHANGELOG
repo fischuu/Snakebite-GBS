@@ -6,6 +6,11 @@
 
 0.17.* UPDATES
 --------------------------------------------------------------------------------
+40: Plenty of scatterplots added to related metrics to sequencing depth
+39: More exportable tables added
+38: Harmonised the plot colours in the final report
+37: Added more descriptions to the final report
+36: Deduplication vs Coverage plot added
 35: QC tables display now the full dataset, without any threshold
 34: QC tables can now be exported
 33: Server config information added to the reports

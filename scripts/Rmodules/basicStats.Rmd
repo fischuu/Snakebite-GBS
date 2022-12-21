@@ -6,22 +6,16 @@ pipeVersion <- gsub("##### Version: ","",pipeSMK[grep("##### Version:", pipeSMK)
 ```
 
 ```{r import barcodesID, results="asis"}
-#barcodes <- read.table(file.path(projFolder, "barcodesID.txt"))
-#rawsamples <- read.table(file.path(projFolder, "rawsamples"))
-#sampleInfo <- read.table(file.path(projFolder, "sampleInfo.txt"), header=TRUE)
 pipelineConfig <- readLines(pipelineConfig.file)
 
 sampleSheet.file <- getConfigField("samplesheet-file")
+if(substr(sampleSheet.file,1,1)!="/") sampleSheet.file <- file.path(projFolder, sampleSheet.file)
 sampleSheet <- read.table(sampleSheet.file, sep="\t", header=TRUE)
 
 sampleInfo.file <- getConfigField("sampleinfo-file")
 sampleInfo <- NULL
 
 if(sampleInfo.file!="") sampleInfo <- read.table(sampleInfo.file, sep="\t", header=TRUE)
-
-#projectFolder.info <- trimws(gsub("project-folder:","", pipelineConfig[grep("project-folder:", pipelineConfig)]))
-#pipelineFolder.info <- trimws(gsub("pipeline-folder:","", pipelineConfig[grep("pipeline-folder:", pipelineConfig)]))
-#pipelineConfig.info <- trimws(gsub("pipeline-config:","", pipelineConfig[grep("pipeline-config:", pipelineConfig)]))
 
 projectFolder.info <- getConfigField("project-folder")
 pipelineFolder.info <- getConfigField("pipeline-folder")

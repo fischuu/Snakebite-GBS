@@ -3,7 +3,7 @@
 ## Preliminary Mock Reference
 ### Mapping stats
  
-Import the mapping statistics to the Mock reference
+Import the mapping statistics to the preliminary Mock reference
 
 ```{r import flagstats}
 flagstatFiles <- list.files(file.path(projFolder,"FASTQ", "TRIMMED", "alignments"), pattern="*.flagstat")
@@ -13,7 +13,7 @@ for(i in 1:length(flagstatFiles)){
 }
 ```
 
-Visualization of the alignments, red stars indicate the mock reference samples
+Visualization of the alignments, red stars indicate the samples that were used to build the mock reference.
 
 ```{r vis mapping stats}
 par(oma=c(6,3,0,0))
@@ -48,7 +48,19 @@ And the same information in table format.
 mappingRates <- mapStats[1,] / apply(mapStats,2,sum)
 out <- as.matrix(mappingRates)
 colnames(out)[1] <- "Mapping rate"
-DT::datatable(out)
+
+tmp <- cbind(colnames(mapStats), out[,1])
+
+if(nrow(tmp)>0){
+  rownames(tmp) <- 1:nrow(tmp)
+  colnames(tmp) <- c("Sample", "Alignment rate")
+  #knitr::kable(tmp) %>% kable_styling
+  datatable(tmp, extensions = 'Buttons',
+            options = list(dom = 'Blfrtip',
+                           buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                           lengthMenu = list(c(10,25,50,-1),
+                                             c(10,25,50,"All"))))
+}
 ```
 
 The average mapping rate is `r mean(mappingRates)`.
@@ -75,7 +87,12 @@ clusterCoverage.std <- t(t(clusterCoverage)/apply(clusterCoverage,2,sum))*100000
 ```
 
 ### Lorenz curve
-Concentration measure of reads against clusters
+The Lorenz curve is a graphical representation of the distribution of a particular variable, here for example reads. It is used to visualize and measure read coverage inequality within the alignments of a sample.
+
+To create a Lorenz curve, the clusters are ranked from lowest to highest coverage. The cumulative percentage of the reads are then plotted on the y-axis, while the cumulative percentage of the clusters is plotted on the x-axis.
+
+A perfectly equal distribution of the reads across the different clusters would be represented by a straight diagonal line from the bottom left to the top right of the graph, indicating that each cluster has the same percentage of the total read number
+aligned. In contrast, a curve that is farther from the diagonal line indicates a greater degree of inequality, with a smaller portion of the clusters gathering a larger proportion of the total read coverage.
 
 ```{r lorenz}
 plot(cumsum(sort(clusterCoverage[,2] / sum(clusterCoverage[,2]))), type="l", xlab="Cluster", ylab="Concentration")
@@ -86,14 +103,14 @@ for(i in 3:ncol(clusterCoverage)){
 
 ### Stats on coverage
 
-These are the amounts of clusters with different samples. 
+These are the amounts of clusters with reads from different samples. For example, 4 on the x-axis gives the amount of clusters with reads from four different samples. Naturally, one would like to see here as high as possible bars on the right hand side of the plot.
 
 ```{r cluster coverage stats}
 coveredClusters <- apply(clusterCoverage[,-1]>0,1,sum)
 barplot(table(coveredClusters), xlab="No. of different samples aligned to cluster", col=report.colours[1])
 ```
 
-Now we have here the number of reads per coverage class. That means, instead of having it binary as in the previous plot, we now count all the reads per coverage group.
+Now we have here the number of reads per coverage class. That means, instead of having it binary as in the previous plot, we now count all the reads per coverage group, which is more representative for the true coverage.
 
 ```{r reads per coverage group}
 readsPerCoverageGroup <- c()
@@ -110,7 +127,7 @@ names(readsPerCoverageGroup) <- 1:max(coveredClusters)
 
 barplot(readsPerCoverageGroup, xlab="Coverage group", ylab="Reads on cluster group", col=report.colours[1])
 ```
-
+ANd the same still with percentages
 
 ```{r reads per coverage group in percent}
 barplot(readsPerCoverageGroup/sum(readsPerCoverageGroup)*100, xlab="Coverage group", ylab="Reads on cluster group (in %)", ylim=c(0,100), col=report.colours[1])
@@ -119,13 +136,14 @@ barplot(readsPerCoverageGroup/sum(readsPerCoverageGroup)*100, xlab="Coverage gro
 Then still the number of clusters without coverage per sample
 
 ```{r clusters without coverage}
+par(mar=c(7,4,1,1))
 nonHittedClusters <- apply(clusterCoverage[,-1]==0,2,sum)
 names(nonHittedClusters) <- gsub(".coverage", "", names(nonHittedClusters))
 barplot(nonHittedClusters, col=report.colours[1], las=2)
 lines(c(0,100000), c(nrow(clusterCoverage), nrow(clusterCoverage)), lty="dotted")
 ```
 
-And then this still as percentage
+And then also this as percentage
 
 ```{r clusterhits percentage}
 barplot(nonHittedClusters/nrow(clusterCoverage), ylim=c(0,1), las=2, col=report.colours[1])
@@ -159,15 +177,12 @@ for(i in 3:ncol(clusterCoverage)){
   lines(smooth.spline(clusterCoverage[,1], log(clusterCoverage.std[,i]+1), all.knots=FALSE))  
 }
 ```
-### Cluster coverage Mock samples vs others
-ADD HERE STILL A COMPARISON, HOW THE READS FROM THE MOCK DISTRIBUTE ACROSS THE REFERENCE VS ALL OTHER SAMPLES
 
 ## Mock Reference
 ### Mapping stats
 
-Import the mapping statistics to the Mock reference
-
 ```{r import final flagstats}
+# Import the mapping statistics to the Mock reference
 flagstatFiles <- list.files(file.path(projFolder,"BAM", "alignments_finalMock"), pattern="*.flagstat")
 flagstats <- list()
 for(i in 1:length(flagstatFiles)){
@@ -210,7 +225,18 @@ And the same information in table format.
 mappingRates <- mapStats[1,] / apply(mapStats,2,sum)
 out <- as.matrix(mappingRates)
 colnames(out)[1] <- "Mapping rate"
-DT::datatable(out)
+tmp <- cbind(colnames(mapStats), out[,1])
+
+if(nrow(tmp)>0){
+  rownames(tmp) <- 1:nrow(tmp)
+  colnames(tmp) <- c("Sample", "Alignment rate")
+  #knitr::kable(tmp) %>% kable_styling
+  datatable(tmp, extensions = 'Buttons',
+            options = list(dom = 'Blfrtip',
+                           buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                           lengthMenu = list(c(10,25,50,-1),
+                                             c(10,25,50,"All"))))
+}
 ```
 
 The average mapping rate is `r mean(mappingRates)`.
@@ -218,6 +244,7 @@ The average mapping rate is `r mean(mappingRates)`.
 ### Coverage
 
 Data mapped against the clusters and then the reads per cluster visualized
+
 ```{r importFinalClusterCoverage, warning=FALSE}
 clusterFiles <- list.files(file.path(projFolder, "BAM", "alignments_finalMock"), pattern="*.coverage")
 clusterCoverage <- read.table(file.path(projFolder, "BAM", "alignments_finalMock", clusterFiles[1]))
@@ -237,7 +264,14 @@ clusterCoverage.std <- t(t(clusterCoverage)/apply(clusterCoverage,2,sum))*100000
 ```
 
 ### Lorenz curve
-Concentration measure of reads against clusters
+
+The Lorenz curve is a graphical representation of the distribution of a particular variable, here for example reads. It is used to visualize and measure read coverage inequality within the alignments of a sample.
+
+To create a Lorenz curve, the clusters are ranked from lowest to highest coverage. The cumulative percentage of the reads are then plotted on the y-axis, while the cumulative percentage of the clusters is plotted on the x-axis.
+
+A perfectly equal distribution of the reads across the different clusters would be represented by a straight diagonal line from the bottom left to the top right of the graph, indicating that each cluster has the same percentage of the total read number
+aligned. In contrast, a curve that is farther from the diagonal line indicates a greater degree of inequality, with a smaller portion of the clusters gathering a larger proportion of the total read coverage.
+
 
 ```{r final lorenz}
 plot(cumsum(sort(clusterCoverage[,2] / sum(clusterCoverage[,2]))), type="l", xlab="Cluster", ylab="Concentration")
@@ -283,6 +317,7 @@ barplot(readsPerCoverageGroup/sum(readsPerCoverageGroup)*100, xlab="Coverage gro
 Then still the number of clusters without coverage per sample
 
 ```{r final clusters without coverage}
+par(mar=c(7,4,1,1))
 nonHittedClusters <- apply(clusterCoverage[,-1]==0,2,sum)
 names(nonHittedClusters) <- gsub(".coverage", "", names(nonHittedClusters))
 barplot(nonHittedClusters, col=report.colours[1], las=2)
@@ -292,6 +327,7 @@ lines(c(0,100000), c(nrow(clusterCoverage), nrow(clusterCoverage)), lty="dotted"
 And then this still as percentage
 
 ```{r final clusterhits percentage}
+par(mar=c(7,4,1,1))
 barplot(nonHittedClusters/nrow(clusterCoverage), ylim=c(0,1), las=2, col=report.colours[1])
 lines(c(0,10000),c(0.2,0.2), lty="dotted")
 lines(c(0,10000),c(0.4,0.4), lty="dotted")
@@ -327,7 +363,6 @@ for(i in 3:ncol(clusterCoverage)){
 
 ## Reference genome
 ### Basic stats
-Import the mapping statistics to the reference genome
 
 ```{r import ref flagstats}
 if(refAvail){
@@ -367,10 +402,29 @@ points(p[mockPos], rep(200000, length(mockPos)), pch="*", col="red", cex=4)
 refGenome.mappingStats <- mapStats[1,] / (apply(mapStats,2,sum))
 barplot(mapStats[1,] / (apply(mapStats,2,sum)), ylim=c(0,1), ylab="Mapping in Percent", col=report.colours[1], las=2)
 ```
+And the same information in table format.
+
+```{r}
+mappingRates <- mapStats[1,] / apply(mapStats,2,sum)
+out <- as.matrix(mappingRates)
+colnames(out)[1] <- "Mapping rate"
+tmp <- cbind(colnames(mapStats), out[,1])
+
+if(nrow(tmp)>0){
+  rownames(tmp) <- 1:nrow(tmp)
+  colnames(tmp) <- c("Sample", "Alignment rate")
+  #knitr::kable(tmp) %>% kable_styling
+  datatable(tmp, extensions = 'Buttons',
+            options = list(dom = 'Blfrtip',
+                           buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                           lengthMenu = list(c(10,25,50,-1),
+                                             c(10,25,50,"All"))))
+}
+```
 
 The average mapping rate on the reference genome is `r mean(refGenome.mappingStats)`.
 
-Now we check still the precise coverage per sample for the sake of simplicity I do it here for the first sample only and also only for the first at most 50 chromosome
+Now we check still the precise coverage per sample for the sake of simplicity I do it here for the first sample only and also only for the first at most 50 chromosome. Here, one can possibly see issues in the reference genome, when the coverage is not uniformly. Areas with a coverage of more than 20 reads are indicated in red, those below 10 are in blue and areas in between are represented with black.
 
 ```{r}
 mpile_files <- list.files(file.path(projFolder, "MPILEUP", "mpileup_reference"), pattern="*.mpileup")
@@ -379,7 +433,7 @@ covData <- fread(file.path(projFolder, "MPILEUP", "mpileup_reference", mpile_fil
 ```{r, fig.width=20, fig.height=10}
 mpile_files <- list.files(file.path(projFolder, "MPILEUP", "mpileup_reference"), pattern="*.mpileup")
 
-for(sam in 1:10){
+for(sam in 1:1){
   par(mfrow=c(4,10),
   mar=c(1,1,1,1))
   
@@ -415,7 +469,8 @@ The aligned reads are interpreted as "transcripts" and via Stringtie novel trans
 string.merge <- importGTF(file.path(projFolder, "Stringtie", "merged_STRG.gtf"), level="transcript")
 ```
 
-Length distribution of identified contigs across the reference genome
+Length distribution of the identified contigs across the reference genome. The identification takes place, just by aligning the reads against the reference genome, as each read should represent here a cut-site.
+Please note, this distribution is based on the Stringtie merge output, meaning, each location is counted once, and is NOT weighted based on the coverage, so outliers have the same weight as well-covered areas.
 
 ```{r}
   tmp <- summary(abs(string.merge$V5 - string.merge$V4))
@@ -432,7 +487,52 @@ bin_width <- 100
 nbins <- seq(0,
              max(x) + bin_width,
              by = bin_width)
-hist(x, las=2, col=report.colours[1], breaks=nbins, xaxt="n", main="Alignment length distribution")
+hist(x, las=2, col=report.colours[1], breaks=nbins, xaxt="n", main="Alignment length distribution (unweighted)")
+axis(1, nbins)
+```
+
+
+```{r}
+# Import the coverages to weight the locations properly
+fcFiles <- list.files(file.path(projFolder, "QUANTIFICATION", "Reference_contigs"), pattern="*.txt$")
+
+fc.quant <- importFeatureCounts(file.path(projFolder, "QUANTIFICATION", "Reference_contigs", fcFiles[1]))
+fc.names <- gsub("_reference_contigs_fc.txt", "", fcFiles)
+for(i in 2:length(fcFiles)){
+  tmp <- importFeatureCounts(file.path(projFolder, "QUANTIFICATION", "Reference_contigs", fcFiles[i]))
+  
+  fc.quant$expValues <- merge(fc.quant$expValues, tmp$expValues)
+}
+
+colnames(fc.quant$expValues) <- c("Locus", fc.names)
+```
+
+```{r}
+locationQuant <- merge(string.merge, fc.quant$expValues, by.x="gene_id", by.y="Locus")
+locationQuant$length <- abs(locationQuant$V5 - locationQuant$V4)
+locationQuant$sum <- apply(locationQuant[,12:(ncol(locationQuant)-1)],1,sum)
+
+weightedLengths <- rep(locationQuant$length, locationQuant$sum)
+```
+
+And then the sme distribution, but still weighted by the reads, so here we take each read into account, to determine the length distribution (this is the distribtion, you should look at when you check the QC of the sequencing run)
+
+```{r}
+  tmp <- summary(weightedLengths)
+  out <- data.frame(names(tmp), as.vector(tmp))
+  out_html <- knitr::kable(out, col.names = NULL, "html")
+  kable_styling(out_html, "striped", position = "left")
+```
+
+Here, we have the alignment length distribution of the reads in a histrogram. Axis labels are to be read in groups of 100, meaning a bar between 200 and 300 tells how many string merge loci had a total length between 200 and 300 bp.
+
+```{r}
+x <- abs(weightedLengths)
+bin_width <- 100
+nbins <- seq(0,
+             max(x) + bin_width,
+             by = bin_width)
+hist(x, las=2, col=report.colours[1], breaks=nbins, xaxt="n", main="Alignment length distribution (weighted)")
 axis(1, nbins)
 ```
 
@@ -446,7 +546,7 @@ barplot(table(string.merge$V1), las=2, col=report.colours[1])
 
 Now we check for the alignments per sample
 
-```{r import individual alignments, echo=FALSE, message=FALSE}
+```{r import individual alignments, echo=FALSE, message=FALSE, results=FALSE}
 gtf.files <- list.files(file.path(projFolder, "Stringtie"), pattern="*.gtf$")
 gtf.files <- gtf.files[-which(gtf.files=="merged_STRG.gtf")]
 
@@ -479,7 +579,7 @@ if(length(remove_those)>0){
 Visualisation, how many alignment loci do the different samples have along the reference genome, ideally you see here a block that represents also the in-situ prediction for the amount of cut-sites with the
 specific contig length after size-selection.
 
-```{r, fig.width=10}
+```{r}
 par(mar=c(7,5,0,0))
 gtfRows <- sapply(gtfs, nrow)
 barplot(gtfRows, las=2, col=report.colours[1])
@@ -503,20 +603,6 @@ barplot(allLoci/allLoci[1], las=2, col=c(report.colours[2], rep(report.colours[1
 
 
 Now we will check how the reads from different samples distribute across the individual aligned loci (which have been merged together). Ideally, we want to see here that all samples have reads from all mapping loci, which is of course not possible but there should be "some consistency".
-
-```{r}
-fcFiles <- list.files(file.path(projFolder, "QUANTIFICATION", "Reference_contigs"), pattern="*.txt$")
-
-fc.quant <- importFeatureCounts(file.path(projFolder, "QUANTIFICATION", "Reference_contigs", fcFiles[1]))
-fc.names <- gsub("_reference_contigs_fc.txt", "", fcFiles)
-for(i in 2:length(fcFiles)){
-  tmp <- importFeatureCounts(file.path(projFolder, "QUANTIFICATION", "Reference_contigs", fcFiles[i]))
-  
-  fc.quant$expValues <- merge(fc.quant$expValues, tmp$expValues)
-}
-
-colnames(fc.quant$expValues) <- c("Locus", fc.names)
-```
 
 Visualisation of the pair-wise expression values. As this can be rather large, we do it for the first 4 samples only
 
@@ -556,7 +642,17 @@ A table of the most covered locations
 tmp <- fc.quant$expValues[,-1]
 totCov <- apply(tmp,1,sum)
 rownames(tmp) <- fc.quant$expValues[,1]
-tmp[order(totCov, decreasing = TRUE)[1:50],]
+tmp <- tmp[order(totCov, decreasing = TRUE)[1:50],]
+if(nrow(tmp)>0){
+  rownames(tmp) <- 1:nrow(tmp)
+#  colnames(tmp) <- c("Sample", "Total sequences")
+  #knitr::kable(tmp) %>% kable_styling
+  datatable(tmp, extensions = 'Buttons',
+            options = list(dom = 'Blfrtip',
+                           buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                           lengthMenu = list(c(10,25,50,-1),
+                                             c(10,25,50,"All"))))
+}
 ```
 
 Usually locations with lots of coverage are not considered. We check, how many reads those locations accumulate and if we loose many reads to them. Here, we check locations with a higher coverage than 200 reads.
@@ -579,6 +675,12 @@ par(mar=c(8,4,2,0))
 barplot(hcLocations , col=report.colours[1], las=2, main="High-coverage locations")
 ```
 
+This one in relation to the total sequencing depth
+
+```{r}
+plot(hcLocations, totalTrimmedSeq, col=report.colours[1], xlab="High-coverage locations", ylab="Total trimmed sequences")
+```
+
 ```{r, fig.width=10}
 par(mar=c(8,5,2,0))
 barplot(hcCoverage , col=report.colours[1], las=2, main="High-coverage location reads")
@@ -588,6 +690,13 @@ barplot(hcCoverage , col=report.colours[1], las=2, main="High-coverage location 
 par(mar=c(8,5,2,0))
 plotData <- hcCoverage/apply(fc.quant$expValues[,-1],2,sum)*100
 barplot(plotData , col=report.colours[1], las=2, main="High-coverage location reads (in percent)")
+```
+
+Set that into relation to sequencing depth
+
+```{r}
+tmp <- cbind(plotData, totalTrimmedSeq)
+plot(tmp, col=report.colours[1], xlab="Reads in high-coverage loci (in %)", ylab="Total trimmed sequencing depth")
 ```
 
 Display how the reads and loci harmonise. For that we create a dataframe that displays the following. Each columns says what is the minimum number of samples with that feature and the
@@ -623,7 +732,7 @@ loci_cor <- cor(fc.quant$expValues[, -1], method="spearman")
 image(loci_cor)
 ```
 
-Then, we check the pair-wise similarities of loci between the samples. If two samples have common reads exactly in ll their alignment loci, the value would be 1, if they do not share a single locus, the value is 0
+Then, we check the pair-wise similarities of loci between the samples. If two samples have common reads exactly in all their alignment loci, the value would be 1, if they do not share a single locus, the value is 0
 
 ```{r}
 loci_similarity <- matrix(0, ncol=ncol(fc.quant$expValues), nrow=ncol(fc.quant$expValues))
@@ -717,38 +826,3 @@ colnames(out) <- gsub(".flanking_right.fa","",flankingRight.list)
 data.table(out)
 
 ```
-
-For that we try now to what percent we find which combination in the samples. First the top ten 
-
-```{r, eval=FALSE}
-hitsLeft1 <- list()
-hitsLeft2 <- list()
-hitsLeft3 <- list()
-hitsLeft4 <- list()
-for(i in 1:length(flankingLeft)){
-  hitsLeft1[[i]] <- as.vector(adist(enz1, flankingLeft[[i]]))
-  hitsLeft2[[i]] <- as.vector(adist(enz2, flankingLeft[[i]]))
-  hitsLeft3[[i]] <- as.vector(adist(revcomp(enz1), flankingLeft[[i]]))
-  hitsLeft4[[i]] <- as.vector(adist(revcomp(enz2), flankingLeft[[i]]))
-}
-
-hitsRight1 <- list()
-hitsRight2 <- list()
-hitsRight3 <- list()
-hitsRight4 <- list()
-
-for(i in 1:length(flankingLeft)){
-  hitsRight1[[i]] <- as.vector(adist(enz1, flankingRight[[i]]))
-  hitsRight2[[i]] <- as.vector(adist(enz2, flankingRight[[i]]))
-  hitsRight3[[i]] <- as.vector(adist(revcomp(enz1), flankingRight[[i]]))
-  hitsRight4[[i]] <- as.vector(adist(revcomp(enz2), flankingRight[[i]]))
-}
-```
-
-TO BE ADDED:
-* Visualisation, how are loci distributed across the chromosomes ("dots on chromosome lines")
-* quantifications per contig, across samples
-* flanking side sequences of the identified loci 
-* Intersection with the mock reference contig alignments against reference genome
-* Check, how those loci from above table 1.50 relate to the in-situ processed digestion. Further, check how many reads align to "real spots" compared to non-wished ones.
-
