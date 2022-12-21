@@ -1,8 +1,6 @@
 
 # References
-Tools used in the analysis:
-
-(Populate this later automatically from the conda environment file)
+Tools used in the analysis, need to be completed!!!:
 
 * FastQC (0.11.8)
 * MultiQC (1.17)

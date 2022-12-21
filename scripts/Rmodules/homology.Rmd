@@ -1,32 +1,5 @@
 
 # Homology comparison
-```{r homology search}
-# Get the group vectors
-  rownames.vcf <- rownames(vcf$genotypes)
-
-  father <- which(sapply(strsplit(rownames.vcf,"\\."),"[",1)=="isa")
-  mother <- which(sapply(strsplit(rownames.vcf,"\\."),"[",1)=="ema")
-  sister <- which(sapply(strsplit(rownames.vcf,"\\."),"[",1)=="sisar")
-  control <- which(sapply(strsplit(rownames.vcf,"\\."),"[",1)=="control")
-  case <- which(sapply(strsplit(rownames.vcf,"\\."),"[",1)=="kaapio")
-  
-  father <- vcf$genotypes[father,]
-  mother <- vcf$genotypes[mother,]
-  sister <- vcf$genotypes[sister,]
-  control <- vcf$genotypes[control,]
-  case <- as.data.frame(vcf$genotypes[case,])
-
-# Now get the Heterozygeous loci for father (father needs to be 0/1)
-  tmp <- lapply(apply(father,2,table),names)=="01"  
-  father.candi <- tmp[tmp==TRUE]
-  tmp <- lapply(apply(mother,2,table),names)=="01"  
-  mother.candi <- tmp[tmp==TRUE]
-  tmp <- table(c(names(father.candi),names(mother.candi)))
-  parents.candi <- names(tmp[tmp==2])
-  
-# Now check if at these candidate loci homolog cases are
-  case.filtered <- case[,which(is.element(colnames(case),parents.candi))]
-```
 
 ## Visualization of VCF
 Here, we have Homo. Ref green, Homo. Alt red, hetero blue and missing black
@@ -76,20 +49,6 @@ for(i in 2:ncol(sampleInfo)){
 
 ## Other methods
 
-### ICS
-```{r, eval=FALSE}
-cols <- min(ncol(vcf.PCA$x),10)
-FOBI <- ics(vcf.PCA$x[,1:cols])
-if(ncol(sampleInfo)>1){
-for(i in 2:ncol(sampleInfo)){
-  plot(FOBI@Scores, col=as.numeric(as.factor(sampleInfo[,i])), pch=20)
-}  
-} else {
-   plot(FOBI@Scores, pch=20)
-}
-
-```
-
 ### t-SNE
 ```{r}
 cols <- min(ncol(vcf.PCA$x),10)
@@ -121,39 +80,5 @@ if(!is.null(sampleInfo)){
    plot(rotated(KPCAres)[,1:ndim], pch=20)
 }
 
-```
-
-### Diffusion map
-```{r}
-# Diffusion map
-#  dm <- DiffusionMap(vcf.PCA$x[,1:10])
-#  for(i in 2:ncol(sampleInfo)){
-#     pairs(dm@eigenvectors[,1:10], col=as.numeric(as.factor(sampleInfo[,i])), pch=20)
-#  }
-```
-
-### Locally linear embedding (LLE)
-```{r, eval=FALSE}
-# LLE
-cols <- min(ncol(vcf.PCA$x),10)
-
-  lleres <- lle(vcf.PCA$x[,1:cols], m=min(nrow(vcf$genotypes), 7), k=17, v=0.99)
- 
-if(ncol(sampleInfo)>1){
- for(i in 2:ncol(sampleInfo)){
-     pairs(lleres$Y[,1:(min(ncol(lleres$Y),5))], col=as.numeric(as.factor(sampleInfo[,i])), pch=20)
-  }
-
-} else {
-   plot(lleres$Y[,1:(min(ncol(lleres$Y),5))], pch=20)
-}
-```
-
-```{r}
-# REPPlab
-#  REPPres <- EPPlab(x.pca[,1:5], PPalg = "Tribe", PPindex = "KurtosisMin", n.simu = 100, maxiter = 200, sphere = TRUE)
-#  plot(REPPres, type = "angles", which = 1:100)
-#  pairs(REPPres, which = c(60, 80,100))
-  
 ```
 
