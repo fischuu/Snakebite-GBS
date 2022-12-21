@@ -163,7 +163,6 @@ rule fastqc_quality_control_trimmed_data:
     threads: 20
     params:
         outfolder="%s/QC/TRIMMED/" % (config["project-folder"])
-    conda:"envs/gbs.yaml"
     singularity: config["singularity"]["gbs"]
     shell:"""
         mkdir -p {params.outfolder};

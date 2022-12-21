@@ -17,7 +17,6 @@ rule cutadapt_trim_reads:
     benchmark:
         "%s/benchmark/cutadapt_trim_reads.{samples}.tsv" % (config["project-folder"])
     threads: 1
-    conda:"envs/cutadapt.yaml"
     singularity: config["singularity"]["cutadapt"]
     shell:"""
         export TMPDIR={params.tmpdir}
@@ -70,7 +69,6 @@ rule TrimBasedOnQuality:
         "%s/logs/TRIMMOMATIC/trimmomatic_{samples}.log" % (config["project-folder"])
     benchmark:
         "%s/benchmark/TrimBasedOnQuality.{samples}.tsv" % (config["project-folder"])
-    conda:"envs/cutadapt.yaml"
     singularity: config["singularity"]["gbs"]
     shell:"""
        java -jar /Trimmomatic-0.38/trimmomatic-0.38.jar PE -phred33 -threads {params.threads} -trimlog {output.trimlog} {input.R1} {input.R2} {output.R1} {output.R1SE} {output.R2} {output.R2SE} MINLEN:{params.minlen} ILLUMINACLIP:{params.ad}:{params.iclip} LEADING:{params.leading} SLIDINGWINDOW:{params.slwin} TRAILING:{params.trail} &>{log}
