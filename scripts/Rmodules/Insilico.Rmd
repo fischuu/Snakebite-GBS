@@ -1,4 +1,39 @@
+REMBEMBER TO REMOVE THIS PART FOR CODE IN PRODUCTION!!!!!
+
+enz1 <- "GAATTC"
+enz2 <- "GCATGC"
+fullInsilico.file <- "/scratch/project_2001746/TestProject/References/full_inSilico_reference.fa"
+selectedInsilico.file <- "/scratch/project_2001746/TestProject/References/sizeSelected_inSilico_reference.fa"
+
+
 
 # In-Silico analysis
 
 In case a reference genome, the restriction enzymes and a size selection window is provided with the configuration, we have a closer look at the in-silico predictions. For that, we first have a general look, how well the restriction enzymes cut the reference genome and then how the reads align to the locations
+
+## In-silico predictions
+Based on the two restriction enzymes `r enz1` and `r enz2` the following fragments were predicted.
+
+```{r}
+fullInsilico <- importFA(fullInsilico.file)
+selectedInsilico <- importFA(selectedInsilico.file)
+
+number_predicted_loci <- length(selectedInsilico)
+```
+
+Without any size selection, we receive the following calculated fragments for the in-silico digestion
+
+```{r}
+out_html <- knitr::kable(summary(fullInsilico), col.names = NULL, "html")
+kable_styling(out_html, "striped", position = "left")
+```
+
+
+Applying a size selection of minimum length `r minLength` and maximum length `r maxLength`, the distributions changes to
+
+```{r}
+out_html <- knitr::kable(summary(selectedInsilico), col.names = NULL, "html")
+kable_styling(out_html, "striped", position = "left")
+```
+
+That means, given the provided enzymes and target size, one would expect `r length(selectedInsilico)` fragments in the mock reference.

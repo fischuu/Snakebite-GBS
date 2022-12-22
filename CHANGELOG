@@ -6,6 +6,8 @@
 
 0.17.* UPDATES
 --------------------------------------------------------------------------------
+50: Prepared a stand-alone In-silico report script
+49: Added the In-Silico section to the final report
 48: Alignment stats are determined for the size selected in-silico prediction alignments
 47: Alignment stats are determined for the full in-silico prediction alignments
 46: Reads are now aligned agains the size selected in-silico prediction loci

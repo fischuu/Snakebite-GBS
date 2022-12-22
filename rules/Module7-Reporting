@@ -233,8 +233,8 @@ rule R_InsilicoReport:
              enz2 <- '{params.enz2}'; \
              minLength <- '{params.minLength}'; \
              maxLength <- '{params.maxLength}'; \
-             fullInsilico <- '{params.fullInsilico}'; \
-             selectedInsilico <- '{params.selectedInsilico}'; \
+             fullInsilico.file <- '{params.fullInsilico}'; \
+             selectedInsilico.file <- '{params.selectedInsilico}'; \
              snakemake <- TRUE;\
              options(knitr.duplicate.label = 'allow');\
              source('{input.script}')" &> {log}
