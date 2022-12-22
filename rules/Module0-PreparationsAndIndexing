@@ -24,6 +24,37 @@ else:
                 STAR --runThreadN {threads} --runMode genomeGenerate --genomeDir {params.index} --genomeFastaFiles {input.fasta} 2> {log}
         """
         
+if config["genome"] == "":
+    pass
+else:
+    rule bwa_create_insilico_index:
+        """
+        Create Genome Index for in-silico prediction (BWA).
+        """
+        input:
+            full="%s/References/full_inSilico_reference.fa" % (config["project-folder"]),
+            selected="%s/References/sizeSelected_inSilico_reference.fa" % (config["project-folder"])
+        output:
+            full=config["genome-bwa-full_insilico-index"],
+            selected=config["genome-bwa-selected_insilico-index"]
+        log:
+            full="%s/logs/bwa_create_full_insilico_index.log" % (config["project-folder"]),
+            selected="%s/logs/bwa_create_full_insilico_index.log" % (config["project-folder"])
+        benchmark:
+            "%s/benchmark/bwa_create_insilico_index.tsv" % (config["project-folder"])
+        singularity: config["singularity"]["gbs"]
+        threads: cluster["bwa_create_insilico_index"]["cpus-per-task"]
+        resources:
+            time=cluster["bwa_create_insilico_index"]["time"],
+            mem=cluster["bwa_create_insilico_index"]["mem-per-cpu"]
+        shell:"""
+            bwa index -a bwtsw {input.full} 2> {log.full}
+            samtools faidx {input.full} 2>> {log.full}
+                
+            bwa index -a bwtsw {input.selected} 2> {log.selected}
+            samtools faidx {input.selected} 2>> {log.selected}
+        """
+        
 rule Concatenate_lanes:
     """
     Concatenate the demultiplexed fastq files (BASH).

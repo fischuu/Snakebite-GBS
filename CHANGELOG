@@ -6,6 +6,12 @@
 
 0.17.* UPDATES
 --------------------------------------------------------------------------------
+48: Alignment stats are determined for the size selected in-situ prediction alignments
+47: Alignment stats are determined for the full in-situ prediction alignments
+46: Reads are now aligned agains the size selected in-situ prediction loci
+45: Reads are now aligned agains the full in-situ prediction loci
+44: More details on the welcoming screen
+43: In situ predicted locations for ddRad digestion are now prepared and written to References/
 42: Table design in Markdown adjusted
 41: Cosmetics for finalReport, status messages printed into the final report were removed.
 40: Plenty of scatterplots added to related metrics to sequencing depth

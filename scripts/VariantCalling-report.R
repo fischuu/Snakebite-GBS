@@ -1,8 +1,8 @@
 if(!is.element("snakemake",ls())){
-  projFolder <- "/scratch/project_2001746/TestProject"
-  pipelineFolder <- "~/git/Pipeline-GBS/"
-  pipelineConfig.file <- "/scratch/project_2001746/TestProject/GBS-pipeline_config.yaml"
-  refGenome.file <- "hermetiaRef_112020.fasta"
+  projFolder <- ""
+  pipelineFolder <- ""
+  pipelineConfig.file <- ""
+  refGenome.file <- ""
 }
 
 createRMD.command <- paste0("cat ",pipelineFolder,"/scripts/Rmodules/VariantCalling-header.Rmd ",

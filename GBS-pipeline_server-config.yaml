@@ -32,6 +32,12 @@ bwa_create_index:
     cpus-per-task: 1
     mem-per-cpu: 50000
 
+bwa_create_insilico_index:
+    job-name: bwa_create_insilico_index
+    time: 05:00:00
+    cpus-per-task: 1
+    mem-per-cpu: 4000
+    
 IndexMockReferenceBWA:
     job-name:  IndexMockRefGenome_BWA
     time: 02:00:00
@@ -487,4 +493,28 @@ CreateVCF_existingMockreference:
 featureCounts_quantify_ReferenceAlignments:
     job-name: featureCounts_quantify_ReferenceAlignments
     time: 01:00:00
+    mem-per-cpu: 30000
+    
+# Module 10:
+###############################################################################
+R_createInSilicoFasta:
+    job-name:  R_createInSilicoFasta
+    time: 01:00:00
+    mem-per-cpu: 30000
+    
+InsilicoGenome_AlignReads:
+    job-name: InsilicoGenome_AlignReads
+    time: 05:00:00
+    cpus-per-task: 20
+    mem-per-cpu: 15000   
+    
+InsilicoGenome_SamToSortedBam:
+    job-name: InsilicoGenome_SamToSortedBam
+    time: 05:00:00
+    mem-per-cpu: 30000
+    
+Insilico_AlignmentStats:
+    job-name: Insilico_AlignmentStats
+    time: 05:00:00
+    cpus-per-task: 1
     mem-per-cpu: 30000

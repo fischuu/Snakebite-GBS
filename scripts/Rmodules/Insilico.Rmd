@@ -1,0 +1,4 @@
+
+# In-Silico analysis
+
+In case a reference genome, the restriction enzymes and a size selection window is provided with the configuration, we have a closer look at the in-silico predictions. For that, we first have a general look, how well the restriction enzymes cut the reference genome and then how the reads align to the locations

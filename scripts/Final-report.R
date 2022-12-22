@@ -18,6 +18,7 @@ createRMD.command <- paste0("cat ",pipelineFolder,"scripts/Rmodules/final-header
                                    pipelineFolder,"scripts/Rmodules/QC.Rmd ",
                                    pipelineFolder,"scripts/Rmodules/clusterAndReference.Rmd ",
                                    pipelineFolder,"scripts/Rmodules/alignments.Rmd ",
+                                   pipelineFolder,"scripts/Rmodules/Insitu.Rmd ",
                                    pipelineFolder,"scripts/Rmodules/variants.Rmd ",
                                    pipelineFolder,"scripts/Rmodules/homology.Rmd ",
                                    pipelineFolder,"scripts/Rmodules/caseControl.Rmd ",

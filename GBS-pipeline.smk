@@ -163,6 +163,10 @@ def get_fastq_for_concatenating_read2(wildcards):
 ##### Complete the input configuration
 config["genome-bwa-index"] = config["genome"]+".bwt"
 config["mockref-bwa-index"] = config["mockreference"]+".bwt"
+config["full-insilico-genome"] = config["project-folder"]+"/References/full_inSilico_reference.fa"
+config["selected-insilico-genome"] = config["project-folder"]+"/References/sizeSelected_inSilico_reference.fa"
+config["genome-bwa-full_insilico-index"]=config["full-insilico-genome"]+".bwt"
+config["genome-bwa-selected_insilico-index"]=config["selected-insilico-genome"]+".bwt"
 config["genome-star-index"] = config["project-folder"]+"/References/STAR2.7.5a"    # Change here to the path from the reference genome!!!!!!!!!!!!!!!!!!
 config["barcodes-script"] = config["pipeline-folder"]+"/scripts/prepareBarcodes.R"
 config["report-script"] = config["pipeline-folder"]+"/scripts/Final-report.R"
@@ -170,6 +174,8 @@ config["qc-script"] = config["pipeline-folder"]+"/scripts/QC-report.R"
 config["variant-script"] = config["pipeline-folder"]+"/scripts/VariantCalling-report.R"
 config["mockeval-script"] = config["pipeline-folder"]+"/scripts/mockeval-report.Rmd"
 config["refinement-script"] = config["pipeline-folder"]+"/scripts/refineMockReference.R"
+config["insilico-script"] = config["pipeline-folder"]+"/scripts/inSilicoFasta.R"
+config["insilico-report-script"] = config["pipeline-folder"]+"/scripts/Insilico-report.R"
 config["adapter"]=config["pipeline-folder"]+"/adapter.fa"
 config["barcodes-file"] = config["project-folder"]+"/barcodesID.txt"
 
@@ -181,7 +187,7 @@ config["singularity"]["gbs"] = "docker://fischuu/gbs:0.2"
 config["singularity"]["cutadapt"] = "docker://fischuu/cutadapt:2.8-0.3"
 config["singularity"]["minimap2"] = "docker://fischuu/minimap2:2.17-0.2"
 config["singularity"]["samtools"] = "docker://fischuu/samtools:1.9-0.2"
-config["singularity"]["r-gbs"] = "docker://fischuu/r-gbs:4.2.1-0.4"
+config["singularity"]["r-gbs"] = "docker://fischuu/r-gbs:4.2.1-0.5"
 config["singularity"]["stringtie"] = "docker://fischuu/stringtie:2.2.1-0.1"
 config["singularity"]["subread"] = "docker://fischuu/subread:2.0.1-0.1"
 
@@ -192,11 +198,15 @@ print("##### version: "+version)
 print("#####")
 print("##### Pipeline configuration")
 print("##### --------------------------------")
-print("##### project-folder  : "+config["project-folder"])
-print("##### pipeline-folder : "+config["pipeline-folder"])
-print("##### report-script   : "+config["report-script"])
-print("##### pipeline-config : "+config["pipeline-config"])
-print("##### server-config   : "+config["server-config"])
+print("##### project-folder       : "+config["project-folder"])
+print("##### pipeline-folder      : "+config["pipeline-folder"])
+print("##### report-script        : "+config["report-script"])
+print("##### pipeline-config      : "+config["pipeline-config"])
+print("##### server-config        : "+config["server-config"])
+print("##### Size selection (min) : "+str(config["minLength"]))
+print("##### Size selection (max) : "+str(config["maxLength"]))
+print("##### Enzyme 1 recog. site : "+config["enz1"])
+print("##### Enzyme 2 recog. site : "+config["enz2"])
 print("#####")
 print("##### Singularity configuration")
 print("##### --------------------------------")
@@ -223,7 +233,12 @@ print("##### --------------------------------")
 print("##### BWA-Genome index    : "+config["genome-bwa-index"])
 print("##### STAR-Genome index   : "+config["genome-star-index"])
 print("##### Existing Mock index : "+config["mockref-bwa-index"])
-print("##### Adapter file        : "+ config["adapter"])
+print("##### Adapter file        : "+config["adapter"])
+print("#####")
+print("##### Output files")
+print("##### --------------------------------")
+print("##### Size selected in-silico predictions : "+ config["selected-insilico-genome"])
+print("##### All in-silico predictions           : "+ config["full-insilico-genome"])
 print("#################################################################################")
 
 ##### Define conditional input/outputs #####
@@ -278,6 +293,17 @@ rule all:
       # Reference Genome and mock related
         "%s/Stringtie/merged_STRG.gtf" % (config["project-folder"]),
         expand("%s/QUANTIFICATION/Reference_contigs/{samples}_reference_contigs_fc.txt" % (config["project-folder"]), samples=samples)
+
+rule insilico:
+    input:
+        "%s/References/full_inSilico_reference.fa" % (config["project-folder"]),
+        "%s/References/sizeSelected_inSilico_reference.fa" % (config["project-folder"]),
+        expand("%s/BAM/Insilico/full/{samples}.bam" % (config["project-folder"]), samples=samples),
+        expand("%s/BAM/Insilico/selected/{samples}.bam" % (config["project-folder"]), samples=samples),
+        expand("%s/BAM/Insilico/full/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
+        expand("%s/BAM/Insilico/full/{samples}.coverage" % (config["project-folder"]), samples=samples),
+        expand("%s/BAM/Insilico/selected/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
+        expand("%s/BAM/Insilico/selected/{samples}.coverage" % (config["project-folder"]), samples=samples)
 
 rule preparations:
     input:
@@ -386,3 +412,4 @@ include: "rules/Module6-PostProcessing"
 include: "rules/Module7-Reporting"
 include: "rules/Module8-CallNewData"
 include: "rules/Module9-ReferenceGenome"
+include: "rules/Module10-InSilico"
