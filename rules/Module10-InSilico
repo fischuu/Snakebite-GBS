@@ -50,6 +50,8 @@ else:
             selectedInsilico="%s/References/sizeSelected_inSilico_reference.fa" % (config["project-folder"]),
             fullIndex=config["genome-bwa-full_insilico-index"],
             selectedIndex=config["genome-bwa-selected_insilico-index"],
+            fullGenome=config["full-insilico-genome"],
+            selectedGenome=config["selected-insilico-genome"],
             R1="%s/FASTQ/TRIMMED/{samples}.R1.fq.gz" % (config["project-folder"]),
             R2="%s/FASTQ/TRIMMED/{samples}.R2.fq.gz" % (config["project-folder"]),
         output:
@@ -66,8 +68,8 @@ else:
             mem=cluster["InsilicoGenome_AlignReads"]["mem-per-cpu"]
         singularity: config["singularity"]["gbs"]
         shell:"""
-            bwa mem -t {threads} -M {input.fullIndex} {input.R1} {input.R2} > {output.full} 2> {log.full}
-            bwa mem -t {threads} -M {input.selectedIndex} {input.R1} {input.R2} > {output.selected} 2> {log.selected}
+            bwa mem -t {threads} -M {input.fullGenome} {input.R1} {input.R2} > {output.full} 2> {log.full}
+            bwa mem -t {threads} -M {input.selectedGenome} {input.R1} {input.R2} > {output.selected} 2> {log.selected}
       	"""
       	
 if config["genome"] == "":
