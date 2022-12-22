@@ -231,19 +231,14 @@ if(refAvail){
 These are the flagstats from mapping the mock clusters against an existing reference genome. Typical flag stats are
 
 
-+----------+--------------------------------------+
-+     Flag + Explanation                          +
-+==========+======================================+
-+        0 + Read aligned against forward strand  +
-+----------+--------------------------------------+
-+       16 + Read aligned against reverse strand  +
-+----------+--------------------------------------+
-+     2048 + Supplementary alignment forward      +
-+----------+--------------------------------------+
-+     2064 + Supplementary alignment reverse      +
-+----------+--------------------------------------+
-+        4 + Unmapped                             +
-+----------+--------------------------------------+
+|     Flag | Explanation                          |
+|---------:|--------------------------------------|
+|        0 | Read aligned against forward strand  |
+|       16 | Read aligned against reverse strand  |
+|     2048 | Supplementary alignment forward      |
+|     2064 | Supplementary alignment reverse      |
+|        4 | Unmapped                             |
+
 
 ```{r samflags}
 if(refAvail){

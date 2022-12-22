@@ -50,10 +50,12 @@ for(i in 2:ncol(sampleInfo)){
 ## Other methods
 
 ### t-SNE
-```{r}
+```{r, echo=FALSE, message=FALSE, results=FALSE}
 cols <- min(ncol(vcf.PCA$x),10)
 TSNEout <- tsne(vcf.PCA$x[,1:cols], k=5)
+```
 
+```{r}
 if(!is.null(sampleInfo)){
 for(i in 2:ncol(sampleInfo)){
   plot(TSNEout, col=as.numeric(as.factor(sampleInfo[,i])), pch=20)

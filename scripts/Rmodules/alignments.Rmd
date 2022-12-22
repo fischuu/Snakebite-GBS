@@ -465,7 +465,7 @@ for(sam in 1:1){
 ### Read alignments
 The aligned reads are interpreted as "transcripts" and via Stringtie novel transcripts are detected to identify the common alignments via stringtie merge
 
-```{r}
+```{r, echo=FALSE, message=FALSE, results=FALSE}
 string.merge <- importGTF(file.path(projFolder, "Stringtie", "merged_STRG.gtf"), level="transcript")
 ```
 
@@ -749,6 +749,7 @@ for(i in 1:(ncol(fc.quant$expValues)-1)){
 ```{r}
 image(loci_similarity)
 ```
+
 ### Alignment flanking sites
 
 We consider the flanking sites of the aligned reads.
@@ -759,7 +760,8 @@ out <- data.frame(Enzyme1 = enz1,
                   Enzyme2 = enz2,
                   Enzyme2_reverse = revcomp(enz2))
 rownames(out) <- c("Sequence")
-knitr::kable(t(out))
+out_html <- knitr::kable(t(out), "html")
+kable_styling(out_html, "striped", position = "left")
 ```
 
 ```{r}

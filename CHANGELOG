@@ -6,6 +6,8 @@
 
 0.17.* UPDATES
 --------------------------------------------------------------------------------
+42: Table design in Markdown adjusted
+41: Cosmetics for finalReport, status messages printed into the final report were removed.
 40: Plenty of scatterplots added to related metrics to sequencing depth
 39: More exportable tables added
 38: Harmonised the plot colours in the final report
