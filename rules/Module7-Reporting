@@ -30,7 +30,12 @@ rule R_finalReport:
         leftSample=expand("%s/FASTQ/TRIMMED/alignments_reference/{samples}.flanking_left.fa" % (config["project-folder"]), samples=samples),
         rightSample=expand("%s/FASTQ/TRIMMED/alignments_reference/{samples}.flanking_right.fa" % (config["project-folder"]), samples=samples),
         full="%s/References/full_inSilico_reference.fa" % (config["project-folder"]),
-        selected="%s/References/sizeSelected_inSilico_reference.fa" % (config["project-folder"])
+        selected="%s/References/sizeSelected_inSilico_reference.fa" % (config["project-folder"]),
+        fsFull=expand("%s/BAM/Insilico/full/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
+        cFull=expand("%s/BAM/Insilico/full/{samples}.coverage" % (config["project-folder"]), samples=samples),
+        fsSelected=expand("%s/BAM/Insilico/selected/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
+        cSelected=expand("%s/BAM/Insilico/selected/{samples}.coverage" % (config["project-folder"]), samples=samples)
+
     output:
         "%s/finalReport.html" % (config["project-folder"])
     log:
@@ -198,10 +203,10 @@ rule R_InsilicoReport:
     """
     input:
         script=config["insilico-report-script"],
-        fsFull="%s/BAM/Insitu/full/{samples}.sam.flagstat" % (config["project-folder"]),
-        cFull="%s/BAM/Insitu/full/{samples}.coverage" % (config["project-folder"]),
-        fsSelected="%s/BAM/Insitu/selected/{samples}.sam.flagstat" % (config["project-folder"]),
-        cSelected="%s/BAM/Insitu/selected/{samples}.coverage" % (config["project-folder"])
+        fsFull="%s/BAM/Insilico/full/{samples}.sam.flagstat" % (config["project-folder"]),
+        cFull="%s/BAM/Insilico/full/{samples}.coverage" % (config["project-folder"]),
+        fsSelected="%s/BAM/Insilico/selected/{samples}.sam.flagstat" % (config["project-folder"]),
+        cSelected="%s/BAM/Insilico/selected/{samples}.coverage" % (config["project-folder"])
     output:
         "%s/Insilico-Report.html" % (config["project-folder"])
     log:

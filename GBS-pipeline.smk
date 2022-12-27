@@ -187,7 +187,7 @@ config["singularity"]["gbs"] = "docker://fischuu/gbs:0.2"
 config["singularity"]["cutadapt"] = "docker://fischuu/cutadapt:2.8-0.3"
 config["singularity"]["minimap2"] = "docker://fischuu/minimap2:2.17-0.2"
 config["singularity"]["samtools"] = "docker://fischuu/samtools:1.9-0.2"
-config["singularity"]["r-gbs"] = "docker://fischuu/r-gbs:4.2.1-0.5"
+config["singularity"]["r-gbs"] = "docker://fischuu/r-gbs:4.2.1-0.6"
 config["singularity"]["stringtie"] = "docker://fischuu/stringtie:2.2.1-0.1"
 config["singularity"]["subread"] = "docker://fischuu/subread:2.0.1-0.1"
 

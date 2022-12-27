@@ -6,6 +6,7 @@
 
 0.17.* UPDATES
 --------------------------------------------------------------------------------
+51: Changed the fasta-import function in the in-silico prediction, as it might generate errors for larger genomes
 50: Prepared a stand-alone In-silico report script
 49: Added the In-Silico section to the final report
 48: Alignment stats are determined for the size selected in-silico prediction alignments
