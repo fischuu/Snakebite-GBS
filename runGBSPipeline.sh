@@ -18,7 +18,8 @@ snakemake -s $pipelineFolder/GBS-pipeline.smk \
           --configfile $projectFolder/GBS-pipeline_config.yaml \
           --latency-wait 60 \
           --cluster-config $pipelineFolder/GBS-pipeline_server-config.yaml \
-          --cluster "sbatch -t {cluster.time} --account={cluster.account} --gres=nvme:{cluster.nvme} --job-name={cluster.job-name} --tasks-per-node={cluster.ntasks} --cpus-per-task={cluster.cpus-per-task} --mem-per-cpu={cluster.mem-per-cpu} --mail-user={cluster.mail-user} --mail-type={cluster.mail-type} -p {cluster.partition} -D {cluster.working-directory}" \
+          --cluster "sbatch -t {cluster.time} --account={cluster.account} --gres=nvme:{cluster.nvme} --job-name={cluster.job-name} --tasks-per-node={cluster.ntasks} --cpus-per-task={cluster.cpus-per-task} --mem-per-cpu={cluster.mem-per-cpu} --mail-user={cluster.mail-user} --mail-type={cluster.mail-type} -p {cluster.partition} -D {cluster.working-directory} --parsable" \
           --scheduler greedy \
+          --cluster-cancel scancel \
           $@
 

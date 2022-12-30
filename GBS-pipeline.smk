@@ -39,9 +39,6 @@ if(config["samplesheet-file"][0]!='/'):
 if(config["genome"][0]!='/'):
     config["genome"] = config["project-folder"] + '/' + config["genome"]
 
-if(config["local-scratch"][0]!='/'):
-    config["local-scratch"] = config["project-folder"] + '/' + config["local-scratch"]
-
 if(config["tmpdir"][0]!='/'):
     config["tmpdir"] = config["project-folder"] + '/' + config["tmpdir"]
 
