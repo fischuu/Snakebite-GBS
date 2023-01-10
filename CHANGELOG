@@ -6,6 +6,8 @@
 
 0.17.* UPDATES
 --------------------------------------------------------------------------------
+54: Default paths adjusted
+53: Function "getConfigField" reports now only field names a row starts with
 52: Added the --cluster-cancel option to the start script
 51: Changed the fasta-import function in the in-silico prediction, as it might generate errors for larger genomes
 50: Prepared a stand-alone In-silico report script

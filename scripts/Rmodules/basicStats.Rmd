@@ -1,7 +1,7 @@
 # Basic stats
 
 ```{r get pipeline version}
-pipeSMK <- readLines(file.path(pipelineFolder,"GBS-pipeline.smk"))
+pipeSMK <- readLines(file.path(pipelineFolder,"Pipeline-GBS.smk"))
 pipeVersion <- gsub("##### Version: ","",pipeSMK[grep("##### Version:", pipeSMK)])
 ```
 

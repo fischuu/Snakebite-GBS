@@ -112,6 +112,8 @@ vectorToDF.int <- function(x, sep=" ", names=NULL, autoCoerc=TRUE){
 getConfigField <- function(x, from=pipelineConfig){
   out <- c()
   
+  x <- trimws(paste0("^",x))
+  
   if(length(x)==1){
     pos <- grep(x, from)
     out <- from[pos]
