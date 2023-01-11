@@ -7,8 +7,8 @@ In case a reference genome, the restriction enzymes and a size selection window 
 Based on the two restriction enzymes `r enz1` and `r enz2` the following fragments were predicted.
 
 ```{r}
-fullInsilico <- importFA(full.file)
-selectedInsilico <- importFA(selected.file)
+fullInsilico <- importFA(fullInsilico)
+selectedInsilico <- importFA(selectedInsilico)
 
 number_predicted_loci <- length(selectedInsilico)
 ```
@@ -109,7 +109,7 @@ clusterCoverage.full <- clusterCoverage
 
 ```{r}
 covFrag.full <- data.frame(frag=rownames(clusterCoverage.full),
-                      clusterCoverage.full)
+                      ceiling(clusterCoverage.full/2))
 
 fragLength.tmp <- nchar(fullInsilico)
 fragLength <- data.frame(frag=trimws(gsub(">", "", names(fragLength.tmp))),
@@ -140,14 +140,15 @@ barplot(output.full, col=report.colours[1], xlab="Fragment length", ylab="Sum of
 And fragments between 0 and 1000, weighted by the reads originating from them.
 
 ```{r}
-barplot(output.full, col=report.colours[1], xlab="Fragment length", ylab="Sum of reads", xlim=c(0, 1000))
+plot(as.numeric(names(output.full)), output.full, col=report.colours[2], xlab="Fragment length", ylab="Sum of reads", xlim=c(0, 1000), type="h")
+abline(v=c(as.numeric(minLength), as.numeric(maxLength)), col="red")
 ```
 
 Restriced to the upper 0.999 quartile, to avoid impact of outliers
 
 ```{r}
-barplot(output.full, col=report.colours[1], xlab="Fragment length", ylab="Sum of reads", xlim=c(0, 1000), ylim=c(0,quantile(output.full[output.full!=0],0.999, na.rm=TRUE)), las=2, xaxt="n")
-abline(v=c(as.numeric(minLength), as.numeric(maxLength)), col="red")
+plot(as.numeric(names(output.full)), output.full, col=report.colours[2], xlab="Fragment length", ylab="Sum of reads", xlim=c(0, 1000), ylim=c(0,quantile(output.full[output.full!=0],0.999, na.rm=TRUE)), las=2, xaxt="n", type="h")
+abline(v=c(as.numeric(minLength), as.numeric(maxLength)), col="red", lwd=2)
 axis(1, seq(0,1000,100))
 ```
 
@@ -236,7 +237,8 @@ if(nrow(tmp)>0){
 ```
 
 
-Lets consider in more detail the coverages
+Lets consider in more detail the coverages. Also here, we assume paired-end reads, meaning the coverage files contain each read "twice", one for the forward and one for the reverse strand. For the sake of simplicity, we assume that all alignments are properly paired and divide the total number by two, In later version, (e.g. when single-end reads are supported), we should give here a more
+precise estimate, but normally that value should be 95%+ accurate. 
 
 ```{r importClusterCoverage, warning=FALSE}
 clusterFiles <- list.files(file.path(projFolder, "BAM", "Insilico", "selected"), pattern="*.coverage")
@@ -251,6 +253,8 @@ for(i in 2:length(clusterFiles)){
 clusterCoverage <- clusterCoverage[-which(clusterCoverage$cluster=="*"),]
 rownames(clusterCoverage) <- clusterCoverage[,1]
 clusterCoverage <- clusterCoverage[,-1]
+
+clusterCoverage <- clusterCoverage/2
 
 names(clusterCoverage)[length(clusterFiles)] <- clusterFiles
 ```
@@ -296,7 +300,7 @@ fragLength <- data.frame(frag=trimws(gsub(">", "", names(fragLength.tmp))),
 covFrag <- merge(fragLength, covFrag, by="frag")
 ```
 
-Before going into the reads per fragment analysis, I will check how over fragments are distributed
+Before going into the reads per fragment analysis, I will check how the different fragment lengths are distributed
 
 ```{r}
 barplot(table(covFrag$length), col=report.colours[1])
@@ -342,9 +346,7 @@ for(i in 1:(chunks-1)){
 barplot(chunks.out, col=report.colours[1], las=2)
 ```
 
-```{r}
-
-Knowing the number of reads and the number of fragments, we can calculate also the average coverage per fragment, depending on the size
+Knowing the number of reads and the number of fragments, we can calculate also the average coverage per fragment, depending on the size, lines are at 10, 20, 30 and 40
 
 ```{r}
 barplot(output/table(covFrag$length)/(ncol(covFrag)-2), col=report.colours[1])

@@ -6,6 +6,11 @@
 
 0.17.* UPDATES
 --------------------------------------------------------------------------------
+59: Location information added for the most covered alignment loci
+58: Location names added for the most covered alignment loci
+57: Small additions to the alignments-R-module (language, explanations, etc)
+56: Small additions to the Cluster and Reference-R-module (language, explanations, etc)
+55: Small additions to the QC-R-module (language, explanations, etc)
 54: Default paths adjusted
 53: Function "getConfigField" reports now only field names a row starts with
 52: Added the --cluster-cancel option to the start script

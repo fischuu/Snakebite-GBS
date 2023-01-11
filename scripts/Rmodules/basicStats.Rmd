@@ -65,7 +65,7 @@ kable_styling(out_html, "striped", position = "left")
 ```
 
 ## Concatenating stats
-As the concatenating is a crucial step in this pipeline, it is important to make this correct. As a double check that things went right, we check how
+As the concatenation is a crucial step in this pipeline, it is important to make this correct. As a double check that things went right, we check how
 many raw samples were concatenated per sample. We do this visually. Basically, the height of the bars should correspond to your number of used lanes,
 normally 1,2 or 4. Sometimes, you might want to concatenate also more files together (e.g. technical replicates), in this case the bar can be also higher.
 

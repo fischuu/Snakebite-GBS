@@ -31,7 +31,7 @@ These are the reads as they come from the sequencer, no trimming, no nothing. Wa
 
 ### De-duplication percent
 
-The de-duplication percentage gives the amount of data that remains, if duplicted would be removed. As GBS sequences highlly depends on a similar patterns, we aim here for a very low percentage and values too high may indicate problems in the library preparation or sequencing. 
+The de-duplication percentage gives the amount of data that remains, if duplicated reads would be removed. As GBS sequences highly depend on a similar patterns (respective loci from where reads are sequenced), we aim here for a very low percentage and values too high may indicate problems in the library preparation or sequencing. 
 
 ```{r raw data duplication percent}
 #par(mar=c(10,5,1,1))
@@ -57,6 +57,8 @@ datatable(tmp, extensions = 'Buttons',
 ```
 
 ### GC content
+
+GC-content, short for "guanine-cytosine content", is a measure of the proportion of guanine and cytosine nucleotides in a DNA or RNA sequence. It is typically expressed as a percentage and calculated by dividing the number of G's and C's by the total number of nucleotides in the sequence, then multiplying by 100.
 
 ```{r raw data qc content}
 #par(mar=c(10,5,1,1))
@@ -84,6 +86,8 @@ if(nrow(tmp)>0){
 ```
 
 ### Sequence length
+
+The average sequence length is an important metric in bioinformatics, particularly in the field of high-throughput sequencing (HTS). It refers to the total number of nucleotides in a given DNA or RNA sequence, and can vary depending on the specific application and experiment.
 
 ```{r raw data sequence length}
 #par(mar=c(10,5,1,1))
@@ -118,6 +122,16 @@ if(nrow(tmp)>0){
 
 ### Total sequences
 
+The number of total sequences generated in a bioinformatics sequencing project is another important metric that can have a significant impact on the quality and accuracy of downstream analyses. This metric is often referred to as "sequencing depth" or "coverage".
+
+In high-throughput sequencing (HTS) projects, the number of total sequences generated is determined by a combination of factors, including the sequencing technology, the read length, and the amount of starting material. A high sequencing depth means that many sequences have been generated, resulting in a large amount of data and more accurate representation of the original sample.
+
+The sequencing depth is important to consider when designing an experiment, as it can have a significant impact on the quality and accuracy of downstream analyses. For example, in transcriptome sequencing (RNA-seq) a high sequencing depth can increase the sensitivity of gene expression analysis, and in genomics sequencing (WGS,WES, exome) a high coverage increases the sensitivity of variant calling.
+
+However, generating a large number of total sequences also means that the sequencing experiment can be more expensive and time-consuming. In practice, there is a trade-off between sequencing depth and cost. It is important to determine the minimal coverage required for the downstream analysis. Additionally, sequencing depth should also be considered in relation to the size and complexity of the sample being sequenced.
+
+In summary, the number of total sequences generated in a bioinformatics sequencing project is an important metric to consider when designing and analyzing HTS experiments. A high sequencing depth can increase the quality and accuracy of downstream analyses, but it also increases the cost and time required for the experiment.
+
 ```{r raw data total sequences}
 #par(mar=c(10,5,1,1))
 plotFastQCFeature(rawFastQC.R1, feature="Total.Sequences", axes=FALSE)
@@ -148,6 +162,11 @@ if(nrow(tmp)>0){
 ```
 
 ### Quality value distribution
+
+Phred quality scores are a way to represent the quality of base calls in high-throughput sequencing data. They are used to indicate the likelihood that a given base call is correct, and are commonly used in DNA sequencing data, such as Illumina and Ion Torrent data.
+
+The Phred quality scores are represented as a single ASCII character for each base call, with a value between 0 and 93, where higher values indicate higher quality base calls. The quality scores are calculated using the Phred algorithm, which uses the signal-to-noise ratio from the sequencer to estimate the error rate at each base. The Phred algorithm converts the error rate into a probability, which is then transformed into a Phred quality score by subtracting the logarithm of the probability from the constant Q (usually set to Q=33 or Q=64). As a rule of thumb, capital letters indicate good quality bases.
+
 ```{r}
 qcFiles.R1.raw <- paste0(sampleSheet$rawsample, "_R1_qualdist.txt")
 #qcFiles.R2.raw <- paste0(sampleSheet$rawsample, "_R2_qualdist.txt")
@@ -206,7 +225,7 @@ tmp <- mqcStats.raw[,-c(1:4,7,11:21)]
 totalRawSequences <- sum(mqcStats.raw$Total.Sequences)
 out <- c(totalRawSequences,sd(tmp[,1]),apply(tmp,2,mean))
 names(out) <- c("Tot. number sequences",
-                "SD total sequences",
+                "Standard deviation total sequences",
                 "Avg. total sequences",
                 "Avg. poor quality",
                 "Avg. GC Percent",
@@ -254,6 +273,8 @@ datatable(tmp, extensions = 'Buttons',
 
 ### GC content
 
+GC-content, short for "guanine-cytosine content", is a measure of the proportion of guanine and cytosine nucleotides in a DNA or RNA sequence. It is typically expressed as a percentage and calculated by dividing the number of G's and C's by the total number of nucleotides in the sequence, then multiplying by 100.
+
 ```{r conc data qc content}
 #par(mar=c(10,5,1,1))
 plotFastQCFeature(conFastQC.R1, conFastQC.R2, feature="X.GC", axes=FALSE)
@@ -278,6 +299,8 @@ if(nrow(tmp)>0){
 ```
 
 ### Sequence length
+
+The average sequence length is an important metric in bioinformatics, particularly in the field of high-throughput sequencing (HTS). It refers to the total number of nucleotides in a given DNA or RNA sequence, and can vary depending on the specific application and experiment.
 
 ```{r con data sequence length}
 #par(mar=c(10,5,1,1))
@@ -310,6 +333,16 @@ if(nrow(tmp)>0){
 
 ### Total sequences
 
+The number of total sequences generated in a bioinformatics sequencing project is another important metric that can have a significant impact on the quality and accuracy of downstream analyses. This metric is often referred to as "sequencing depth" or "coverage".
+
+In high-throughput sequencing (HTS) projects, the number of total sequences generated is determined by a combination of factors, including the sequencing technology, the read length, and the amount of starting material. A high sequencing depth means that many sequences have been generated, resulting in a large amount of data and more accurate representation of the original sample.
+
+The sequencing depth is important to consider when designing an experiment, as it can have a significant impact on the quality and accuracy of downstream analyses. For example, in transcriptome sequencing (RNA-seq) a high sequencing depth can increase the sensitivity of gene expression analysis, and in genomics sequencing (WGS,WES, exome) a high coverage increases the sensitivity of variant calling.
+
+However, generating a large number of total sequences also means that the sequencing experiment can be more expensive and time-consuming. In practice, there is a trade-off between sequencing depth and cost. It is important to determine the minimal coverage required for the downstream analysis. Additionally, sequencing depth should also be considered in relation to the size and complexity of the sample being sequenced.
+
+In summary, the number of total sequences generated in a bioinformatics sequencing project is an important metric to consider when designing and analyzing HTS experiments. A high sequencing depth can increase the quality and accuracy of downstream analyses, but it also increases the cost and time required for the experiment.
+
 ```{r con data total sequences}
 par(mar=c(10,5,1,1))
 plotFastQCFeature(conFastQC.R1, conFastQC.R2, feature="Total.Sequences")
@@ -338,6 +371,11 @@ if(nrow(tmp)>0){
 ```
 
 ### Quality value distribution
+
+Phred quality scores are a way to represent the quality of base calls in high-throughput sequencing data. They are used to indicate the likelihood that a given base call is correct, and are commonly used in DNA sequencing data, such as Illumina and Ion Torrent data.
+
+The Phred quality scores are represented as a single ASCII character for each base call, with a value between 0 and 93, where higher values indicate higher quality base calls. The quality scores are calculated using the Phred algorithm, which uses the signal-to-noise ratio from the sequencer to estimate the error rate at each base. The Phred algorithm converts the error rate into a probability, which is then transformed into a Phred quality score by subtracting the logarithm of the probability from the constant Q (usually set to Q=33 or Q=64). As a rule of thumb, capital letters indicate good quality bases.
+
 ```{r qualityValueDistribution Concatenated data}
 qcFiles.conc <- list.files(file.path(projFolder,"QC", "CONCATENATED"), pattern="*qualdist.txt")
 qcQual.conc <- fread(file.path(projFolder,"QC", "CONCATENATED", qcFiles.conc[1]), skip=1)
@@ -395,7 +433,7 @@ names(out) <- c("Tot. number sequences",
                 "Avg. total sequences",
                 "Avg. poor quality",
                 "Avg. GC Percent",
-                "Avg. deplication percent",
+                "Avg. deduplication percent",
                 "Avg. sequence length")
 
 out_html <- knitr::kable(formatC(out,  format="d", big.mark=","), col.names = NULL, "html")
@@ -409,6 +447,8 @@ kable_styling(out_html, "striped", position = "left")
 
 
 ## Trimmed data
+
+After the concatenating step, a quality trimming of the data takes place. This is done in two phases, first possible adapter sequences are removed from the data and then, in a second step low quality bases are removed and reads are trimmed, if needed, respective if the quality drop below a given threshold.
 
 ### De-Duplication percent
 The de-duplication percentage gives the amount of data that remains, if duplicted would be removed. As GBS sequences highlly depends on a similar patterns, we aim here for a very low percentage and values too high may indicate problems in the library preparation or sequencing.
@@ -465,6 +505,8 @@ if(nrow(tmp)>0){
 
 ### Sequence length
 
+The average sequence length is an important metric in bioinformatics, particularly in the field of high-throughput sequencing (HTS). It refers to the total number of nucleotides in a given DNA or RNA sequence, and can vary depending on the specific application and experiment.
+
 ```{r trimmed data sequence length}
 #par(mar=c(10,5,1,1))
 plotFastQCFeature(trimmedFastQC.R1, trimmedFastQC.R2, feature="avg_sequence_length", axes=FALSE)
@@ -496,6 +538,16 @@ if(nrow(tmp)>0){
 ```
 
 ### Total sequences
+
+The number of total sequences generated in a bioinformatics sequencing project is another important metric that can have a significant impact on the quality and accuracy of downstream analyses. This metric is often referred to as "sequencing depth" or "coverage".
+
+In high-throughput sequencing (HTS) projects, the number of total sequences generated is determined by a combination of factors, including the sequencing technology, the read length, and the amount of starting material. A high sequencing depth means that many sequences have been generated, resulting in a large amount of data and more accurate representation of the original sample.
+
+The sequencing depth is important to consider when designing an experiment, as it can have a significant impact on the quality and accuracy of downstream analyses. For example, in transcriptome sequencing (RNA-seq) a high sequencing depth can increase the sensitivity of gene expression analysis, and in genomics sequencing (WGS,WES, exome) a high coverage increases the sensitivity of variant calling.
+
+However, generating a large number of total sequences also means that the sequencing experiment can be more expensive and time-consuming. In practice, there is a trade-off between sequencing depth and cost. It is important to determine the minimal coverage required for the downstream analysis. Additionally, sequencing depth should also be considered in relation to the size and complexity of the sample being sequenced.
+
+In summary, the number of total sequences generated in a bioinformatics sequencing project is an important metric to consider when designing and analyzing HTS experiments. A high sequencing depth can increase the quality and accuracy of downstream analyses, but it also increases the cost and time required for the experiment.
 
 ```{r trimmed data total sequences}
 par(mar=c(10,5,1,1))
@@ -532,6 +584,11 @@ totalSequences[,1] <- gsub(".R1","",totalSequences[,1])
 ```
 
 ### Quality value distribution
+
+Phred quality scores are a way to represent the quality of base calls in high-throughput sequencing data. They are used to indicate the likelihood that a given base call is correct, and are commonly used in DNA sequencing data, such as Illumina and Ion Torrent data.
+
+The Phred quality scores are represented as a single ASCII character for each base call, with a value between 0 and 93, where higher values indicate higher quality base calls. The quality scores are calculated using the Phred algorithm, which uses the signal-to-noise ratio from the sequencer to estimate the error rate at each base. The Phred algorithm converts the error rate into a probability, which is then transformed into a Phred quality score by subtracting the logarithm of the probability from the constant Q (usually set to Q=33 or Q=64). As a rule of thumb, capital letters indicate good quality bases.
+
 ```{r qualityValueDistribution Trimmed data}
 qcFiles.trimmed <- list.files(file.path(projFolder,"QC", "TRIMMED"), pattern="*qualdist.txt")
 qcQual.trimmed <- fread(file.path(projFolder,"QC", "TRIMMED", qcFiles.trimmed[1]), skip=1)
@@ -628,7 +685,7 @@ names(out) <- c("Tot. number sequences",
                 "Avg. total sequences",
                 "Avg. poor quality",
                 "Avg. GC Percent",
-                "Avg. deplication percent",
+                "Avg. deduplication percent",
                 "Avg. sequence length")
 
 out_html <- knitr::kable(formatC(out,  format="d", big.mark=","), col.names = NULL, "html")
@@ -688,6 +745,8 @@ if(nrow(trimmedFastQCJSON.R1$perBaseN)!=nrow(trimmedFastQCJSON.R2$perBaseN)){
 
 ### De-Duplication percent
 
+The de-duplication percentage gives the amount of data that remains, if duplicated reads would be removed. As GBS sequences highly depend on a similar patterns (respective loci from where reads are sequenced), we aim here for a very low percentage and values too high may indicate problems in the library preparation or sequencing. 
+
 ```{r conctrim data duplication percent}
 par(mar=c(10,5,1,1))
 plotFastQCFeature(conFastQC.avg, trimmedFastQC.avg, labels=c("Conc", "Trimmed"), feature="total_deduplicated_percentage")
@@ -702,12 +761,24 @@ plotFastQCFeature(conFastQC.avg, trimmedFastQC.avg, labels=c("Conc", "Trimmed"),
 
 ### Sequence length
 
+The average sequence length is an important metric in bioinformatics, particularly in the field of high-throughput sequencing (HTS). It refers to the total number of nucleotides in a given DNA or RNA sequence, and can vary depending on the specific application and experiment.
+
 ```{r conctrim data sequence length}
 par(mar=c(10,5,1,1))
 plotFastQCFeature(conFastQC.avg, trimmedFastQC.avg, labels=c("Conc", "Trimmed"), feature="avg_sequence_length")
 ```
 
 ### Total sequences
+
+The number of total sequences generated in a bioinformatics sequencing project is another important metric that can have a significant impact on the quality and accuracy of downstream analyses. This metric is often referred to as "sequencing depth" or "coverage".
+
+In high-throughput sequencing (HTS) projects, the number of total sequences generated is determined by a combination of factors, including the sequencing technology, the read length, and the amount of starting material. A high sequencing depth means that many sequences have been generated, resulting in a large amount of data and more accurate representation of the original sample.
+
+The sequencing depth is important to consider when designing an experiment, as it can have a significant impact on the quality and accuracy of downstream analyses. For example, in transcriptome sequencing (RNA-seq) a high sequencing depth can increase the sensitivity of gene expression analysis, and in genomics sequencing (WGS,WES, exome) a high coverage increases the sensitivity of variant calling.
+
+However, generating a large number of total sequences also means that the sequencing experiment can be more expensive and time-consuming. In practice, there is a trade-off between sequencing depth and cost. It is important to determine the minimal coverage required for the downstream analysis. Additionally, sequencing depth should also be considered in relation to the size and complexity of the sample being sequenced.
+
+In summary, the number of total sequences generated in a bioinformatics sequencing project is an important metric to consider when designing and analyzing HTS experiments. A high sequencing depth can increase the quality and accuracy of downstream analyses, but it also increases the cost and time required for the experiment.
 
 ```{r conctrim data total sequences}
 par(mar=c(10,5,1,1))

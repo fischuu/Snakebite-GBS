@@ -3,7 +3,7 @@
 ## Preliminary Mock Reference
 ### Mapping stats
  
-Import the mapping statistics to the preliminary Mock reference
+Here, we present the mapping statistics for the preliminary mock reference.
 
 ```{r import flagstats}
 flagstatFiles <- list.files(file.path(projFolder,"FASTQ", "TRIMMED", "alignments"), pattern="*.flagstat")
@@ -67,7 +67,8 @@ The average mapping rate is `r mean(mappingRates)`.
 
 ### Coverage
 
-Data mapped against the clusters and then the reads per cluster visualized
+Here, the coverage statistics for reads mapped against the clusters are presented.
+
 ```{r importClusterCoverage, warning=FALSE}
 clusterFiles <- list.files(file.path(projFolder, "FASTQ", "TRIMMED", "alignments_clusters"), pattern="*.coverage")
 clusterCoverage <- read.table(file.path(projFolder, "FASTQ", "TRIMMED", "alignments_clusters", clusterFiles[1]))
@@ -92,10 +93,10 @@ The Lorenz curve is a graphical representation of the distribution of a particul
 To create a Lorenz curve, the clusters are ranked from lowest to highest coverage. The cumulative percentage of the reads are then plotted on the y-axis, while the cumulative percentage of the clusters is plotted on the x-axis.
 
 A perfectly equal distribution of the reads across the different clusters would be represented by a straight diagonal line from the bottom left to the top right of the graph, indicating that each cluster has the same percentage of the total read number
-aligned. In contrast, a curve that is farther from the diagonal line indicates a greater degree of inequality, with a smaller portion of the clusters gathering a larger proportion of the total read coverage.
+aligned. In contrast, a curve that is further from the diagonal line indicates a greater degree of inequality, with a smaller portion of the clusters gathering a larger proportion of the total read coverage.
 
 ```{r lorenz}
-plot(cumsum(sort(clusterCoverage[,2] / sum(clusterCoverage[,2]))), type="l", xlab="Cluster", ylab="Concentration")
+plot(cumsum(sort(clusterCoverage[,2] / sum(clusterCoverage[,2]))), type="l", xlab="Sorted clusters", ylab="Concentration")
 for(i in 3:ncol(clusterCoverage)){
   lines(cumsum(sort(clusterCoverage[,i] / sum(clusterCoverage[,i]))))
 }
@@ -103,7 +104,7 @@ for(i in 3:ncol(clusterCoverage)){
 
 ### Stats on coverage
 
-These are the amounts of clusters with reads from different samples. For example, 4 on the x-axis gives the amount of clusters with reads from four different samples. Naturally, one would like to see here as high as possible bars on the right hand side of the plot.
+These are the amounts of clusters with reads from different samples. For example, the bar at 4 on the x-axis gives the amount of clusters with reads from four different samples. Naturally, one would like to see here as high as possible bars on the right hand side of the plot.
 
 ```{r cluster coverage stats}
 coveredClusters <- apply(clusterCoverage[,-1]>0,1,sum)
@@ -127,7 +128,7 @@ names(readsPerCoverageGroup) <- 1:max(coveredClusters)
 
 barplot(readsPerCoverageGroup, xlab="Coverage group", ylab="Reads on cluster group", col=report.colours[1])
 ```
-ANd the same still with percentages
+And the same still with percentages
 
 ```{r reads per coverage group in percent}
 barplot(readsPerCoverageGroup/sum(readsPerCoverageGroup)*100, xlab="Coverage group", ylab="Reads on cluster group (in %)", ylim=c(0,100), col=report.colours[1])
@@ -424,7 +425,7 @@ if(nrow(tmp)>0){
 
 The average mapping rate on the reference genome is `r mean(refGenome.mappingStats)`.
 
-Now we check still the precise coverage per sample for the sake of simplicity I do it here for the first sample only and also only for the first at most 50 chromosome. Here, one can possibly see issues in the reference genome, when the coverage is not uniformly. Areas with a coverage of more than 20 reads are indicated in red, those below 10 are in blue and areas in between are represented with black.
+Now we check still the precise coverage (in terms of alignment loci) per sample for the sake of simplicity we'll do it here for the first sample only and also only for the first 40 chromosomes (if there are as many...). Here, one can possibly see issues in the reference genome, when the coverage is not uniformly distributed. Areas with a coverage of more than 20 reads are indicated in red, those below 10 are in blue and areas in between are represented with black.
 
 ```{r}
 mpile_files <- list.files(file.path(projFolder, "MPILEUP", "mpileup_reference"), pattern="*.mpileup")
@@ -434,15 +435,15 @@ covData <- fread(file.path(projFolder, "MPILEUP", "mpileup_reference", mpile_fil
 mpile_files <- list.files(file.path(projFolder, "MPILEUP", "mpileup_reference"), pattern="*.mpileup")
 
 for(sam in 1:1){
-  par(mfrow=c(4,10),
-  mar=c(1,1,1,1))
-  
   covData <- fread(file.path(projFolder, "MPILEUP", "mpileup_reference", mpile_files[sam]), sep="\t")
   chrNames <- names(table(covData[,1]))
   chrNames <- chrNames[1:min(49, length(chrNames))]
 
-  maxChr <- min(length(chrNames), 20)
-  
+  maxChr <- min(length(chrNames), 40)
+
+  par(mfrow=c(maxChr%/%10+1,10),
+  mar=c(1,1,1,1))
+    
   for(i in 1:maxChr){
     tmpChr <- chrNames[i]
     
@@ -463,7 +464,7 @@ for(sam in 1:1){
 ```
 
 ### Read alignments
-The aligned reads are interpreted as "transcripts" and via Stringtie novel transcripts are detected to identify the common alignments via stringtie merge
+The aligned reads are now interpreted as "transcripts" and via Stringtie novel transcripts are detected to identify the common alignments via stringtie merge.
 
 ```{r, echo=FALSE, message=FALSE, results=FALSE}
 string.merge <- importGTF(file.path(projFolder, "Stringtie", "merged_STRG.gtf"), level="transcript")
@@ -515,7 +516,7 @@ locationQuant$sum <- apply(locationQuant[,12:(ncol(locationQuant)-1)],1,sum)
 weightedLengths <- rep(locationQuant$length, locationQuant$sum)
 ```
 
-And then the sme distribution, but still weighted by the reads, so here we take each read into account, to determine the length distribution (this is the distribtion, you should look at when you check the QC of the sequencing run)
+And then the same distribution, but still weighted by the reads, so here we take each read into account, to determine the length distribution (this is the distribtion, you should look at when you check the QC of the sequencing run)
 
 ```{r}
   tmp <- summary(weightedLengths)
@@ -639,15 +640,16 @@ for(i in 3:ncol(fc.quant$expValues)){
 A table of the most covered locations
 
 ```{r}
-tmp <- fc.quant$expValues[,-1]
-totCov <- apply(tmp,1,sum)
+tmp <- fc.quant$expValues
+tmp <- merge(fc.quant$geneInfo[,-c(5)], tmp, by.x="Geneid", by.y = "Locus")
+totCov <- apply(tmp[,-c(1:5)],1,sum)
 rownames(tmp) <- fc.quant$expValues[,1]
 tmp <- tmp[order(totCov, decreasing = TRUE)[1:50],]
 if(nrow(tmp)>0){
-  rownames(tmp) <- 1:nrow(tmp)
+  rownames(tmp) <- NULL
 #  colnames(tmp) <- c("Sample", "Total sequences")
   #knitr::kable(tmp) %>% kable_styling
-  datatable(tmp, extensions = 'Buttons',
+  datatable(tmp, extensions = 'Buttons', rownames=FALSE,
             options = list(dom = 'Blfrtip',
                            buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
                            lengthMenu = list(c(10,25,50,-1),
@@ -752,7 +754,7 @@ image(loci_similarity)
 
 ### Alignment flanking sites
 
-We consider the flanking sites of the aligned reads.
+We consider the flanking sites of the aligned reads. Please keep in mind that we align trimmed data, so this table might be misleading.
 
 ```{r}
 out <- data.frame(Enzyme1 = enz1,
@@ -780,7 +782,9 @@ for(i in 1:length(flankingLeft.list)){
 
 First, the distributions per sample of the most abundant flanking sequence (top-10)
 
-This table is as we take it from the data:
+#### Flanking sequences 'left'
+
+This table is as we take it from the data, the most abundant sequences at the left site of the aligned reads.
 
 ```{r}
 flankSeqLeft <- list()
@@ -796,6 +800,10 @@ for(i in 2:length(flankSeqLeft)){
 colnames(out) <- gsub(".flanking_left.fa","",flankingLeft.list)
 data.table(out)
 ```
+#### Flanking sequences 'right'
+
+Those are the most abundant sequences that we find at the right site of the aligned reads.
+
 ```{r}
 flankSeqRight <- list()
 for(i in 1:length(flankingRight))
@@ -811,6 +819,9 @@ colnames(out) <- gsub(".flanking_right.fa","",flankingRight.list)
 data.table(out)
 
 ```
+
+#### Combined left and right sequences
+
 And finally still the top10 combinations
 
 ```{r}
@@ -827,4 +838,196 @@ for(i in 2:length(flankingLeft)){
 colnames(out) <- gsub(".flanking_right.fa","",flankingRight.list)
 data.table(out)
 
+```
+
+## In-silico
+
+### Alignment rate (full in-silico)
+
+First we check how well our reads align to complete in-silico prediction. As this is not size-filtered, please keep in mind that this represents more or less the complete reference genome and hence
+the alignment rate between the reference genome and the full in-silico prediction should not differ much.
+
+```{r}
+fullAR.files <- list.files(file.path(projFolder, "BAM", "Insilico", "full"), pattern="*.flagstat")
+
+fullAR.tmp <- readLines(file.path(projFolder, "BAM", "Insilico", "full", fullAR.files[1]))[5]
+fullAR <- as.numeric(strsplit(strsplit(fullAR.tmp, "\\(")[[1]][2], "\\%")[[1]][1])
+
+for(i in 2:length(fullAR.files)){
+fullAR.tmp <- readLines(file.path(projFolder, "BAM", "Insilico", "full", fullAR.files[i]))[5]
+fullAR[i] <- as.numeric(strsplit(strsplit(fullAR.tmp, "\\(")[[1]][2], "\\%")[[1]][1])
+}
+
+names(fullAR) <- gsub(".sam.flagstat", "", fullAR.files)
+
+```
+
+```{r}
+par(mar=c(7,3,1,1))
+barplot(fullAR, col=report.colours[1], las=2, ylim=c(0,100))
+```
+
+### Alignment rate (size-selected in-silico)
+And now, we align the reads against the fragments that we should have, given that our restriction and size selection worked.
+
+```{r}
+selectedAR.files <- list.files(file.path(projFolder, "BAM", "Insilico", "selected"), pattern="*.flagstat")
+
+selectedAR.tmp <- readLines(file.path(projFolder, "BAM", "Insilico", "selected", selectedAR.files[1]))[5]
+selectedAR <- as.numeric(strsplit(strsplit(selectedAR.tmp, "\\(")[[1]][2], "\\%")[[1]][1])
+
+for(i in 2:length(selectedAR.files)){
+selectedAR.tmp <- readLines(file.path(projFolder, "BAM", "Insilico", "selected", selectedAR.files[i]))[5]
+selectedAR[i] <- as.numeric(strsplit(strsplit(selectedAR.tmp, "\\(")[[1]][2], "\\%")[[1]][1])
+}
+
+names(selectedAR) <- gsub(".sam.flagstat", "", selectedAR.files)
+
+```
+
+```{r}
+par(mar=c(7,3,1,1))
+barplot(rbind(selectedAR, fullAR-selectedAR), col=report.colours[1:2], las=2, ylim=c(0,100))
+legend("bottomright", pch=c(20,20), col=c(report.colours[2], report.colours[1]), legend=c("Full model", "Size selected"), fill="white")
+
+```
+
+### Coverage (full in-silico prediction)
+
+The pipeline currently takes only paired-end reads and we use here the idxstats output of samtools. In case of paired-end reads, we get because
+of that here roughly twice the number of aligned reads (one for the forward and one for the reverse strand read, in cause reads were properly
+paired). For the sake of simplicity, we take here half of that measure, knowing that this is not 100% accurate, but well enough estiamte for the
+real value. In a future version (e.g. when single-end support will be added), we should improve that step.
+
+```{r}
+fullC.files <- list.files(file.path(projFolder, "BAM", "Insilico", "full"), pattern="*.coverage")
+fullC <- read.table(file.path(projFolder, "BAM", "Insilico", "full", fullC.files[1]))
+colnames(fullC) <- c("Location", gsub(".coverage", "", fullC.files[1]))
+fullC[,2] <- ceiling(fullC[,2]/2)
+
+for(i in 2:length(fullC.files)){
+  fullC.tmp <- read.table(file.path(projFolder, "BAM", "Insilico", "full", fullC.files[i]))
+  fullC.tmp[,2] <- ceiling(fullC.tmp[,2]/2)
+  colnames(fullC.tmp) <- c("Location", gsub(".coverage", "", fullC.files[i]))
+
+  fullC <- merge(fullC, fullC.tmp, by="Location")
+}
+
+fullC <- fullC[-which(fullC$Location=="*"),]
+```
+
+### Coverage (size-selected in-silico)
+
+The pipeline currently takes only paired-end reads and we use here the idxstats output of samtools. In case of paired-end reads, we get because
+of that here roughly twice the number of aligned reads (one for the forward and one for the reverse strand read, in cause reads were properly
+paired). For the sake of simplicity, we take here half of that measure, knowing that this is not 100% accurate, but well enough estiamte for the
+real value. In a future version (e.g. when single-end support will be added), we should improve that step.
+
+```{r}
+selectedC.files <- list.files(file.path(projFolder, "BAM", "Insilico", "selected"), pattern="*.coverage")
+selectedC <- read.table(file.path(projFolder, "BAM", "Insilico", "selected", selectedC.files[1]))
+colnames(selectedC) <- c("Location", gsub(".coverage", "", selectedC.files[1]))
+selectedC[,2] <- ceiling(selectedC[,2]/2)
+
+for(i in 2:length(selectedC.files)){
+  selectedC.tmp <- read.table(file.path(projFolder, "BAM", "Insilico", "selected", selectedC.files[i]))
+  selectedC.tmp[,2] <- ceiling(selectedC.tmp[,2]/2)
+  colnames(selectedC.tmp) <- c("Location", gsub(".coverage", "", selectedC.files[i]))
+
+  selectedC <- merge(selectedC, selectedC.tmp, by="Location")
+}
+
+selectedC <- selectedC[-which(selectedC$Location=="*"),]
+```
+
+### Fragment length distribution (full in-silico prediction)
+
+```{r}
+fullSizeC <- merge(insilico.full.length, fullC, by="Location")
+
+lengths <- names(table(fullSizeC$Length))
+
+lengths <- sort(as.numeric(lengths))[1:2000]
+
+
+fullSizeDist <- matrix(0, ncol=ncol(fullC) - 1 , nrow=length(lengths))
+
+for(i in 1:length(lengths)){
+  tmpRows <- which(fullSizeC$Length==lengths[i])
+  fullSizeDist[i,] <- apply(fullSizeC[tmpRows,-c(1:2)],2,sum)
+}
+
+```
+
+```{r}
+plot(lengths,fullSizeDist[,1], type="l", ylim=c(0, max(fullSizeDist)), xlab="Fragment length", ylab="Sum read coverage")
+for(i in 2:ncol(fullSizeDist)){
+  lines(lengths,fullSizeDist[,i])
+}
+
+abline(v=300, col="red")
+```
+
+```{r}
+plot(lengths,log(fullSizeDist[,1]), type="l", ylim=c(0, max(log(fullSizeDist))), xlab="Fragment length", ylab="log(sum read coverage)")
+
+for(i in 2:ncol(fullSizeDist)){
+  lines(lengths,log(fullSizeDist[,i]))
+}
+```
+
+### Fragment length distribution (size-selected in-silico prediction)
+
+```{r}
+selectedSizeC <- merge(insilico.size.length, selectedC, by="Location")
+
+lengths <- names(table(selectedSizeC$Length))
+
+selectedSizeDist <- matrix(0, ncol=ncol(selectedC) - 1 , nrow=length(lengths))
+
+for(i in 1:length(lengths)){
+  tmpRows <- which(selectedSizeC$Length==lengths[i])
+  selectedSizeDist[i,] <- apply(selectedSizeC[tmpRows,-c(1:2)],2,sum)
+}
+
+```
+
+```{r}
+plot(lengths,selectedSizeDist[,1], type="l", ylim=c(0, max(selectedSizeDist)), xlab="Fragment length", ylab="Sum read coverage")
+for(i in 2:ncol(selectedSizeDist)){
+  lines(lengths,selectedSizeDist[,i])
+}
+```
+
+```{r}
+plot(lengths,log(selectedSizeDist[,1]), type="l", ylim=c(0, max(log(selectedSizeDist))), xlab="Fragment length", ylab="log(sum read coverage)")
+
+for(i in 2:ncol(selectedSizeDist)){
+  lines(lengths,log(selectedSizeDist[,i]))
+}
+```
+
+### Location changes between full and size-selected
+We compare how the alignment numbers change between the full in-silico and size-selected in-silico predictions change. I restrict the full model to the same locations present in the size-selected reference and then see, how the coverage changes.
+
+Positive values indicate moves from the selected to full prediction model, negative values from full model to selected model. If values are large, that might indicate large sequence similarities between different loci, outside the aimed size selection.
+
+```{r}
+fullSelectedC <- merge(fullC, selectedC, by="Location")
+
+fullSelected.changes <- fullSelectedC[,2:ncol(fullC)] - fullSelectedC[,(ncol(fullC)+1):ncol(fullSelectedC)]
+
+nSamples <- ncol(fullC)-1
+fullSelected.up <- c()
+fullSelected.down <- c()
+
+for(i in 1:nSamples){
+ fullSelected.up[i] <- sum(fullSelected.changes[fullSelected.changes[,i]>0,i])  
+ fullSelected.down[i] <- sum(fullSelected.changes[fullSelected.changes[,i]<0,i])
+}
+```
+
+```{r}
+barplot(fullSelected.down, col=report.colours[1], ylim=range(c(fullSelected.down, fullSelected.up)))
+barplot(fullSelected.up, col=report.colours[2], add = TRUE)
 ```

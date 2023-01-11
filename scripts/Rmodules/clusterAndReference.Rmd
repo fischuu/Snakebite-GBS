@@ -3,7 +3,7 @@
 
 ## Preliminary Mock Reference
 
-The preliminary mock reference is created inthe first phase of the GBS pipeline. Here, we first create a mock reference and then align the data to it. Then, cluster locations with low coverage are removed to avoid diluting reads across locations that were assembly artifacts rather than real mock reference clusters
+The preliminary mock reference is created in the first phase of the GBS pipeline. Here, we first create a mock reference and then align the data to it. Then, cluster locations with low read coverage are removed to avoid diluting the reads across locations that are, in fact, assembly artifacts rather than real mock reference clusters.
 
 ### Basic stats
 ```{r import required files, warning=FALSE, }
@@ -14,6 +14,7 @@ vsearchIN <- importFA(file.path(projFolder,"FASTQ", "TRIMMED", "VsearchIN.fa"))
 ```
 
 Basic information on the sequences used to build the preliminary mock reference:
+
 ```{r mock build stats}
   out <- summary(vsearchIN)
   out[,2] <- formatC(out[,2],  format="d", big.mark=",")
@@ -21,7 +22,7 @@ Basic information on the sequences used to build the preliminary mock reference:
   kable_styling(out_html, "striped", position = "left")
 ```
 
-Basic information on the identified clusters, used as preliminary mock reference
+Basic information on the assembled preliminary mock reference
 
 ```{r summarise mock reference clusters}
   out <- summary(prelimMockClusters)
@@ -39,7 +40,7 @@ Total length of the preliminary Mock Reference Clusters: `r format(sum(nchar(pre
 Total length of the preliminary Mock Reference (Used as reference): `r format(sum(nchar(prelimMockReference)), big.mark=",")` bp.
 
 ### Theoretical coverage of Mock per sample
-Given the length of the mock reference assembly and the total number of sequenced bases per sample, we can estimate the theoretical coverage of the mock for each sample
+Given the length of the mock reference assembly and the total number of sequenced bases per sample, we can estimate the theoretical coverage of the mock reference for each sample
 
 ```{r mock coverage}
 par(mar=c(10,5,1,1))
@@ -73,7 +74,7 @@ kable_styling(out_html, "striped", position = "left")
 
 ```
 
-Number of used samples for the mock reference: `r length(startPos)`.
+In total, `r length(startPos)` sample(s) were used to build the preliminary mock reference.
 
 ```{r report Pear stats}
 
@@ -169,7 +170,11 @@ barplot(outQual, ylab="Frequency", main="Quality-score distribution", col=report
 ### Ratio samples used to length Mock reference
 How much were the reads merged down? Length of Mock reference vs the length of all used reads together.
 
+<t.b.a.>
+
 ## Mock reference
+
+The final mock reference we use for calling the variants, after removing low coverage clusters.
 
 ### Basic stats
 ```{r import required files mock, warning=FALSE, }
@@ -232,7 +237,7 @@ These are the flagstats from mapping the mock clusters against an existing refer
 
 
 |     Flag | Explanation                          |
-|---------:|--------------------------------------|
+|---------:|-------------------------------------:|
 |        0 | Read aligned against forward strand  |
 |       16 | Read aligned against reverse strand  |
 |     2048 | Supplementary alignment forward      |
@@ -252,7 +257,7 @@ kable_styling(out_html, "striped", position = "left")
 }
 ```
 
-From there we have `r totalLoci` primary alignments.
+From there we have `r formatC(totalLoci,  format="d", big.mark=",")` primary alignments.
 
 ```{r bam.merged.bed}
 if(refAvail){
@@ -267,9 +272,11 @@ totalBases <- sum(abs(mergedLoci$V3 - mergedLoci$V2))
 ```
 
 However, in total we have `r formatC(nrow(unmergedLoci),  format="d", big.mark=",")` mapping loci that can be merged down (by intersection of the bed) to `r formatC(nrow(mergedLoci),  format="d", big.mark=",")` if their chromosomal location is intersected.
-Please note, if the difference between these two numbers is too large, it indicates that the mock reference needs to be merged more strict.
+Please note, if the difference between these two numbers is too large, it indicates that the mock reference could possibly be merged more strictly.
 
-In total `r formatC(totalBases, big.mark=",")` bases are covered in the reference genome from mock cluster sequences.
+In total, `r formatC(totalBases, big.mark=",")` bases are covered in the reference genome from mock cluster sequences.
+
+### Alignments per Chromosome in Reference
 
 A visualisation of the alignments of the mock clusters to the reference genome
 
@@ -298,6 +305,8 @@ if(refAvail){
 }
 ```
 
+### Avg cluster mapping distance per Chromosome
+
 Then, this is the average distance from one alignment to the next, per chromosome
 
 ```{r}
@@ -317,6 +326,7 @@ barplot(avgDist, main="Avg cluster mapping distance per Chromosome", col=report.
 }
 ```
 
+### Mock reference contig alignments on reference genome
 
 Coverage of the lined up alignment loci of the mock reference contigs against the reference genome. Ideally, we observe here just a constant coverage of 1, meaning that each contig of the mock reference aligns to a unique place on the reference genome. Having here spikes indicates that several mock reference contigs align to one and the same loci along the reference genome and that those contigs could possibly be merged.
 
@@ -416,3 +426,4 @@ if(nrow(tmp)>0){
 }
 }
 ```
+
