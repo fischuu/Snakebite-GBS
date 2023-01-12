@@ -1,5 +1,7 @@
 # Basic stats
 
+A concise overview of important runtime parameters and used inputs.
+
 ```{r get pipeline version}
 pipeSMK <- readLines(file.path(pipelineFolder,"Pipeline-GBS.smk"))
 pipeVersion <- gsub("##### Version: ","",pipeSMK[grep("##### Version:", pipeSMK)])
@@ -44,7 +46,9 @@ out <- data.frame(c("Number of raw-samples",
                     "Pipeline config",
                     "Server config",
                     "Enzyme 1 sequence",
-                    "Enzyme 2 sequence"),
+                    "Enzyme 2 sequence",
+                    "Aimed min. fragment length",
+                    "Aimed max. fragment length"),
                   c(length(unique(sampleSheet$rawsample)),
                     length(unique(sampleSheet$sample_name)),
                     numberGroupingNames,
@@ -58,7 +62,9 @@ out <- data.frame(c("Number of raw-samples",
                     pipelineConfig.info,
                     serverConfig.info,
                     enz1,
-                    enz2))
+                    enz2,
+                    paste(minLength, "bp"),
+                    paste(maxLength, "bp")))
 
 out_html <- knitr::kable(out, col.names = NULL, "html")
 kable_styling(out_html, "striped", position = "left")

@@ -16,7 +16,11 @@ number_predicted_loci <- length(selectedInsilico)
 Without any size selection, we receive the following calculated fragments for the in-silico digestion
 
 ```{r}
-out_html <- knitr::kable(summary(fullInsilico), col.names = NULL, "html")
+printThis <- summary(fullInsilico)
+for(i in 1:length(printThis[[2]])){
+  printThis[[2]][i] <- prettyNum(printThis[[2]][i], big.mark = ",")  
+}
+out_html <- knitr::kable(printThis, col.names = NULL, "html")
 kable_styling(out_html, "striped", position = "left")
 ```
 
@@ -24,11 +28,15 @@ kable_styling(out_html, "striped", position = "left")
 Applying a size selection of minimum length `r minLength` and maximum length `r maxLength`, the distributions changes to
 
 ```{r}
-out_html <- knitr::kable(summary(selectedInsilico), col.names = NULL, "html")
+printThis <- summary(selectedInsilico)
+for(i in 1:length(printThis[[2]])){
+  printThis[[2]][i] <- prettyNum(printThis[[2]][i], big.mark = ",")  
+}
+out_html <- knitr::kable(printThis, col.names = NULL, "html")
 kable_styling(out_html, "striped", position = "left")
 ```
 
-That means, given the provided enzymes and target size, one would expect `r length(selectedInsilico)` fragments in the mock reference.
+That means, given the provided enzymes and target size, one would expect `r prettyNum(length(selectedInsilico), big.mark=",")` fragments in the mock reference.
 
 ## Alignments
 
@@ -88,6 +96,9 @@ if(nrow(tmp)>0){
 ```
 
 ### Full in-silico digestion
+
+Currently, we only support paired-end reads and for paired-end reads the here used coverage function frm samtools counts for a paired-end read
+two, so we half for now the value as a good estimate.
 
 ```{r importFullClusterCoverage, warning=FALSE}
 clusterFiles <- list.files(file.path(projFolder, "BAM", "Insilico", "full"), pattern="*.coverage")
@@ -254,9 +265,11 @@ clusterCoverage <- clusterCoverage[-which(clusterCoverage$cluster=="*"),]
 rownames(clusterCoverage) <- clusterCoverage[,1]
 clusterCoverage <- clusterCoverage[,-1]
 
-clusterCoverage <- clusterCoverage/2
+clusterCoverage <- ceiling(clusterCoverage/2)
 
 names(clusterCoverage)[length(clusterFiles)] <- clusterFiles
+clusterCoverage.size <- clusterCoverage
+
 ```
 
 Here is the lorenz-curve visualisation of the alignment concentration
@@ -399,8 +412,153 @@ for(i in 2:ncol(outputMat_std)){
 }
 ```
 
-### Agreement between select and full
+### Coverage distribution
 
 ```{r}
+barplot(table(apply(clusterCoverage.size>0, 1, sum)), col=report.colours[1], main="Sample coverage with at least one read on aimed contig")
+```
+```{r}
+barplot(table(apply(clusterCoverage.size>4, 1, sum)), col=report.colours[1], main="Sample coverage with at least five read on aimed contig")
+```
+
+```{r}
+barplot(table(apply(clusterCoverage.size>9, 1, sum)), col=report.colours[1], main="Sample coverage with at least ten read on aimed contig")
+```
+```{r}
+barplot(table(apply(clusterCoverage.full>0, 1, sum)), col=report.colours[1], main="Sample coverage with at least one read on unaimed contig")
+```
+
+```{r}
+barplot(table(apply(clusterCoverage.full>4, 1, sum)), col=report.colours[1], main="Sample coverage with at least five read on unaimed contig")
+```
+
+```{r}
+barplot(table(apply(clusterCoverage.full>9, 1, sum)), col=report.colours[1], main="Sample coverage with at least ten read on unaimed contig")
+```
+
+### Sample similarity
+
+We want to check, how similar different samples behave. For that we try different things
+
+Here are the pairwise similarities between the samples, as darker the colour as more joint locations the samples have
+
+```{r}
+similarity.size <- matrix(0, ncol=ncol(clusterCoverage.size), nrow=ncol(clusterCoverage.size))
+for(i in 1:ncol(clusterCoverage.size)){
+  for(j in i:ncol(clusterCoverage.size)){
+    covI <- clusterCoverage.size[,i]>0
+    covJ <- clusterCoverage.size[,j]>0
+    covIJ <- covI*covJ
+    similarity.size[i,j] <- sum(covIJ)/sum(covI)
+    similarity.size[j,i] <- sum(covIJ)/sum(covJ)
+  }
+}
+
+par(mfrow=c(1,2))
+image(similarity.size, main="At least one read per aimed locus", zlim=c(0,1))
+plotScale <- rep(10,12)
+names(plotScale) <- round(seq(0.1,1, length.out=12 ),2)
+barplot(plotScale, col=hcl.colors(12, "YlOrRd", rev = TRUE), horiz = TRUE, las=2, xaxt="n")
+
+```
+```{r}
+similarity.size <- matrix(0, ncol=ncol(clusterCoverage.size), nrow=ncol(clusterCoverage.size))
+for(i in 1:ncol(clusterCoverage.size)){
+  for(j in i:ncol(clusterCoverage.size)){
+    covI <- clusterCoverage.size[,i]>4
+    covJ <- clusterCoverage.size[,j]>4
+    covIJ <- covI*covJ
+    similarity.size[i,j] <- sum(covIJ)/sum(covI)
+    similarity.size[j,i] <- sum(covIJ)/sum(covJ)
+  }
+}
+
+par(mfrow=c(1,2))
+image(similarity.size, main="At least five reads per aimed locus", zlim=c(0,1))
+plotScale <- rep(10,12)
+names(plotScale) <- round(seq(0.1,1, length.out=12 ),2)
+barplot(plotScale, col=hcl.colors(12, "YlOrRd", rev = TRUE), horiz = TRUE, las=2, xaxt="n")
+
+```
+
+```{r}
+similarity.size <- matrix(0, ncol=ncol(clusterCoverage.size), nrow=ncol(clusterCoverage.size))
+for(i in 1:ncol(clusterCoverage.size)){
+  for(j in i:ncol(clusterCoverage.size)){
+    covI <- clusterCoverage.size[,i]>9
+    covJ <- clusterCoverage.size[,j]>9
+    covIJ <- covI*covJ
+    similarity.size[i,j] <- sum(covIJ)/sum(covI)
+    similarity.size[j,i] <- sum(covIJ)/sum(covJ)
+  }
+}
+
+par(mfrow=c(1,2))
+image(similarity.size, main="At least ten reads per aimed locus", zlim=c(0,1))
+plotScale <- rep(10,12)
+names(plotScale) <- round(seq(0.1,1, length.out=12 ),2)
+barplot(plotScale, col=hcl.colors(12, "YlOrRd", rev = TRUE), horiz = TRUE, las=2, xaxt="n")
+
+```
+
+
+```{r}
+similarity.full<- matrix(0, ncol=ncol(clusterCoverage.full), nrow=ncol(clusterCoverage.full))
+for(i in 1:ncol(clusterCoverage.full)){
+  for(j in i:ncol(clusterCoverage.full)){
+    covI <- clusterCoverage.full[,i]>0
+    covJ <- clusterCoverage.full[,j]>0
+    covIJ <- covI*covJ
+    similarity.full[i,j] <- sum(covIJ)/sum(covI)
+    similarity.full[j,i] <- sum(covIJ)/sum(covJ)
+  }
+}
+
+par(mfrow=c(1,2))
+image(similarity.full, main="At least one read per unaimed locus", zlim=c(0,1))
+plotScale <- rep(10,12)
+names(plotScale) <- round(seq(0.1,1, length.out=12 ),2)
+barplot(plotScale, col=hcl.colors(12, "YlOrRd", rev = TRUE), horiz = TRUE, las=2, xaxt="n")
+
+```
+
+
+```{r}
+similarity.full<- matrix(0, ncol=ncol(clusterCoverage.full), nrow=ncol(clusterCoverage.full))
+for(i in 1:ncol(clusterCoverage.full)){
+  for(j in i:ncol(clusterCoverage.full)){
+    covI <- clusterCoverage.full[,i]>4
+    covJ <- clusterCoverage.full[,j]>4
+    covIJ <- covI*covJ
+    similarity.full[i,j] <- sum(covIJ)/sum(covI)
+    similarity.full[j,i] <- sum(covIJ)/sum(covJ)
+  }
+}
+
+par(mfrow=c(1,2))
+image(similarity.full, main="At least five reads per unaimed locus", zlim=c(0,1))
+plotScale <- rep(10,12)
+names(plotScale) <- round(seq(0.1,1, length.out=12 ),2)
+barplot(plotScale, col=hcl.colors(12, "YlOrRd", rev = TRUE), horiz = TRUE, las=2, xaxt="n")
+```
+
+
+```{r}
+similarity.full<- matrix(0, ncol=ncol(clusterCoverage.full), nrow=ncol(clusterCoverage.full))
+for(i in 1:ncol(clusterCoverage.full)){
+  for(j in i:ncol(clusterCoverage.full)){
+    covI <- clusterCoverage.full[,i]>9
+    covJ <- clusterCoverage.full[,j]>9
+    covIJ <- covI*covJ
+    similarity.full[i,j] <- sum(covIJ)/sum(covI)
+    similarity.full[j,i] <- sum(covIJ)/sum(covJ)
+  }
+}
+
+par(mfrow=c(1,2))
+image(similarity.full, main="At least ten reads per unaimed locus", zlim=c(0,1))
+plotScale <- rep(10,12)
+names(plotScale) <- round(seq(0.1,1, length.out=12 ),2)
+barplot(plotScale, col=hcl.colors(12, "YlOrRd", rev = TRUE), horiz = TRUE, las=2, xaxt="n")
 
 ```

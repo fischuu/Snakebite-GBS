@@ -403,6 +403,8 @@ legend("topright", inset=c(-0.2,0), legend=rownames(plotThis)[(nrow(plotThis)):1
 
 ### Per base N content (left: R1, right: R2)
 
+The "Per base N content" provides the ratio of missing bases (due to sequencing problems) per base of the reads. 
+
 ```{r con data per base n content}
 par(mar=c(5,5,1,1))
 #plotFastQCJSONFeature(conFastQCJSON.R1, conFastQCJSON.R2, feature="perBaseN")
@@ -413,6 +415,9 @@ plotMQCFeature(x=file.path(projFolder,"QC","CONCATENATED","multiqc_R1"),
 ```
 
 ### Per base quality (left: R1, right: R2)
+
+The "Per base quality" value gives the quality value distribution per base across all samples and reads.
+
 ```{r con data per base sequence quality}
 par(mar=c(5,5,1,1))
 #plotFastQCJSONFeature(conFastQCJSON.R1, conFastQCJSON.R2, feature="sequenceQuality")
@@ -615,6 +620,8 @@ legend("topright", inset=c(-0.2,0), legend=rownames(plotThis)[(nrow(plotThis)):1
 
 ### Per base N content
 
+The "Per base N content" provides the ratio of missing bases (due to sequencing problems) per base of the reads. 
+
 ```{r trimmed data per base n content}
 par(mar=c(5,5,1,1))
 #plotFastQCJSONFeature(conFastQCJSON.R1, conFastQCJSON.R2, feature="perBaseN")
@@ -625,6 +632,9 @@ plotMQCFeature(x=file.path(projFolder,"QC","TRIMMED","multiqc_R1"),
 ```
 
 ### Per base quality (left: R1, right: R2)
+
+The "Per base quality" value gives the quality value distribution per base across all samples and reads.
+
 ```{r trimmed data per base sequence quality}
 par(mar=c(5,5,1,1))
 #plotFastQCJSONFeature(conFastQCJSON.R1, conFastQCJSON.R2, feature="sequenceQuality")
@@ -667,9 +677,11 @@ kable_styling(out_html, "striped", position = "left")
 
 ### De-duplication vs. Coverage
 
+The de-duplication rate is set into relation with the sequencing depth of each sample. 
+
 ```{r}
 ddvc <- cbind(dedup.Data, totalTrimmedSeq)
-plot(ddvc[,2], ddvc[,3], col=report.colours[1], ylab="Total trimmed sequences", xlab="De-duplication (in %)")
+plot(ddvc[,2], ddvc[,3], col=report.colours[1], ylab="Total sequences (after trimming)", xlab="De-duplication (in %)")
 ```
 
 

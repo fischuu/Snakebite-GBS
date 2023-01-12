@@ -6,6 +6,9 @@
 
 0.17.* UPDATES
 --------------------------------------------------------------------------------
+62: Pairwise comparisons added to the report
+61: More chapter explanations added to the QC-R-Module
+60: Minimum and Maximum fragment lengths added to the basic stats report part
 59: Location information added for the most covered alignment loci
 58: Location names added for the most covered alignment loci
 57: Small additions to the alignments-R-module (language, explanations, etc)
