@@ -36,8 +36,11 @@ if(config["rawdata-folder"][0]!='/'):
 if(config["samplesheet-file"][0]!='/'):
     config["samplesheet-file"] = config["project-folder"] + '/' + config["samplesheet-file"]
     
-if(config["genome"][0]!='/'):
-    config["genome"] = config["project-folder"] + '/' + config["genome"]
+if config["genome"] == "":
+    pass
+else:
+    if(config["genome"][0]!='/'):
+        config["genome"] = config["project-folder"] + '/' + config["genome"]
 
 if(config["tmpdir"][0]!='/'):
     config["tmpdir"] = config["project-folder"] + '/' + config["tmpdir"]
@@ -300,7 +303,8 @@ rule insilico:
         expand("%s/BAM/Insilico/full/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
         expand("%s/BAM/Insilico/full/{samples}.coverage" % (config["project-folder"]), samples=samples),
         expand("%s/BAM/Insilico/selected/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
-        expand("%s/BAM/Insilico/selected/{samples}.coverage" % (config["project-folder"]), samples=samples)
+        expand("%s/BAM/Insilico/selected/{samples}.coverage" % (config["project-folder"]), samples=samples),
+        "%s/Insilico-Report.html" % (config["project-folder"])
 
 rule preparations:
     input:

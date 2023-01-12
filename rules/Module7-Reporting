@@ -203,10 +203,10 @@ rule R_InsilicoReport:
     """
     input:
         script=config["insilico-report-script"],
-        fsFull="%s/BAM/Insilico/full/{samples}.sam.flagstat" % (config["project-folder"]),
-        cFull="%s/BAM/Insilico/full/{samples}.coverage" % (config["project-folder"]),
-        fsSelected="%s/BAM/Insilico/selected/{samples}.sam.flagstat" % (config["project-folder"]),
-        cSelected="%s/BAM/Insilico/selected/{samples}.coverage" % (config["project-folder"])
+        fsFull=expand("%s/BAM/Insilico/full/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
+        cFull=expand("%s/BAM/Insilico/full/{samples}.coverage" % (config["project-folder"]), samples=samples),
+        fsSelected=expand("%s/BAM/Insilico/selected/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
+        cSelected=expand("%s/BAM/Insilico/selected/{samples}.coverage" % (config["project-folder"]), samples=samples)
     output:
         "%s/Insilico-Report.html" % (config["project-folder"])
     log:
