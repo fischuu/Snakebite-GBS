@@ -100,7 +100,9 @@ rule R_QCReport:
        serverConfig=config["server-config"],
        refGenome=config["genome"],
        enz1=config["enz1"],
-       enz2=config["enz2"]
+       enz2=config["enz2"],
+       minLength=config["minLength"],
+       maxLength=config["maxLength"]
     shell:"""
        echo "Creating the QC-Report"
        echo "###################################################################"
@@ -113,6 +115,8 @@ rule R_QCReport:
              serverConfig.file <- '{params.serverConfig}'; \
              enz1 <- '{params.enz1}'; \
              enz2 <- '{params.enz2}'; \
+             minLength <- '{params.minLength}'; \
+             maxLength <- '{params.maxLength}'; \
              snakemake <- TRUE;\
              options(knitr.duplicate.label = 'allow');\
              source('{input.script}')" &> {log}
@@ -142,7 +146,9 @@ rule R_VariantCallingReport:
        serverConfig=config["server-config"],
        refGenome=config["genome"],
        enz1=config["enz1"],
-       enz2=config["enz2"]
+       enz2=config["enz2"],
+       minLength=config["minLength"],
+       maxLength=config["maxLength"]
     shell:"""
        echo "Creating the VariantCalling-Report"
        echo "###################################################################"
@@ -155,6 +161,8 @@ rule R_VariantCallingReport:
              serverConfig.file <- '{params.serverConfig}'; \
              enz1 <- '{params.enz1}'; \
              enz2 <- '{params.enz2}'; \
+             minLength <- '{params.minLength}'; \
+             maxLength <- '{params.maxLength}'; \
              snakemake <- TRUE;\
              options(knitr.duplicate.label = 'allow');\
              source('{input.script}')" &> {log}
@@ -184,7 +192,9 @@ rule R_MockEval:
        pipeConfig=config["pipeline-config"],
        serverConfig=config["server-config"],
        enz1=config["enz1"],
-       enz2=config["enz2"]
+       enz2=config["enz2"],
+       minLength=config["minLength"],
+       maxLength=config["maxLength"]
     shell:"""
        R -e "projFolder <- '{params.projFolder}'; \
              pipelineFolder <- '{params.pipeFolder}'; \
@@ -192,6 +202,8 @@ rule R_MockEval:
              serverConfig.file <- '{params.serverConfig}'; \
              enz1 <- '{params.enz1}'; \
              enz2 <- '{params.enz2}'; \
+             minLength <- '{params.minLength}'; \
+             maxLength <- '{params.maxLength}'; \
              snakemake <- TRUE;\
              options(knitr.duplicate.label = 'allow');\
              rmarkdown::render('{input.script}',output_file='{output}')" &> {log}
@@ -219,6 +231,7 @@ rule R_InsilicoReport:
        projFolder=config["project-folder"],
        pipeFolder=config["pipeline-folder"],
        pipeConfig=config["pipeline-config"],
+       serverConfig=config["server-config"],
        refGenome=config["genome"],
        fullInsilico=config["full-insilico-genome"],
        selectedInsilico=config["selected-insilico-genome"],
@@ -232,14 +245,16 @@ rule R_InsilicoReport:
        echo ""
        
        R -e "projFolder <- '{params.projFolder}'; \
+             pipelineFolder <- '{params.pipeFolder}'; \
              refGenome.file <- '{params.refGenome}'; \
              pipelineConfig.file <- '{params.pipeConfig}'; \
+             serverConfig.file <- '{params.serverConfig}'; \
              enz1 <- '{params.enz1}'; \
              enz2 <- '{params.enz2}'; \
              minLength <- '{params.minLength}'; \
              maxLength <- '{params.maxLength}'; \
-             fullInsilico.file <- '{params.fullInsilico}'; \
-             selectedInsilico.file <- '{params.selectedInsilico}'; \
+             fullInsilico <- '{params.fullInsilico}'; \
+             selectedInsilico <- '{params.selectedInsilico}'; \
              snakemake <- TRUE;\
              options(knitr.duplicate.label = 'allow');\
              source('{input.script}')" &> {log}

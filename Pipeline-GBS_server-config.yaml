@@ -423,6 +423,12 @@ R_VariantCallingReport:
     job-name: VariantCallingreport
     mem-per-cpu: 80000
 
+R_InsilicoReport:
+    time: 0-03:00:00
+    job-name: InsilicoReport
+    mem-per-cpu: 32000
+
+
 # Module 8 - Call new data
 ################################################################################
 ExistingMockRefGenome_AlignReads:

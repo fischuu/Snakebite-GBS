@@ -6,6 +6,8 @@
 
 0.17.* UPDATES
 --------------------------------------------------------------------------------
+64: Fixed dependencies from the report
+63: Server resource allocation for the Insilico standalo report added to the server default file
 62: Pairwise comparisons added to the report
 61: More chapter explanations added to the QC-R-Module
 60: Minimum and Maximum fragment lengths added to the basic stats report part
