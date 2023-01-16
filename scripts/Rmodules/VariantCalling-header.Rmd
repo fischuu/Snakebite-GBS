@@ -14,3 +14,18 @@ output:
     df_print: paged
     code_folding: show
 ---
+
+```{r, include=FALSE}
+# Fill up the missing variables, that are normally determined from other scripts
+
+fsFiles <- list.files(file.path(projFolder, "FASTQ", "TRIMMED", "alignments"), pattern="*.flagstat")
+
+totalTrimmedSeq <- c()
+
+for(i in 1:length(fsFiles)){
+  tmp <- readLines(file.path(projFolder, "FASTQ", "TRIMMED", "alignments", fsFiles[i]),n=1)
+  totalTrimmedSeq[i] <- as.numeric(strsplit(tmp, " ")[[1]][1])
+}
+
+
+```
