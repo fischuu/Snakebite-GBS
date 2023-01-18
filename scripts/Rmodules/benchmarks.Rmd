@@ -1,5 +1,6 @@
 # Benchmarks
 
 ## Runtimes per calculation step
-IMPORT HERE STILL THE BENCHMARKING TABLES
+
+This part needs to be added still, sorry!
 

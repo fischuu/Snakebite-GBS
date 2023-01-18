@@ -27,7 +27,7 @@ rule CreateClusterAndMockReference:
     log:
         "%s/logs/CreateClusterAndMockReference.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/CreateClusterAndMockReference.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/CreateClusterAndMockReference.tsv" % (config["project-folder"])
     conda:"envs/gbs.yaml"
     singularity: config["singularity"]["gbs"]
     shell:"""
@@ -61,7 +61,7 @@ else:
         log:
             "%s/logs/MINIMAP2/mm2_map_mockVSref.log" % (config["project-folder"])
         benchmark:
-            "%s/benchmark/MINIMAP2/mm2_mockVSref.benchmark.tsv" % (config["project-folder"])
+            "%s/benchmark/MockVsRef_alignment.tsv" % (config["project-folder"])
         threads: 20
         conda:"envs/minimap2.yaml"
         singularity: config["singularity"]["minimap2"]
@@ -85,7 +85,7 @@ else:
         log:
             "%s/logs/Samtools/MockVsRef_samtools_SamToSortedBam.log" % (config["project-folder"])
         benchmark:
-            "%s/benchmark/Samtools/MockVsRef_samtools_SamToSortedBam.benchmark.tsv" % (config["project-folder"])
+            "%s/benchmark/MockVsRef_samtools_SamToSortedBam.tsv" % (config["project-folder"])
         conda:"envs/step3.yaml"
         singularity: config["singularity"]["gbs"]
         shell:"""
@@ -129,7 +129,7 @@ else:
         log:
             "%s/logs/MockVsRef_AlignmentStats.log" % (config["project-folder"])
         benchmark:
-            "%s/benchmark/MockVsRef_AlignmentStats.benchmark.tsv" % (config["project-folder"])
+            "%s/benchmark/MockVsRef_AlignmentStats.tsv" % (config["project-folder"])
         threads: lambda cores: cpu_count()
         params: tmpdir=config["tmpdir"]
         conda:"envs/step3.yaml"
@@ -173,7 +173,7 @@ else:
         log:
             "%s/logs/minimap2-SortedBamToMpileup.log" % (config["project-folder"])
         benchmark:
-            "%s/benchmark/minimap2-SortedBamToMpileup.benchmark.tsv" % (config["project-folder"])
+            "%s/benchmark/MockVsRef_SortedBamToMpileup.tsv" % (config["project-folder"])
         conda:"envs/samtools.yaml"
         singularity: config["singularity"]["gbs"]
         params:
@@ -204,9 +204,8 @@ rule refine_mock_reference:
     log:
         "%s/logs/R/refine_mock_reference.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/R/refine_mock_reference.benchmark.tsv" % (config["project-folder"])
-    singularity: 
-        "docker://fischuu/r-gbs:3.6.3-0.2"
+        "%s/benchmark/refine_mock_reference.tsv" % (config["project-folder"])
+    singularity: config["singularity"]["r-gbs"]
     params:
        projFolder=config["project-folder"],
        pipeFolder=config["pipeline-folder"],
@@ -237,7 +236,7 @@ else:
         log:
             "%s/logs/MINIMAP2/mm2_map_finalMockVSref.log" % (config["project-folder"])
         benchmark:
-            "%s/benchmark/MINIMAP2/mm2_finalMockVSref.benchmark.tsv" % (config["project-folder"])
+            "%s/benchmark/FinalMockVsRef_alignment.tsv" % (config["project-folder"])
         threads: 20
         singularity: config["singularity"]["minimap2"]
         shell:"""
@@ -260,7 +259,7 @@ else:
         log:
             "%s/logs/Samtools/FinalMockVsRef_samtools_SamToSortedBam.log" % (config["project-folder"])
         benchmark:
-            "%s/benchmark/Samtools/FinalMockVsRef_samtools_SamToSortedBam.benchmark.tsv" % (config["project-folder"])
+            "%s/benchmark/FinalMockVsRef_samtools_SamToSortedBam.tsv" % (config["project-folder"])
         singularity: config["singularity"]["gbs"]
         shell:"""
 	    echo "df -h output:\n----------------------------\n" &>> {log}
@@ -303,7 +302,7 @@ else:
         log:
             "%s/logs/FinalMockVsRef_AlignmentStats.log" % (config["project-folder"])
         benchmark:
-            "%s/benchmark/MockVsRef_AlignmentStats.benchmark.tsv" % (config["project-folder"])
+            "%s/benchmark/FinalMockVsRef_AlignmentStats.tsv" % (config["project-folder"])
         threads: lambda cores: cpu_count()
         params: tmpdir=config["tmpdir"]
         conda:"envs/step3.yaml"
@@ -331,3 +330,37 @@ else:
             paste -d '+' {output.leftFA} {output.rightFA} > {output.FA}
             sed '/^>/d' {output.FA} | awk '{{ print toupper($0) }}' | sort | uniq -c > {output.FACounts}
       	"""
+
+
+
+if config["genome"] == "":
+    pass
+else:  	
+    rule Mockrefloci_vs_samplealignments:
+        """
+        Intersect positions of mock reference on reference against the sample alignments
+        """
+        input:
+            ref=config["genome"],
+            bed="%s/BAM/FinalMockref/mockToRef.bed" % (config["project-folder"]),
+            gtf="%s/Stringtie/{samples}.stringtie.gtf" % (config["project-folder"]),
+            left="%s/FASTQ/TRIMMED/alignments_reference/{samples}.flanking_left" % (config["project-folder"]),
+            right="%s/FASTQ/TRIMMED/alignments_reference/{samples}.flanking_right" % (config["project-folder"])
+        output:
+            inter="%s/Stringtie/{samples}.intersected_with_mockOnRef_loci.is" % (config["project-folder"]),
+            left="%s/FASTQ/TRIMMED/alignments_reference/{samples}.flanking_left.fa" % (config["project-folder"]),
+            right="%s/FASTQ/TRIMMED/alignments_reference/{samples}.flanking_right.fa" % (config["project-folder"])
+        log:
+            "%s/logs/Mockrefloci_vs_samplealignments.{samples}.log" % (config["project-folder"])
+        benchmark:
+            "%s/benchmark/Mockrefloci_vs_samplealignments.{samples}.tsv" % (config["project-folder"])
+        params: tmpdir=config["tmpdir"]
+        threads: lambda cores: cpu_count()
+        singularity: config["singularity"]["gbs"]
+        shell:"""
+            bedtools intersect -wa -a {input.bed} -b {input.gtf} > {output.inter}
+            TMPDIR={params.tmpdir}
+
+            bedtools getfasta -fi {input.ref} -bed {input.left} > {output.left}
+            bedtools getfasta -fi {input.ref} -bed {input.right} > {output.right}
+        """

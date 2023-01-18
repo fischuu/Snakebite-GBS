@@ -4,6 +4,80 @@
 #####                                                                      #####
 ################################################################################
 
+0.17.* UPDATES
+--------------------------------------------------------------------------------
+69: Adjusted the remaining input and report files to work with and without provided reference genome
+68: Adjusted the final report so that it runs also without provided reference genome
+67: Input files changed for final report so that pipeline dependencies work without provided reference genome
+66: Exception handling if the first sample does not have reads aligned to reference genome. Now the sample with the most alignemtns is used for visualisation (instead of the first one)
+65: Missing variables added for variatn calling report
+64: Fixed dependencies from the report
+63: Server resource allocation for the Insilico standalo report added to the server default file
+62: Pairwise comparisons added to the report
+61: More chapter explanations added to the QC-R-Module
+60: Minimum and Maximum fragment lengths added to the basic stats report part
+59: Location information added for the most covered alignment loci
+58: Location names added for the most covered alignment loci
+57: Small additions to the alignments-R-module (language, explanations, etc)
+56: Small additions to the Cluster and Reference-R-module (language, explanations, etc)
+55: Small additions to the QC-R-module (language, explanations, etc)
+54: Default paths adjusted
+53: Function "getConfigField" reports now only field names a row starts with
+52: Added the --cluster-cancel option to the start script
+51: Changed the fasta-import function in the in-silico prediction, as it might generate errors for larger genomes
+50: Prepared a stand-alone In-silico report script
+49: Added the In-Silico section to the final report
+48: Alignment stats are determined for the size selected in-silico prediction alignments
+47: Alignment stats are determined for the full in-silico prediction alignments
+46: Reads are now aligned agains the size selected in-silico prediction loci
+45: Reads are now aligned agains the full in-silico prediction loci
+44: More details on the welcoming screen
+43: In situ predicted locations for ddRad digestion are now prepared and written to References/
+42: Table design in Markdown adjusted
+41: Cosmetics for finalReport, status messages printed into the final report were removed.
+40: Plenty of scatterplots added to related metrics to sequencing depth
+39: More exportable tables added
+38: Harmonised the plot colours in the final report
+37: Added more descriptions to the final report
+36: Deduplication vs Coverage plot added
+35: QC tables display now the full dataset, without any threshold
+34: QC tables can now be exported
+33: Server config information added to the reports
+32: QC plots now show ommit the missing R2 output (and do not duplicate R1 to pretend it to be R2)
+31: Expection added in finalReport in case FastQC/MultiQC report different binnings in their reports for R1 and R2
+30: Internal improvement: Duplicated Chunk names in report-knitr files are allowed
+29: Paths in the configuration file can now be relative
+28: Special case for flanking site determination caught (in case alignment starts at base 0, bed could have been negativ)
+27: FinalReport polished and more statistics added
+26: Chapter "Individual analysis" added to the finalReport
+25: FinalReport: The ACGT-plot was improved in readability
+24: FinalReport: Total sequences stats report now table with samples with less than 100k reads 
+23: Bugfix, flanking sequence extraction ignored the first alignment
+22: flanking bed files are now tab-delimted, as reqired by bedtools
+21: Header lines removed from Stringtie output to ensure strict gtf compatability
+20: Variant calling missingnes in percentages are now displayed on a fixed 0-100 scale
+19: Added the Gini coefficient to represent the concentration of reads against the different alignment loci
+18: Added the correlation plot for th loci aligned to reference genome
+17: Critical bugfix in 'Mockrefloci_vs_samplealignments' that crashed the pipeline byt wrong output-filename
+16: QC diverging samples are now printed for upper and lower throeshols in finalReport
+15: Missing percentages are now always displayed on a scale between 0 and 100%
+14: summaryTable cluster to reference genome added to the final report
+13: Caught the special case, if the "genome" is also part of the filename of "genome" that produced an error
+12: Dependency of preliminary mock vcf added to the report to avoid errors
+11: QC module cleaned up (needs still a little)
+10: Added a fasta-index dependency to avoid crashes in case fasta index was not created before stats are calculated
+9: Fixed hard-coded link to docker container in Module 3 (r-gbs)
+8: Special case caught, in case a reference aligned bam is empty
+7: Flanking sites from individual alignments are now extracted
+6: Input bug in the preparesamplesheet.R script fixed (tab-delimited input enforced)
+5: Removed for the time-being the R2 reads from raw-read FastQC, due to some bug in function.
+4: Created functions to handle individual fastq files in FastQC report
+3: Variant Calling report added
+2: Added a server-small config to downscale the server requirements for smaller projects
+1: Define a TMPDIR for the create vertical ref rules, as it seems to crash for large datasets when the system default tmp folder is small
+
+Previous updates
+--------------------------------------------------------------------------------
 0.16.1: * Small path adjustments
 0.16  : * New release with previous changes
 0.15.9: * Added the callvariants rule

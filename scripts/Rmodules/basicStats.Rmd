@@ -1,17 +1,17 @@
 # Basic stats
 
+A concise overview of important runtime parameters and used inputs.
+
 ```{r get pipeline version}
-pipeSMK <- readLines(file.path(pipelineFolder,"GBS-pipeline.smk"))
+pipeSMK <- readLines(file.path(pipelineFolder,"Pipeline-GBS.smk"))
 pipeVersion <- gsub("##### Version: ","",pipeSMK[grep("##### Version:", pipeSMK)])
 ```
 
 ```{r import barcodesID, results="asis"}
-#barcodes <- read.table(file.path(projFolder, "barcodesID.txt"))
-#rawsamples <- read.table(file.path(projFolder, "rawsamples"))
-#sampleInfo <- read.table(file.path(projFolder, "sampleInfo.txt"), header=TRUE)
 pipelineConfig <- readLines(pipelineConfig.file)
 
 sampleSheet.file <- getConfigField("samplesheet-file")
+if(substr(sampleSheet.file,1,1)!="/") sampleSheet.file <- file.path(projFolder, sampleSheet.file)
 sampleSheet <- read.table(sampleSheet.file, sep="\t", header=TRUE)
 
 sampleInfo.file <- getConfigField("sampleinfo-file")
@@ -19,13 +19,10 @@ sampleInfo <- NULL
 
 if(sampleInfo.file!="") sampleInfo <- read.table(sampleInfo.file, sep="\t", header=TRUE)
 
-#projectFolder.info <- trimws(gsub("project-folder:","", pipelineConfig[grep("project-folder:", pipelineConfig)]))
-#pipelineFolder.info <- trimws(gsub("pipeline-folder:","", pipelineConfig[grep("pipeline-folder:", pipelineConfig)]))
-#pipelineConfig.info <- trimws(gsub("pipeline-config:","", pipelineConfig[grep("pipeline-config:", pipelineConfig)]))
-
 projectFolder.info <- getConfigField("project-folder")
 pipelineFolder.info <- getConfigField("pipeline-folder")
 pipelineConfig.info <- pipelineConfig.file
+serverConfig.info <- serverConfig.file
 
 groupingNames <- "No file with sample information provided ('sampleinfo-file'-field)!"
 numberGroupingNames <- 0
@@ -46,7 +43,12 @@ out <- data.frame(c("Number of raw-samples",
                     "Pipeline version",
                     "Project folder",
                     "Pipeline folder",
-                    "Pipeline config"),
+                    "Pipeline config",
+                    "Server config",
+                    "Enzyme 1 sequence",
+                    "Enzyme 2 sequence",
+                    "Aimed min. fragment length",
+                    "Aimed max. fragment length"),
                   c(length(unique(sampleSheet$rawsample)),
                     length(unique(sampleSheet$sample_name)),
                     numberGroupingNames,
@@ -57,14 +59,19 @@ out <- data.frame(c("Number of raw-samples",
                     pipeVersion,
                     projectFolder.info,
                     pipelineFolder.info,
-                    pipelineConfig.info))
+                    pipelineConfig.info,
+                    serverConfig.info,
+                    enz1,
+                    enz2,
+                    paste(minLength, "bp"),
+                    paste(maxLength, "bp")))
 
 out_html <- knitr::kable(out, col.names = NULL, "html")
 kable_styling(out_html, "striped", position = "left")
 ```
 
 ## Concatenating stats
-As the concatenating is a crucial step in this pipeline, it is important to make this correct. As a double check that things went right, we check how
+As the concatenation is a crucial step in this pipeline, it is important to make this correct. As a double check that things went right, we check how
 many raw samples were concatenated per sample. We do this visually. Basically, the height of the bars should correspond to your number of used lanes,
 normally 1,2 or 4. Sometimes, you might want to concatenate also more files together (e.g. technical replicates), in this case the bar can be also higher.
 

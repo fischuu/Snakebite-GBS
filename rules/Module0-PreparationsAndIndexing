@@ -6,19 +6,53 @@ else:
         Create Genome Index for reference genome (STAR).
         """
         input:
-            fasta=config["genome"],
+            fasta=config["genome"]
         output:
             "%s/chrName.txt" % (config["genome-star-index"])
         log:
-            "%s/logs/STAR/star_reference_index.log" % (config["project-folder"])
+            "%s/logs/star_create_index.log" % (config["project-folder"])
         benchmark:
             "%s/benchmark/star_create_index.tsv" % (config["project-folder"])
-        threads: lambda cores: cpu_count()
         singularity: config["singularity"]["star"]
+        threads: cluster["star_create_index"]["cpus-per-task"]
+        resources:
+            time=cluster["star_create_index"]["time"],
+            mem=cluster["star_create_index"]["mem-per-cpu"]
         params: index=config["genome-star-index"]
         shell:"""
                 mkdir -p {params.index}
                 STAR --runThreadN {threads} --runMode genomeGenerate --genomeDir {params.index} --genomeFastaFiles {input.fasta} 2> {log}
+        """
+        
+if config["genome"] == "":
+    pass
+else:
+    rule bwa_create_insilico_index:
+        """
+        Create Genome Index for in-silico prediction (BWA).
+        """
+        input:
+            full="%s/References/full_inSilico_reference.fa" % (config["project-folder"]),
+            selected="%s/References/sizeSelected_inSilico_reference.fa" % (config["project-folder"])
+        output:
+            full=config["genome-bwa-full_insilico-index"],
+            selected=config["genome-bwa-selected_insilico-index"]
+        log:
+            full="%s/logs/bwa_create_full_insilico_index.log" % (config["project-folder"]),
+            selected="%s/logs/bwa_create_full_insilico_index.log" % (config["project-folder"])
+        benchmark:
+            "%s/benchmark/bwa_create_insilico_index.tsv" % (config["project-folder"])
+        singularity: config["singularity"]["gbs"]
+        threads: cluster["bwa_create_insilico_index"]["cpus-per-task"]
+        resources:
+            time=cluster["bwa_create_insilico_index"]["time"],
+            mem=cluster["bwa_create_insilico_index"]["mem-per-cpu"]
+        shell:"""
+            bwa index -a bwtsw {input.full} 2> {log.full}
+            samtools faidx {input.full} 2>> {log.full}
+                
+            bwa index -a bwtsw {input.selected} 2> {log.selected}
+            samtools faidx {input.selected} 2>> {log.selected}
         """
         
 rule Concatenate_lanes:
@@ -37,15 +71,18 @@ rule Concatenate_lanes:
         "%s/logs/SHELL/catFastq_{samples}.log" % (config["project-folder"])
     benchmark:
         "%s/benchmark/Concatenate_lanes.{samples}.tsv" % (config["project-folder"])
-    threads: lambda cores: cpu_count()
+    threads: cluster["Concatenate_lanes"]["cpus-per-task"]
+    resources:
+        time=cluster["Concatenate_lanes"]["time"],
+        mem=cluster["Concatenate_lanes"]["mem-per-cpu"]
     params:
         outfolder="%s/FASTQ/CONCATENATED" % (config["project-folder"])
     shell:"""
-        mkdir -p {params.outfolder}
-        cat {input.R1} > {output.R1} 2> {log}
-        ls {input.R1} > {output.R1Report} 2> {log}
-        cat {input.R2} > {output.R2} 2> {log}
-        ls {input.R2} > {output.R2Report} 2> {log}
+        mkdir -p {params.outfolder} &> {log}
+        cat {input.R1} > {output.R1} 2>> {log}
+        ls {input.R1} > {output.R1Report} 2>> {log}
+        cat {input.R2} > {output.R2} 2>> {log}
+        ls {input.R2} > {output.R2Report} 2>> {log}
   	"""
 
 if config["genome"] == "":
@@ -60,10 +97,13 @@ else:
         output:
             config["genome-bwa-index"]
         log:
-            "%s/logs/BWA/bwa-fai-IndexReferenceGenome.log" % (config["project-folder"])
+            "%s/logs/bwa_create_index.log" % (config["project-folder"])
         benchmark:
             "%s/benchmark/bwa_create_index.tsv" % (config["project-folder"])
-        threads: lambda cores: cpu_count()
+        threads: cluster["bwa_create_index"]["cpus-per-task"]
+        resources:
+            time=cluster["bwa_create_index"]["time"],
+            mem=cluster["bwa_create_index"]["mem-per-cpu"]
         singularity: config["singularity"]["gbs"]
         shell:"""
                 bwa index -a bwtsw {input} 2> {log}
@@ -79,9 +119,13 @@ rule IndexMockReferenceBWA:
     output:
         "%s/FASTQ/TRIMMED/GSC.MR.Genome.fa.bwt" % (config["project-folder"])
     log:
-        "%s/BWA/IndexGMockReference.log" % (config["project-folder"])
+        "%s/IndexMockReferenceBWA.log" % (config["project-folder"])
     benchmark:
         "%s/benchmark/IndexMockReferenceBWA.tsv" % (config["project-folder"])
+    threads: cluster["IndexMockReferenceBWA"]["cpus-per-task"]
+    resources:
+        time=cluster["IndexMockReferenceBWA"]["time"],
+        mem=cluster["IndexMockReferenceBWA"]["mem-per-cpu"]
     singularity: config["singularity"]["gbs"]
     shell:"""
         bwa index -a bwtsw {input}
@@ -96,14 +140,17 @@ rule IndexMockReferenceSamtools:
     output:
         "%s/FASTQ/TRIMMED/GSC.MR.Genome.fa.fai" % (config["project-folder"])
     log:
-        "%s/logs/Samtools/IndexGenomeSam.log" % (config["project-folder"])
+        "%s/logs/IndexMockReferenceSamtools.log" % (config["project-folder"])
     benchmark:
         "%s/benchmark/IndexMockReferenceSamtools.tsv" % (config["project-folder"])
     singularity: config["singularity"]["gbs"]
+    threads: cluster["IndexMockReferenceSamtools"]["cpus-per-task"]
+    resources:
+        time=cluster["IndexMockReferenceSamtools"]["time"],
+        mem=cluster["IndexMockReferenceSamtools"]["mem-per-cpu"]
     shell:"""
         samtools faidx {input}
   	"""
-
 
 rule IndexClustersBWA:
     """
@@ -114,10 +161,14 @@ rule IndexClustersBWA:
     output:
         "%s/FASTQ/TRIMMED/GSC.MR.Clusters.fa.bwt" % (config["project-folder"])
     log:
-        "%s/logs/BWA/IndexClusters.log" % (config["project-folder"])
+        "%s/logs/IndexClustersBWA.log" % (config["project-folder"])
     benchmark:
         "%s/benchmark/IndexClustersBWA.tsv" % (config["project-folder"])
     singularity: config["singularity"]["gbs"]
+    threads: cluster["IndexClustersBWA"]["cpus-per-task"]
+    resources:
+        time=cluster["IndexClustersBWA"]["time"],
+        mem=cluster["IndexClustersBWA"]["mem-per-cpu"]
     shell:"""
         bwa index -a bwtsw {input}
   	"""
@@ -131,10 +182,14 @@ rule IndexClustersSamtools:
     output:
         "%s/FASTQ/TRIMMED/GSC.MR.Clusters.fa.fai" % (config["project-folder"])
     log:
-        "%s/logs/Samtools/IndexClustersSam.log" % (config["project-folder"])
+        "%s/logs/IndexClustersSamtools.log" % (config["project-folder"])
     benchmark:
         "%s/benchmark/IndexClustersSamtools.tsv" % (config["project-folder"])
     singularity: config["singularity"]["gbs"]
+    threads: cluster["IndexClustersSamtools"]["cpus-per-task"]
+    resources:
+        time=cluster["IndexClustersSamtools"]["time"],
+        mem=cluster["IndexClustersSamtools"]["mem-per-cpu"]
     shell:"""
         samtools faidx {input}
   	"""
@@ -148,10 +203,14 @@ rule IndexFinalMockBWA:
     output:
         "%s/MockReference/MockReference.fa.bwt" % (config["project-folder"])
     log:
-        "%s/logs/BWA/IndexFinalMock.log" % (config["project-folder"])
+        "%s/logs/IndexFinalMockBWA.log" % (config["project-folder"])
     benchmark:
         "%s/benchmark/IndexFinalMockBWA.tsv" % (config["project-folder"])
     singularity: config["singularity"]["gbs"]
+    threads: cluster["IndexFinalMockBWA"]["cpus-per-task"]
+    resources:
+        time=cluster["IndexFinalMockBWA"]["time"],
+        mem=cluster["IndexFinalMockBWA"]["mem-per-cpu"]
     shell:"""
         bwa index -a bwtsw {input}
   	"""
@@ -163,12 +222,16 @@ rule IndexFinalMockSamtools:
     input:
         "%s/MockReference/MockReference.fa" % (config["project-folder"])
     output:
-        "%s/MockReference/MockReference.fai" % (config["project-folder"])
+        "%s/MockReference/MockReference.fa.fai" % (config["project-folder"])
     log:
-        "%s/logs/Samtools/IndexFinalMockSam.log" % (config["project-folder"])
+        "%s/logs/IndexFinalMockSamtools.log" % (config["project-folder"])
     benchmark:
         "%s/benchmark/IndexFinalMockSamtools.tsv" % (config["project-folder"])
     singularity: config["singularity"]["gbs"]
+    threads: cluster["IndexFinalMockSamtools"]["cpus-per-task"]
+    resources:
+        time=cluster["IndexFinalMockSamtools"]["time"],
+        mem=cluster["IndexFinalMockSamtools"]["mem-per-cpu"]
     shell:"""
         samtools faidx {input}
   	"""
@@ -188,17 +251,19 @@ else:
             output:
                 config["mockref-bwa-index"]
             log:
-                "%s/logs/BWA/bwa-fai-IndexMockReferenceGenome.log" % (config["project-folder"])
+                "%s/logs/bwa_create_index_existingMock.log" % (config["project-folder"])
             benchmark:
                 "%s/benchmark/bwa_create_index_existingMock.tsv" % (config["project-folder"])
             singularity: config["singularity"]["gbs"]
+            threads: cluster["bwa_create_index_existingMock"]["cpus-per-task"]
+            resources:
+                time=cluster["bwa_create_index_existingMock"]["time"],
+                mem=cluster["bwa_create_index_existingMock"]["mem-per-cpu"]
             shell:"""
                     bwa index -a bwtsw {input} 2> {log}
                     samtools faidx {input} 2> {log}
           	"""
           	
-# vim: set filetype=sh :
-
 rule R_createBarcodesID_file:
     """
     Create the file barcodesID.txt (R).
@@ -209,11 +274,15 @@ rule R_createBarcodesID_file:
     output:
         config["barcodes-file"]
     log:
-        "%s/logs/R/prepareBarcodes.log" % (config["project-folder"])
+        "%s/logs/R_createBarcodesID_file.log" % (config["project-folder"])
     benchmark:
         "%s/benchmark/R_createBarcodesID_file.tsv" % (config["project-folder"])
     singularity:
         config["singularity"]["r-gbs"]
+    threads: cluster["R_createBarcodesID_file"]["cpus-per-task"]
+    resources:
+        time=cluster["R_createBarcodesID_file"]["time"],
+        mem=cluster["R_createBarcodesID_file"]["mem-per-cpu"]
     params:
        projFolder=config["project-folder"],
        pipeFolder=config["pipeline-folder"],

@@ -2,7 +2,7 @@ args <- commandArgs(trailingOnly=TRUE)
 samplesheet.file <- args[1]
 #message("I will use the sample sheet file: ", samplesheet.file)
 #samplesheet.file <- "/path/to/the/file"
-samplesheet <- read.table(samplesheet.file, header=TRUE)
+samplesheet <- read.table(samplesheet.file, header=TRUE, sep="\t")
 
 mockSamples <- NULL
 mockSamples <- unique(samplesheet$sample_name[samplesheet$useForMock=="YES"])

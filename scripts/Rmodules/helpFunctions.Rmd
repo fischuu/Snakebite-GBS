@@ -1,8 +1,6 @@
 
 ```{r setup, include=FALSE}
 .libPaths()
-#.libPaths(c("/projappl/project_2001746/R/libraries", .libPaths()))
-#library("knitr")
 library("GenomicTools")
 library("Luke")
 library("xtable")   # Needed for LaTeX output of the tables
@@ -20,31 +18,74 @@ library("kernlab")
 #library("RDRToolbox")
 library("destiny")
 library("ggplot2")
+
 options(scipen=999,
         stringsAsFactors=FALSE)
+
 knitr::opts_chunk$set(echo = FALSE,
                       cache = FALSE,
                       cache.lazy = FALSE,
                       dev = c('png', 'pdf'),
                       fig.align = 'center', fig.height = 5, fig.width = 8.5)
+
 report.colours <-c("#FF8200", "#00B5E2", "#78BE20", "#7F3F98", "#E13C98", "#0033A0", "#54585A")
 
 mockClusters.file <- "GSC.MR.Clusters.fa"
 mockReference.file <- "GSC.MR.Genome.fa"
+
 # To run locally on terminal type this command in the pipeline folder:
 # R -e "rmarkdown::render('./scripts/workflow-report.Rmd',output_file='./finalReport.html')"
 
 if(!is.element("snakemake",ls())){
-  projFolder <- "/scratch/project_2001746/TestProject"
-  pipelineFolder <- "~/git/Pipeline-GBS/"
-  pipelineConfig.file <- "/scratch/project_2001746/TestProject/GBS-pipeline_config.yaml"
-  refGenome.file <- "hermetiaRef_112020.fasta"
+  projFolder <- ""
+  pipelineFolder <- ""
+  pipelineConfig.file <- ""
+  serverConfig.file <- ""
+  refGenome.file <- ""
 }
+refGenome.full <- refGenome.file
 refGenome.file <- basename(refGenome.file)
 ifelse(refGenome.file == "", refAvail <- FALSE, refAvail <- TRUE)
 ```
 
 ```{r help functions}
+
+stepMean <- function(x,y,step=30000){
+  rx <- range(x)
+  locs <- seq(1,max(rx), step)
+  pos <- rep(0, length(locs)-1)
+  out <- rep(0, length(locs)-1)
+  
+  for(i in 2:length(locs)){
+    takeThose <- which(x>=locs[i-1] & x<locs[i])
+    if(length(takeThose)>0){
+        out[i-1] <- mean(y[takeThose])      
+    } else {
+        out[i-1] <- 0
+    }
+    pos[i-1] <- mean(locs[i], locs[i-1])
+  }
+  cbind(pos,out)
+}
+
+  gini <- function (x, w=NULL){
+    
+    if (is.null(w))
+      w <- rep(1, length(x))
+    x.sort <- sort(x)
+    x.order <- order(x)
+    x <- x.sort
+    n <- length(x)
+    w <- w[x.order]/sum(w)
+    w.c <- cumsum(w)
+    xw.c <- cumsum(w * x)
+    xw.c <- xw.c/xw.c[n]
+    Gini <- t(xw.c[-1]) %*% w.c[-n] - t(xw.c[-n]) %*% w.c[-1]
+    res <- Gini * 1/(1 - sum(w^2))
+    
+    return( pmax(0, res))
+  }
+
 vectorToDF.int <- function(x, sep=" ", names=NULL, autoCoerc=TRUE){
   x.split <- strsplit(x, sep)
   no.columns <- length(x.split[[1]])
@@ -70,11 +111,14 @@ vectorToDF.int <- function(x, sep=" ", names=NULL, autoCoerc=TRUE){
 getConfigField <- function(x, from=pipelineConfig){
   out <- c()
   
+  x <- trimws(paste0("^",x))
+  
   if(length(x)==1){
     pos <- grep(x, from)
     out <- from[pos]
-    
-    out <- gsub(x, "", out)
+   
+    out <- trimws(out)
+    out <- gsub(paste0("^",x), "", out)
     out <- gsub('\"','',out)
     out <- gsub(' ','',out)
     out <- gsub(':','',out)
@@ -101,9 +145,9 @@ class.table <- function(x, classes=NULL){
 }
 
 # alternative colours c(viridis(20)[8], viridis(20)[16])
-plotFastQCFeature <- function(x,y, labels=c("R1", "R2"), col=c(report.colours[1], report.colours[2]), feature="total_deduplicated_percentage", axes=TRUE){
+plotFastQCFeature <- function(x,y=NULL, labels=c("R1", "R2"), col=c(report.colours[1], report.colours[2]), feature="total_deduplicated_percentage", axes=TRUE){
   x.values <- as.vector(as.matrix(x[feature]))
-  y.values <- as.vector(as.matrix(y[feature]))
+  if(!is.null(y)) y.values <- as.vector(as.matrix(y[feature]))
   
   if(feature=="total_deduplicated_percentage"){
     label <- "De-Duplication level in %"
@@ -115,11 +159,22 @@ plotFastQCFeature <- function(x,y, labels=c("R1", "R2"), col=c(report.colours[1]
     label <- "Total sequences"
   }
   
-  barplot(rbind(x.values, y.values), beside=TRUE, ylab=label, col=col)
+  if(is.null(y)){
+    barplot(rbind(x.values), beside=TRUE, ylab=label, col=col[1])  
+  } else {
+    barplot(rbind(x.values, y.values), beside=TRUE, ylab=label, col=col)    
+  }
+
 
   if(axes) axis(1, at=seq(2,3*nrow(x), by=3), paste(substr(x$Sample,1,10),"..."), las=2, cex=0.1)
   
-  legend("bottomright", pch=c(20,20), col=col, legend=labels, fill="white")
+  if(is.null(y)){
+    labels <- "R1"
+    legend("bottomright", pch=c(20,20), col=col[1], legend=labels, fill="white")
+  } else {
+    legend("bottomright", pch=c(20,20), col=col, legend=labels, fill="white")    
+  }
+
 }
 
 plotFastQCJSONFeature <- function(x,y, labels, feature){

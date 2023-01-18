@@ -15,7 +15,7 @@ else:
         log:
             "%s/logs/BWA/RefGenome_AlignReads.{samples}.log" % (config["project-folder"])
         benchmark:
-            "%s/benchmark/BWA/RefGenome_AlignReads.{samples}.benchmark.tsv" % (config["project-folder"])
+            "%s/benchmark/RefGenome_AlignReads.{samples}.tsv" % (config["project-folder"])
         threads: lambda cores: cpu_count()
         conda:"envs/gbs.yaml"
         singularity: config["singularity"]["gbs"]
@@ -35,11 +35,14 @@ else:
             "%s/FASTQ/TRIMMED/alignments_reference/{samples}.sam" % (config["project-folder"])
         output:
             bam=temp("%s/FASTQ/TRIMMED/alignments_reference/{samples}.bam" % (config["project-folder"])),
-            sorted="%s/FASTQ/TRIMMED/alignments_reference/{samples}.sorted.bam" % (config["project-folder"])
+            sorted="%s/FASTQ/TRIMMED/alignments_reference/{samples}.sorted.bam" % (config["project-folder"]),
+            pp=temp("%s/FASTQ/TRIMMED/alignments_reference/{samples}.sorted.pp.bam" % (config["project-folder"])),
+            numberPairs=temp("%s/FASTQ/TRIMMED/alignments_reference/{samples}.name_sorted.bam.wcl" % (config["project-folder"])),
+            namesorted=temp("%s/FASTQ/TRIMMED/alignments_reference/{samples}.name_sorted.bam" % (config["project-folder"]))
         log:
             "%s/logs/Samtools/RefGenome_SamToSortedBam.{samples}.log" % (config["project-folder"])
         benchmark:
-            "%s/benchmark/Samtools/RefGenome_SamToSortedBam.{samples}.benchmark.tsv" % (config["project-folder"])
+            "%s/benchmark/RefGenome_SamToSortedBam.{samples}.tsv" % (config["project-folder"])
         threads: lambda cores: cpu_count()
         params:
             q=config["params"]["step5d"]["q"],
@@ -53,7 +56,49 @@ else:
             samtools view -b -q {params.q} -f {params.f} -F {params.F} {input} > {output.bam}
             samtools sort {output.bam} -o {output.sorted}
             samtools index -c {output.sorted}
+            
+            samtools view -bf 0x2 {output.sorted} > {output.pp}
+            samtools sort -n {output.pp} -o {output.namesorted}
+            
+            samtools view {output.namesorted} | wc -l > {output.numberPairs}
+
       	"""
+
+if config["genome"] == "":
+    pass
+else:
+    rule RefGenome_GetAlignmentFlanking:
+        """
+        Get Flanking sites from individual alignments.
+        """
+        input:
+            bam="%s/FASTQ/TRIMMED/alignments_reference/{samples}.name_sorted.bam" % (config["project-folder"]),
+            numberPairs="%s/FASTQ/TRIMMED/alignments_reference/{samples}.name_sorted.bam.wcl" % (config["project-folder"])
+        output:
+            pa="%s/FASTQ/TRIMMED/alignments_reference/{samples}.paired_alignments" % (config["project-folder"]),
+            left="%s/FASTQ/TRIMMED/alignments_reference/{samples}.flanking_left" % (config["project-folder"]),
+            right="%s/FASTQ/TRIMMED/alignments_reference/{samples}.flanking_right" % (config["project-folder"])
+        log:
+            "%s/logs/RefGenome_GetAlignmentFlanking.{samples}.log" % (config["project-folder"])
+        benchmark:
+            "%s/benchmark/RefGenome_GetAlignmentFlanking.{samples}.tsv" % (config["project-folder"])
+        params:
+            pipefolder=config["pipeline-folder"]
+        singularity: config["singularity"]["gbs"]
+        shell:"""
+        
+            lines=$(cut -f1 {input.numberPairs})
+            
+            if [ "$lines" -eq "0" ]; then
+                touch {output.pa}
+                touch {output.left}
+                touch {output.right}
+            else
+                bedtools bamtobed -bedpe -i {input.bam} > {output.pa} 2> {log}
+                {params.pipefolder}/scripts/getFlankingLeft.sh {output.pa} {output.left} 2>> {log}
+                {params.pipefolder}/scripts/getFlankingRight.sh {output.pa} {output.right} 2>> {log}
+            fi
+       	"""
 
 if config["genome"] == "":
     pass
@@ -70,7 +115,7 @@ else:
         log:
             "%s/logs/Samtools/RefGenome_SortedBamToMpileup.{samples}.log" % (config["project-folder"])
         benchmark:
-            "%s/benchmark/Samtools/RefGenome_SortedBamToMpileup.{samples}.benchmark.tsv" % (config["project-folder"])
+            "%s/benchmark/RefGenome_SortedBamToMpileup.{samples}.tsv" % (config["project-folder"])
         threads: lambda cores: cpu_count()
         params:
             Q=config["params"]["step5d"]["Q"],
@@ -99,7 +144,7 @@ else:
         log:
             "%s/logs/Samtools/RefGenome_AlignmentStats.{samples}.log" % (config["project-folder"])
         benchmark:
-            "%s/benchmark/Samtools/RefGenome_AlignmentStats.{samples}.benchmark.tsv" % (config["project-folder"])
+            "%s/benchmark/RefGenome_AlignmentStats.{samples}.tsv" % (config["project-folder"])
         threads: lambda cores: cpu_count()
         conda:"envs/samtools.yaml"
         singularity: config["singularity"]["gbs"]
@@ -124,7 +169,7 @@ rule MockRef_AlignReads:
     log:
         "%s/logs/BWA/MockRef_AlignReads.{samples}.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/BWA/MockRef_AlignReads.{samples}.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/MockRef_AlignReads.{samples}.tsv" % (config["project-folder"])
     params:
         threads=config["params"]["step5b"]["threads"],
     conda:"envs/gbs.yaml"
@@ -148,7 +193,7 @@ rule MockRefClusters_AlignReads:
     log:
         "%s/logs/BWA/MockRefClusters_AlignReads.{samples}.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/BWA/MockRefClusters_AlignReads.{samples}.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/MockRefClusters_AlignReads.{samples}.tsv" % (config["project-folder"])
     params:
         threads=config["params"]["step5c"]["threads"],
     conda:"envs/gbs.yaml"
@@ -170,7 +215,7 @@ rule MockRef_SamToSortedBam:
     log:
         "%s/logs/Samtools/MockRef_SamToSortedBam.{samples}.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/Samtools/MockRef_SamToSortedBam.{samples}.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/MockRef_SamToSortedBam.{samples}.tsv" % (config["project-folder"])
     params:
         threads=config["params"]["step5d"]["threads"],
         q=config["params"]["step5d"]["q"],
@@ -179,10 +224,19 @@ rule MockRef_SamToSortedBam:
     conda:"envs/samtools.yaml"
     singularity: config["singularity"]["gbs"]
     shell:"""
-        df -h &> {log}
-        samtools view -b -q {params.q} -f {params.f} -F {params.F} {input} > {output.bam}
-        samtools sort {output.bam} -o {output.sorted}
-        samtools index -c {output.sorted}
+        echo "Available disc space" &> {log}
+        df -h &>> {log}
+        echo "Step 1:" &>> {log}
+        echo "##################################################################" &>> {log}
+        samtools view -b -q {params.q} -f {params.f} -F {params.F} {input} > {output.bam} 2>>{log}
+
+        echo "Step 2:" &>> {log}
+        echo "##################################################################" &>> {log}
+        samtools sort {output.bam} -o {output.sorted} &>>{log}
+
+        echo "Step 3:" &>> {log}
+        echo "##################################################################" &>> {log}
+        samtools index -c {output.sorted} &>>{log}
   	"""
 
 rule MockRefClusters_SamToSortedBam:
@@ -197,7 +251,7 @@ rule MockRefClusters_SamToSortedBam:
     log:
         "%s/logs/Samtools/MockRefClusters_SamToSortedBam.{samples}.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/Samtools/MockRefClusters_SamToSortedBam.{samples}.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/MockRefClusters_SamToSortedBam.{samples}.tsv" % (config["project-folder"])
     params:
         threads=config["params"]["step5e"]["threads"],
         q=config["params"]["step5e"]["q"],
@@ -224,7 +278,7 @@ rule MockRef_SortedBamToMpileup:
     log:
         "%s/logs/Samtoools/MockRef_SortedBamToMpileup.{samples}.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/Samtools/MockRef_SortedBamToMpileup.{samples}.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/MockRef_SortedBamToMpileup.{samples}.tsv" % (config["project-folder"])
     params:
         threads=config["params"]["step5d"]["threads"],
         Q=config["params"]["step5d"]["Q"],
@@ -248,7 +302,7 @@ rule MockRef_AlignmentStats:
     log:
         "%s/logs/Samtools/MockRef_AlignmentStats.{samples}.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/Samtools/MockRef_AlignmentStats.{samples}.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/MockRef_AlignmentStats.{samples}.tsv" % (config["project-folder"])
     conda:"envs/samtools.yaml"
     singularity: config["singularity"]["gbs"]
     shell:"""
@@ -269,7 +323,7 @@ rule MockRefClusters_AlignmentStats:
     log:
         "%s/logs/Samtools/MockRefClusters_AlignmentStats.{samples}.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/Samtools/MockRefClusters_AlignmentStats.{samples}.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/MockRefClusters_AlignmentStats.{samples}.tsv" % (config["project-folder"])
     conda:"envs/samtools.yaml"
     singularity: config["singularity"]["gbs"]
     shell:"""
@@ -297,7 +351,7 @@ rule FinalMockRef_AlignReads:
     log:
         "%s/logs/BWA/FinalMockRef_AlignReads.{samples}.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/BWA/FinalMockRef_AlignReads.{samples}.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/FinalMockRef_AlignReads.{samples}.tsv" % (config["project-folder"])
     params:
         threads=config["params"]["step5b"]["threads"],
     conda:"envs/gbs.yaml"
@@ -319,7 +373,7 @@ rule FinalMockRef_SamToSortedBam:
     log:
         "%s/logs/Samtools/FinalMockRef_SamToSortedBam.{samples}.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/Samtools/FinalMockRef_SamToSortedBam.{samples}.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/FinalMockRef_SamToSortedBam.{samples}.tsv" % (config["project-folder"])
     params:
         threads=config["params"]["step5d"]["threads"],
         q=config["params"]["step5d"]["q"],
@@ -341,13 +395,13 @@ rule FinalMockRef_SortedBamToMpileup:
     input:
         bam="%s/BAM/alignments_finalMock/{samples}.sorted.bam" % (config["project-folder"]),
         reference="%s/MockReference/MockReference.fa" % (config["project-folder"]),
-        index="%s/MockReference/MockReference.fa.fai" % (config["project-folder"]),
+        index="%s/MockReference/MockReference.fa.fai" % (config["project-folder"])
     output:
         bam="%s/MPILEUP/mpileup_finalMock/{samples}.mpileup" % (config["project-folder"])
     log:
         "%s/logs/Samtoools/FinalMockRef_SortedBamToMpileup.{samples}.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/Samtools/FinalMockRef_SortedBamToMpileup.{samples}.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/FinalMockRef_SortedBamToMpileup.{samples}.tsv" % (config["project-folder"])
     params:
         threads=config["params"]["step5d"]["threads"],
         Q=config["params"]["step5d"]["Q"],
@@ -373,7 +427,7 @@ rule finalMockRef_AlignmentStats:
     log:
         "%s/logs/Samtools/FinalMockRef_AlignmentStats.{samples}.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/Samtools/FinalMockRef_AlignmentStats.{samples}.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/finalMockRef_AlignmentStats.{samples}.tsv" % (config["project-folder"])
     conda:"envs/samtools.yaml"
     singularity: config["singularity"]["gbs"]
     shell:"""

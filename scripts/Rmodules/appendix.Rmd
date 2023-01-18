@@ -29,14 +29,3 @@ pipelineConfig <- readLines(pipelineConfig.file)
   kable_styling(out_html, "striped", position = "left")
 ```
 
-## Pipeline environment
-And this is the conda environment configuration
- 
-```{r import conda file}
-condaFile <- readLines(file.path(pipelineFolder, "GBS.yaml"))
-```
-
-```{r print conda}
-  out_html <- knitr::kable(as.matrix(condaFile), "html")
-  kable_styling(out_html, "striped", position = "left")
-```

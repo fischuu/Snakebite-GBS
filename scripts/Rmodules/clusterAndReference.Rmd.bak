@@ -3,8 +3,7 @@
 
 ## Preliminary Mock Reference
 
-### To Add
- * Get statistics on multi-mapping of the reads.
+The preliminary mock reference is created in the first phase of the GBS pipeline. Here, we first create a mock reference and then align the data to it. Then, cluster locations with low read coverage are removed to avoid diluting the reads across locations that are, in fact, assembly artifacts rather than real mock reference clusters.
 
 ### Basic stats
 ```{r import required files, warning=FALSE, }
@@ -14,7 +13,8 @@ vsearchIN <- importFA(file.path(projFolder,"FASTQ", "TRIMMED", "VsearchIN.fa"))
 #vsearchOUT <- importFA(file.path(projFolder,"FASTQ", "TRIMMED", "VsearchOUT.fa"))
 ```
 
-Basic information on the sequences used to build the mock reference:
+Basic information on the sequences used to build the preliminary mock reference:
+
 ```{r mock build stats}
   out <- summary(vsearchIN)
   out[,2] <- formatC(out[,2],  format="d", big.mark=",")
@@ -22,33 +22,32 @@ Basic information on the sequences used to build the mock reference:
   kable_styling(out_html, "striped", position = "left")
 ```
 
-Basic information on the identified clusters, used as mock reference
+Basic information on the assembled preliminary mock reference
 
 ```{r summarise mock reference clusters}
   out <- summary(prelimMockClusters)
   out[1,1] <- c("No. of Clusters")
   out[,2] <- formatC(out[,2],  format="d", big.mark=",")
+  out_prelim <- out
   out_html <- knitr::kable(out, col.names = NULL, "html")
   kable_styling(out_html, "striped", position = "left")
 ```
 
-Total length of the input fasta to build reference: `r format(sum(nchar(vsearchIN)), big.mark=",")` bp.
+Total length of the input fasta to build preliminary mock reference: `r format(sum(nchar(vsearchIN)), big.mark=",")` bp.
 
 Total length of the preliminary Mock Reference Clusters: `r format(sum(nchar(prelimMockClusters)), big.mark=",")` bp.
 
 Total length of the preliminary Mock Reference (Used as reference): `r format(sum(nchar(prelimMockReference)), big.mark=",")` bp.
 
 ### Theoretical coverage of Mock per sample
-Given the length of the mock reference assembly and the total number of sequenced bases per sample, we can estimate the theoretical coverage of the mock for each sample
-
-Currently I hard-code here the paired-end reads and assume equal lengths and reads in both pairs, but it should be a good estimate.
+Given the length of the mock reference assembly and the total number of sequenced bases per sample, we can estimate the theoretical coverage of the mock reference for each sample
 
 ```{r mock coverage}
 par(mar=c(10,5,1,1))
 mockLength <- sum(nchar(prelimMockReference))
 mockCov <- (2*mqcStats.trim[,10] * mqcStats.trim[,5])/mockLength
 names(mockCov) <- mqcStats.trim[,1]
-barplot(mockCov, ylab="'x'-fold Coverage", col=viridis(20)[8], las=2)
+barplot(mockCov, ylab="'x'-fold Coverage", col=report.colours[1], las=2)
 lines(c(-100,10000),c(1,1), lty="dotted")
 lines(c(-100,10000),c(5,5), lty="dotted")
 lines(c(-100,10000),c(10,10), lty="dotted")
@@ -75,7 +74,7 @@ kable_styling(out_html, "striped", position = "left")
 
 ```
 
-Number of used samples for the mock reference: `r length(startPos)`.
+In total, `r length(startPos)` sample(s) were used to build the preliminary mock reference.
 
 ```{r report Pear stats}
 
@@ -92,6 +91,8 @@ final("mockSamples")
 
 ```
 
+The ACGT-distribution across the samples used for building the mock reference.
+
 ```{r vis atcg distribution}
 # Get the ATCG distribution
 atDist <- matrix(-1, ncol=length(startPos), nrow=4)
@@ -100,7 +101,7 @@ for(i in 1:4){
 }
 rownames(atDist) <- c("A", "C", "G", "T")
 
-barplot(t(atDist), main="A,C,T,G distribution", col=viridis(20)[8])
+barplot(t(atDist), main="A,C,T,G distribution", col=report.colours[1:ncol(atDist)], beside = TRUE)
 ```
 
 ### Assembling statistics
@@ -155,7 +156,7 @@ out_html <- knitr::kable(out, col.names = NULL, "html")
 kable_styling(out_html, "striped", position = "left")
 ```
 
-Quality values for the first 100,000 sequences. As a rule of thumb, capital letters are good, special characters are bad quality.
+Quality values for the first 100,000 sequences. As a rule of thumb, capital letters are good, special characters represent bad quality.
 ```{r quality measues}
 outQual <- table(unlist(strsplit(discardedReads$qual[1:100000],"")))
 out_html <- knitr::kable(formatC(outQual,  format="d", big.mark=","), "html")
@@ -166,10 +167,14 @@ kable_styling(out_html, "striped", position = "left")
 barplot(outQual, ylab="Frequency", main="Quality-score distribution", col=report.colours[1])
 ```
 
-### Ratio samles used to length Mock reference
+### Ratio samples used to length Mock reference
 How much were the reads merged down? Length of Mock reference vs the length of all used reads together.
 
+<t.b.a.>
+
 ## Mock reference
+
+The final mock reference we use for calling the variants, after removing low coverage clusters.
 
 ### Basic stats
 ```{r import required files mock, warning=FALSE, }
@@ -180,7 +185,8 @@ Basic information for the final mock reference:
 ```{r final mock build stats}
   out <- summary(finalMockClusters)
   out[,2] <- formatC(out[,2],  format="d", big.mark=",")
-  out_html <- knitr::kable(out, col.names = NULL, "html")
+  out[,3] <- out_prelim[,2]
+  out_html <- knitr::kable(out, col.names = c("", "Final Mock", "Preliminary Mock"), "html")
   kable_styling(out_html, "striped", position = "left")
 ```
 
@@ -207,7 +213,9 @@ In case a reference genome was provided, here are a few statistics regarding it
 
 ```{r importRefGenome, warning=FALSE, results="asis"}
 if(refAvail){
-  refGenome <- importFA(getConfigField("genome"))
+  refGenome.file <- getConfigField("genome")
+  if(substr(refGenome.file,1,1)!="/") refGenome.file <- file.path(projFolder, refGenome.file)
+  refGenome <- importFA(refGenome.file)
 }
 ```
 
@@ -225,12 +233,17 @@ if(refAvail){
 
 ## Mock vs reference
 
-These are the flagstats from mapping the mock clusters against an existing reference genome. Typical flag stats are:
-* 0: Read aligned against forward strand
-* 16: Read aligned against reverse strand
-* 2048: Supplementary alignment forward
-* 2064: Supplementary alignment reverse
-* 4: Unmapped
+These are the flagstats from mapping the mock clusters against an existing reference genome. Typical flag stats are
+
+
+|     Flag | Explanation                          |
+|---------:|-------------------------------------:|
+|        0 | Read aligned against forward strand  |
+|       16 | Read aligned against reverse strand  |
+|     2048 | Supplementary alignment forward      |
+|     2064 | Supplementary alignment reverse      |
+|        4 | Unmapped                             |
+
 
 ```{r samflags}
 if(refAvail){
@@ -244,7 +257,7 @@ kable_styling(out_html, "striped", position = "left")
 }
 ```
 
-From there we have `r totalLoci` primary alignments.
+From there we have `r formatC(totalLoci,  format="d", big.mark=",")` primary alignments.
 
 ```{r bam.merged.bed}
 if(refAvail){
@@ -259,9 +272,11 @@ totalBases <- sum(abs(mergedLoci$V3 - mergedLoci$V2))
 ```
 
 However, in total we have `r formatC(nrow(unmergedLoci),  format="d", big.mark=",")` mapping loci that can be merged down (by intersection of the bed) to `r formatC(nrow(mergedLoci),  format="d", big.mark=",")` if their chromosomal location is intersected.
-Please note, if the difference between these two numbers is too large, it indicates that the mock reference needs to be merged more strict.
+Please note, if the difference between these two numbers is too large, it indicates that the mock reference could possibly be merged more strictly.
 
-In total `r formatC(totalBases, big.mark=",")` bases are covered in the reference genome from mock cluster sequences.
+In total, `r formatC(totalBases, big.mark=",")` bases are covered in the reference genome from mock cluster sequences.
+
+### Alignments per Chromosome in Reference
 
 A visualisation of the alignments of the mock clusters to the reference genome
 
@@ -290,6 +305,8 @@ if(refAvail){
 }
 ```
 
+### Avg cluster mapping distance per Chromosome
+
 Then, this is the average distance from one alignment to the next, per chromosome
 
 ```{r}
@@ -309,7 +326,9 @@ barplot(avgDist, main="Avg cluster mapping distance per Chromosome", col=report.
 }
 ```
 
-Coverage of the lined up alignment loci of the mock reference contigs against the reference genome. Ideally, we observe here just a constant coverage of 1, meaning that each contig of the mock reference aligns to a unique place on the reference genome. Having here spikes indicates thaat several mock reference contigs align to one and the same loci along the reference genome and that those contigs are not merged.
+### Mock reference contig alignments on reference genome
+
+Coverage of the lined up alignment loci of the mock reference contigs against the reference genome. Ideally, we observe here just a constant coverage of 1, meaning that each contig of the mock reference aligns to a unique place on the reference genome. Having here spikes indicates that several mock reference contigs align to one and the same loci along the reference genome and that those contigs could possibly be merged.
 
 ```{r}
 if(refAvail){
@@ -317,9 +336,38 @@ if(refAvail){
 }
 ```
 
-TO BE ADDED
-* Identify loci with more than a certain threshold contigs (e.g. 10), identify the loci on the reference and all mock reference contigs that align to it and then put them in a IGV style manner under each other (bases colour coded, top line the reference and then all the sequences of the mock reference contig)
-* Check if this information can be used to optimise the refinement of the final mock, is there any systematics that creates those multimapping contigs?!
+Here is a list of the most covered areas (coverage > 10)
+
+```{r}
+
+tmp <- SAMLoci[order(SAMLoci[,4], decreasing = TRUE),]
+tmp <- tmp[tmp[,4]>10,]
+
+if(nrow(tmp)>0){
+  rownames(tmp) <- 1:nrow(tmp)
+  colnames(tmp) <- c("Chromosome", "Start", "End", "Coverage")
+  #knitr::kable(tmp) %>% kable_styling
+  datatable(tmp, extensions = 'Buttons',
+            options = list(dom = 'Blfrtip',
+                           buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                           lengthMenu = list(c(10,25,50,-1),
+                                             c(10,25,50,"All"))))
+}
+``` 
+
+In summary, we have the following quantities of alignments of mock reference contigs against various loci on the reference genome. Value 1 means here, only a single mock reference cluster aligns to a particular reference genome locus, two means, there are two different mock reference clusters that align to a reference genome locu and so forth.
+
+```{r summaryTable cluster to ref genome, results = 'asis'}
+
+  out <- table(SAMLoci$V4)
+# Split the table
+  printRows <- length(out)%/%10  
+  for(i in 1:printRows){
+    out_html <- knitr::kable(t(out[((i-1)*10+1):(i*10)]), "html")
+    print(kable_styling(out_html, "striped", position = "left") ) 
+  }
+```
+
 
 ```{r}
 if(refAvail){
@@ -338,7 +386,16 @@ rownames(tmp) <- NULL
 colnames(tmp) <- c("Counts", "Sequence")
 #  out_html <- knitr::kable(tmp, "html")
 #  kable_styling(out_html, "striped", position = "left")  
-datatable(tmp)
+if(nrow(tmp)>0){
+  rownames(tmp) <- 1:nrow(tmp)
+  colnames(tmp) <- c("Counts", "Sequence")
+  #knitr::kable(tmp) %>% kable_styling
+  datatable(tmp, extensions = 'Buttons',
+            options = list(dom = 'Blfrtip',
+                           buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                           lengthMenu = list(c(10,25,50,-1),
+                                             c(10,25,50,"All"))))
+}
 }
 ```
 
@@ -357,9 +414,16 @@ if(refAvail){
 tmp <- mergedFlankingCounts[order(mergedFlankingCounts$V1, decreasing=TRUE),][1:20,]
 rownames(tmp) <- NULL
 colnames(tmp) <- c("Counts", "Sequence")
-datatable(tmp)
+if(nrow(tmp)>0){
+  rownames(tmp) <- 1:nrow(tmp)
+  colnames(tmp) <- c("Counts", "Sequence")
+  #knitr::kable(tmp) %>% kable_styling
+  datatable(tmp, extensions = 'Buttons',
+            options = list(dom = 'Blfrtip',
+                           buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                           lengthMenu = list(c(10,25,50,-1),
+                                             c(10,25,50,"All"))))
+}
 }
 ```
-
-WE COULD COUNT HERE STILL HOW MANY SEQUENCES MATCH THE GIVEN ONE WITH ONE SUBSTITUTION ALLOWED.
 

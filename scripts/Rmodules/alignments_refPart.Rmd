@@ -1,0 +1,491 @@
+## Reference genome
+### Basic stats
+
+```{r import ref flagstats}
+if(refAvail){
+  flagstatFiles <- list.files(file.path(projFolder,"FASTQ", "TRIMMED", "alignments_reference"), pattern="*.flagstat")
+  flagstats <- list()
+  for(i in 1:length(flagstatFiles)){
+    flagstats[[i]] <- readLines(file.path(projFolder,"FASTQ", "TRIMMED", "alignments_reference",flagstatFiles[i]))
+  }
+}
+```
+
+### Coverage
+```{r reference mapping stat grpah}
+par(oma=c(6,3,0,0))
+mapStats <- matrix(0,ncol=length(flagstatFiles), nrow=2)
+
+sampleNames <- gsub(".sam.flagstat", "", flagstatFiles)
+
+colnames(mapStats) <- sampleNames
+
+tmp <- as.numeric(sapply(strsplit(sapply(flagstats,"[",1), " +"),"[",1))
+mapStats[1,] <- as.numeric(sapply(strsplit(sapply(flagstats,"[",5), " +"),"[",1))
+mapStats[2,] <- tmp - mapStats[1,]
+
+p <- barplot(mapStats, col=c(report.colours[1], report.colours[2]), las=2)
+
+legend("topleft", pch=c(20,20), col=c(report.colours[2], report.colours[1]), legend=c("Unmapped", "Mapped"), fill="white")
+
+# highlight the mock reference samples
+mockFiles <- paste(mockSamples, ".sam.flagstat", sep="")
+mockPos <- which(is.element(flagstatFiles, mockFiles))
+
+points(p[mockPos], rep(200000, length(mockPos)), pch="*", col="red", cex=4)
+```
+
+```{r ref mapping percentage}
+refGenome.mappingStats <- mapStats[1,] / (apply(mapStats,2,sum))
+barplot(mapStats[1,] / (apply(mapStats,2,sum)), ylim=c(0,1), ylab="Mapping in Percent", col=report.colours[1], las=2)
+```
+And the same information in table format.
+
+```{r}
+mappingRates <- mapStats[1,] / apply(mapStats,2,sum)
+out <- as.matrix(mappingRates)
+colnames(out)[1] <- "Mapping rate"
+tmp <- cbind(colnames(mapStats), out[,1])
+
+if(nrow(tmp)>0){
+  rownames(tmp) <- 1:nrow(tmp)
+  colnames(tmp) <- c("Sample", "Alignment rate")
+  #knitr::kable(tmp) %>% kable_styling
+  datatable(tmp, extensions = 'Buttons',
+            options = list(dom = 'Blfrtip',
+                           buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                           lengthMenu = list(c(10,25,50,-1),
+                                             c(10,25,50,"All"))))
+}
+```
+
+The average mapping rate on the reference genome is `r mean(refGenome.mappingStats)`.
+
+Now we check still the precise coverage (in terms of alignment loci) per sample for the sake of simplicity we'll do it here for the first sample only and also only for the first 40 chromosomes (if there are as many...). Here, one can possibly see issues in the reference genome, when the coverage is not uniformly distributed. Areas with a coverage of more than 20 reads are indicated in red, those below 10 are in blue and areas in between are represented with black.
+
+```{r, fig.width=20, fig.height=10}
+mpile_files <- list.files(file.path(projFolder, "MPILEUP", "mpileup_reference"), pattern="*.mpileup")
+
+# Chose the best sam, with the largest file
+sam <- 1
+fileSize <- -1
+for(i in 1:length(mpile_files)){
+  fileInfo <- file.info(file.path(projFolder, "MPILEUP", "mpileup_reference", mpile_files[i]))  
+  if(fileInfo$size>fileSize){
+    sam <- i
+    fileSize <- fileInfo$size
+  }
+}
+
+
+
+
+
+  covData <- fread(file.path(projFolder, "MPILEUP", "mpileup_reference", mpile_files[sam]), sep="\t")
+  chrNames <- names(table(covData[,1]))
+  chrNames <- chrNames[1:min(49, length(chrNames))]
+
+  maxChr <- min(length(chrNames), 40)
+
+  par(mfrow=c(maxChr%/%10+1,10),
+  mar=c(1,1,1,1))
+    
+  for(i in 1:maxChr){
+    tmpChr <- chrNames[i]
+    
+    tmpData <- covData[which(covData[,1]==tmpChr),]
+    
+     out <- stepMean(x=tmpData$V2, y=tmpData$V4, step=30000)
+     plotcol <- rep("black", length(out))
+     plotcol[out[,2]>20] <- "red"
+     plotcol[out[,2]<10] <- "blue"
+     
+     if(is.element(i, c(1,11,21,31))){
+        plot(out, col=plotcol, xaxt="n", ylim=c(0,40), main=paste0("Chr ",i))  
+     } else {
+        plot(out, col=plotcol, xaxt="n",yaxt="n", ylim=c(0,40), main=paste0("Chr ",i))     
+     }
+  }
+  
+```
+
+### Read alignments
+The aligned reads are now interpreted as "transcripts" and via Stringtie novel transcripts are detected to identify the common alignments via stringtie merge.
+
+```{r, echo=FALSE, message=FALSE, results=FALSE}
+string.merge <- importGTF(file.path(projFolder, "Stringtie", "merged_STRG.gtf"), level="transcript")
+```
+
+Length distribution of the identified contigs across the reference genome. The identification takes place, just by aligning the reads against the reference genome, as each read should represent here a cut-site.
+Please note, this distribution is based on the Stringtie merge output, meaning, each location is counted once, and is NOT weighted based on the coverage, so outliers have the same weight as well-covered areas.
+
+```{r}
+  tmp <- summary(abs(string.merge$V5 - string.merge$V4))
+  out <- data.frame(names(tmp), as.vector(tmp))
+  out_html <- knitr::kable(out, col.names = NULL, "html")
+  kable_styling(out_html, "striped", position = "left")
+```
+
+Here, we have the alignment length distribution of the reads in a histrogram. Axis labels are to be read in groups of 100, meaning a bar between 200 and 300 tells how many string merge loci had a total length between 200 and 300 bp.
+
+```{r}
+x <- abs(string.merge$V5 - string.merge$V4)
+bin_width <- 100
+nbins <- seq(0,
+             max(x) + bin_width,
+             by = bin_width)
+hist(x, las=2, col=report.colours[1], breaks=nbins, xaxt="n", main="Alignment length distribution (unweighted)")
+axis(1, nbins)
+```
+
+
+```{r}
+# Import the coverages to weight the locations properly
+fcFiles <- list.files(file.path(projFolder, "QUANTIFICATION", "Reference_contigs"), pattern="*.txt$")
+
+fc.quant <- importFeatureCounts(file.path(projFolder, "QUANTIFICATION", "Reference_contigs", fcFiles[1]))
+fc.names <- gsub("_reference_contigs_fc.txt", "", fcFiles)
+for(i in 2:length(fcFiles)){
+  tmp <- importFeatureCounts(file.path(projFolder, "QUANTIFICATION", "Reference_contigs", fcFiles[i]))
+  
+  fc.quant$expValues <- merge(fc.quant$expValues, tmp$expValues)
+}
+
+colnames(fc.quant$expValues) <- c("Locus", fc.names)
+```
+
+```{r}
+locationQuant <- merge(string.merge, fc.quant$expValues, by.x="gene_id", by.y="Locus")
+locationQuant$length <- abs(locationQuant$V5 - locationQuant$V4)
+locationQuant$sum <- apply(locationQuant[,12:(ncol(locationQuant)-1)],1,sum)
+
+weightedLengths <- rep(locationQuant$length, locationQuant$sum)
+```
+
+And then the same distribution, but still weighted by the reads, so here we take each read into account, to determine the length distribution (this is the distribtion, you should look at when you check the QC of the sequencing run)
+
+```{r}
+  tmp <- summary(weightedLengths)
+  out <- data.frame(names(tmp), as.vector(tmp))
+  out_html <- knitr::kable(out, col.names = NULL, "html")
+  kable_styling(out_html, "striped", position = "left")
+```
+
+Here, we have the alignment length distribution of the reads in a histrogram. Axis labels are to be read in groups of 100, meaning a bar between 200 and 300 tells how many string merge loci had a total length between 200 and 300 bp.
+
+```{r}
+x <- abs(weightedLengths)
+bin_width <- 100
+nbins <- seq(0,
+             max(x) + bin_width,
+             by = bin_width)
+hist(x, las=2, col=report.colours[1], breaks=nbins, xaxt="n", main="Alignment length distribution (weighted)")
+axis(1, nbins)
+```
+
+Then we have the identified clusters per chromosome on the reference genome
+
+```{r}
+barplot(table(string.merge$V1), las=2, col=report.colours[1])
+```
+
+### Individual assessments
+
+Now we check for the alignments per sample
+
+```{r import individual alignments, echo=FALSE, message=FALSE, results=FALSE}
+gtf.files <- list.files(file.path(projFolder, "Stringtie"), pattern="*.gtf$")
+gtf.files <- gtf.files[-which(gtf.files=="merged_STRG.gtf")]
+
+gtf.names <- gsub(".stringtie.gtf", "", gtf.files)
+
+gtfs <- list()
+gtfs[[1]] <- importGTF(file.path(projFolder, "Stringtie", gtf.files[1]), level="transcript")
+
+samples_without_loci <- c()
+remove_those <- c()
+for(i in 2:length(gtf.files)){
+  
+  number_loci <- sum(substr(readLines(file.path(projFolder, "Stringtie", gtf.files[i]), n=10),1,1)!="#")
+  if(number_loci>0){
+    gtfs[[i]] <- importGTF(file.path(projFolder, "Stringtie", gtf.files[i]), level="transcript")
+  } else {
+    samples_without_loci <- c(samples_without_loci, gtf.names[i])
+    remove_those <- c(remove_those, i)
+  }
+}
+
+if(length(remove_those)>0){
+  gtfs <- gtfs[-remove_those]
+  names(gtfs) <- gtf.names[-remove_those]
+} else {
+  names(gtfs) <- gtf.names
+}
+```
+
+Visualisation, how many alignment loci do the different samples have along the reference genome, ideally you see here a block that represents also the in-situ prediction for the amount of cut-sites with the
+specific contig length after size-selection.
+
+```{r}
+par(mar=c(7,5,0,0))
+gtfRows <- sapply(gtfs, nrow)
+barplot(gtfRows, las=2, col=report.colours[1])
+```
+
+And now the same with the overall amount of identified loci in relation
+
+```{r, fig.width=10}
+par(mar=c(7,5,0,0))
+allLoci <- c(length(string.merge$V1), gtfRows)
+names(allLoci) <- c("All loci", names(gtfRows))
+barplot(allLoci, las=2, col=c(report.colours[2], rep(report.colours[1],length(gtfRows))))
+```
+
+And also the percentage, how many overall loci have alignments from each sample
+
+```{r, fig.width=10}
+par(mar=c(7,5,0,0))
+barplot(allLoci/allLoci[1], las=2, col=c(report.colours[2], rep(report.colours[1],length(gtfRows))), ylim=c(0,1))
+```
+
+
+Now we will check how the reads from different samples distribute across the individual aligned loci (which have been merged together). Ideally, we want to see here that all samples have reads from all mapping loci, which is of course not possible but there should be "some consistency".
+
+Visualisation of the pair-wise expression values. As this can be rather large, we do it for the first 4 samples only
+
+```{r, fig.width=10}
+tmp <- fc.quant$expValues[,2:min(ncol(fc.quant$expValues), 4)]
+tmp <- tmp[apply(tmp, 1, sum)>0,]
+pairs(tmp)
+```
+
+Concentration measure of reads against merged loci.
+
+```{r final lorenz}
+plot(cumsum(sort(fc.quant$expValues[,2] / sum(fc.quant$expValues[,2]))), type="l", xlab="Cluster", ylab="Concentration")
+for(i in 3:ncol(fc.quant$expValues)){
+  lines(cumsum(sort(fc.quant$expValues[,i] / sum(fc.quant$expValues[,i]))))
+}
+```
+
+Concentration measure of reads against merged loci, without zero-locations per sample.
+
+```{r final lorenz}
+tmpData <- fc.quant$expValues[,2]
+tmpData <- tmpData[tmpData!=0]
+plot(cumsum(sort(tmpData / sum(tmpData))), type="l", xlab="Cluster", ylab="Concentration", xlim=c(0, max(apply(fc.quant$expValues[,-1]>0,2,sum))))
+
+for(i in 3:ncol(fc.quant$expValues)){
+    tmpData <- fc.quant$expValues[,i]
+    tmpData <- tmpData[tmpData!=0]
+
+    lines(cumsum(sort(tmpData / sum(tmpData))))
+}
+```
+
+A table of the most covered locations
+
+```{r}
+tmp <- fc.quant$expValues
+tmp <- merge(fc.quant$geneInfo[,-c(5)], tmp, by.x="Geneid", by.y = "Locus")
+totCov <- apply(tmp[,-c(1:5)],1,sum)
+rownames(tmp) <- fc.quant$expValues[,1]
+tmp <- tmp[order(totCov, decreasing = TRUE)[1:50],]
+if(nrow(tmp)>0){
+  rownames(tmp) <- NULL
+#  colnames(tmp) <- c("Sample", "Total sequences")
+  #knitr::kable(tmp) %>% kable_styling
+  datatable(tmp, extensions = 'Buttons', rownames=FALSE,
+            options = list(dom = 'Blfrtip',
+                           buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                           lengthMenu = list(c(10,25,50,-1),
+                                             c(10,25,50,"All"))))
+}
+```
+
+Usually locations with lots of coverage are not considered. We check, how many reads those locations accumulate and if we loose many reads to them. Here, we check locations with a higher coverage than 200 reads.
+
+```{r}
+hcLocations <- vector(mode="numeric", length=ncol(fc.quant$expValues)-1)
+hcCoverage <- vector(mode="numeric", length=ncol(fc.quant$expValues)-1)
+names(hcLocations) <- colnames(fc.quant$expValues)[-1]
+names(hcCoverage) <- colnames(fc.quant$expValues)[-1]
+
+for(i in 2:ncol(fc.quant$expValues)){
+  hcLocations[i-1] <- sum(fc.quant$expValues[,i]>200)
+  hcCoverage[i-1] <- sum(fc.quant$expValues[fc.quant$expValues[,i]>200,i])
+}
+
+```
+
+```{r, fig.width=10}
+par(mar=c(8,4,2,0))
+barplot(hcLocations , col=report.colours[1], las=2, main="High-coverage locations")
+```
+
+This one in relation to the total sequencing depth
+
+```{r}
+plot(hcLocations, totalTrimmedSeq, col=report.colours[1], xlab="High-coverage locations", ylab="Total trimmed sequences")
+```
+
+```{r, fig.width=10}
+par(mar=c(8,5,2,0))
+barplot(hcCoverage , col=report.colours[1], las=2, main="High-coverage location reads")
+```
+
+```{r, fig.width=10}
+par(mar=c(8,5,2,0))
+plotData <- hcCoverage/apply(fc.quant$expValues[,-1],2,sum)*100
+barplot(plotData , col=report.colours[1], las=2, main="High-coverage location reads (in percent)")
+```
+
+Set that into relation to sequencing depth
+
+```{r}
+tmp <- cbind(plotData, totalTrimmedSeq)
+plot(tmp, col=report.colours[1], xlab="Reads in high-coverage loci (in %)", ylab="Total trimmed sequencing depth")
+```
+
+Display how the reads and loci harmonise. For that we create a dataframe that displays the following. Each columns says what is the minimum number of samples with that feature and the
+rows are the number of reads of a certain locus. That means, if e.g. row number 4 and column 6 says 38,931 that would mean, there are 38,931 loci where six or more samples have at least
+four reads.
+
+```{r}
+readDist <- matrix(0, ncol=ncol(fc.quant$expValues), nrow=201)
+
+for(i in 1:201){
+  readDist[i,] <- table(factor(apply(fc.quant$expValues[,-1]>(i-1),1,sum), levels=0:(ncol(fc.quant$expValues)-1)))
+}
+```
+
+```{r}
+rdn <- ncol(readDist)
+out <- t(apply(readDist[1:50,rdn:1],1,cumsum))[,rdn:1]
+
+colnames(out) <- 0:(rdn-1)
+rownames(out) <- 1:50
+knitr::kable(out, row.names = TRUE)%>%  
+ kable_styling(bootstrap_options = c("hover", "condensed", "responsive"), 
+  latex_options = c("striped", "condensed", "HOLD_position", "repeat_header"),
+  repeat_header_text = "(huhu)",
+  full_width = F, fixed_thead = T) %>%  
+ row_spec(0, bold=T, monospace=F, color="white", background="#7B7B7B")
+```
+
+Typically, we have plenty of loci, so a simple image is not feasible. Hence, we create here a image of the (Spearman-)correlation matrix between the loci. In case that the read alignments are equal, it would be one.
+
+```{r, fig.width=10}
+loci_cor <- cor(fc.quant$expValues[, -1], method="spearman")
+image(loci_cor)
+```
+
+Then, we check the pair-wise similarities of loci between the samples. If two samples have common reads exactly in all their alignment loci, the value would be 1, if they do not share a single locus, the value is 0
+
+```{r}
+loci_similarity <- matrix(0, ncol=ncol(fc.quant$expValues), nrow=ncol(fc.quant$expValues))
+for(i in 1:(ncol(fc.quant$expValues)-1)){
+  for(j in (i+1):ncol(fc.quant$expValues)){
+    reads1 <- fc.quant$expValues[,i]>0
+    reads2 <- fc.quant$expValues[,j]>0
+    loci_similarity[i,j] <- sum((reads1 + reads2)==2)/length(reads1)
+    loci_similarity[j,i] <- sum((reads1 + reads2)==2)/length(reads2)
+  }
+}
+```
+
+```{r}
+image(loci_similarity)
+```
+
+### Alignment flanking sites
+
+We consider the flanking sites of the aligned reads. Please keep in mind that we align trimmed data, so this table might be misleading.
+
+```{r}
+out <- data.frame(Enzyme1 = enz1,
+                  Enzyme1_reverse = revcomp(enz1),
+                  Enzyme2 = enz2,
+                  Enzyme2_reverse = revcomp(enz2))
+rownames(out) <- c("Sequence")
+out_html <- knitr::kable(t(out), "html")
+kable_styling(out_html, "striped", position = "left")
+```
+
+```{r}
+flankingLeft.list <- list.files(file.path(projFolder,"FASTQ", "TRIMMED", "alignments_reference"), pattern="*left.fa")
+flankingRight.list <- list.files(file.path(projFolder,"FASTQ", "TRIMMED", "alignments_reference"), pattern="*right.fa")
+flankingLeft <- list()
+flankingRight <- list()
+
+for(i in 1:length(flankingLeft.list)){
+  fileInfo <- file.info(file.path(projFolder,"FASTQ", "TRIMMED", "alignments_reference", flankingLeft.list[i]))
+  if(fileInfo$size>0){
+    flankingLeft[[i]] <- importFA(file.path(projFolder,"FASTQ", "TRIMMED", "alignments_reference", flankingLeft.list[i]))
+    flankingRight[[i]] <- importFA(file.path(projFolder,"FASTQ", "TRIMMED", "alignments_reference", flankingRight.list[i]))
+  }
+}
+
+
+```
+
+First, the distributions per sample of the most abundant flanking sequence (top-10)
+
+#### Flanking sequences 'left'
+
+This table is as we take it from the data, the most abundant sequences at the left site of the aligned reads.
+
+```{r}
+flankSeqLeft <- list()
+for(i in 1:length(flankingLeft))
+flankSeqLeft[[i]] <- sort(table(flankingLeft[[i]]), decreasing = TRUE)[1:10]/length(flankingLeft[[i]])
+```
+
+```{r}
+out <- paste0(names(flankSeqLeft[[1]]), " - ",round(flankSeqLeft[[1]]*100,1),"%")
+for(i in 2:length(flankSeqLeft)){
+  out <- cbind(out, paste0(names(flankSeqLeft[[i]]), " - ",round(flankSeqLeft[[i]]*100,1),"%"))
+}
+colnames(out) <- gsub(".flanking_left.fa","",flankingLeft.list)
+data.table(out)
+```
+#### Flanking sequences 'right'
+
+Those are the most abundant sequences that we find at the right site of the aligned reads.
+
+```{r}
+flankSeqRight <- list()
+for(i in 1:length(flankingRight))
+flankSeqRight[[i]] <- sort(table(flankingRight[[i]]), decreasing = TRUE)[1:10]/length(flankingRight[[i]])
+```
+
+```{r}
+out <- paste0(names(flankSeqRight[[1]]), " - ",round(flankSeqRight[[1]]*100,1),"%")
+for(i in 2:length(flankSeqRight)){
+  out <- cbind(out, paste0(names(flankSeqRight[[i]]), " - ",round(flankSeqRight[[i]]*100,1),"%"))
+}
+colnames(out) <- gsub(".flanking_right.fa","",flankingRight.list)
+data.table(out)
+
+```
+
+#### Combined left and right sequences
+
+And finally still the top10 combinations
+
+```{r}
+
+tmp <- paste(flankingLeft[[1]], flankingRight[[1]], sep="-")
+tmp2 <- sort(table(tmp), decreasing=TRUE)[1:20]/length(tmp)
+out <- paste0(names(tmp2), " - ",round(tmp2*100,1),"%")
+
+for(i in 2:length(flankingLeft)){
+   tmp <- paste(flankingLeft[[i]], flankingRight[[i]], sep="-")
+   tmp2 <- sort(table(tmp), decreasing=TRUE)[1:20]/length(tmp)
+   out <- cbind(out, paste0(names(tmp2), " - ",round(tmp2*100,1),"%"))
+}
+colnames(out) <- gsub(".flanking_right.fa","",flankingRight.list)
+data.table(out)
+
+```
+

@@ -1,0 +1,564 @@
+
+# In-Silico analysis
+
+In case a reference genome, the restriction enzymes and a size selection window is provided with the configuration, we have a closer look at the in-silico predictions. For that, we first have a general look, how well the restriction enzymes cut the reference genome and then how the reads align to the locations
+
+## In-silico predictions
+Based on the two restriction enzymes `r enz1` and `r enz2` the following fragments were predicted.
+
+```{r}
+fullInsilico <- importFA(fullInsilico)
+selectedInsilico <- importFA(selectedInsilico)
+
+number_predicted_loci <- length(selectedInsilico)
+```
+
+Without any size selection, we receive the following calculated fragments for the in-silico digestion
+
+```{r}
+printThis <- summary(fullInsilico)
+for(i in 1:length(printThis[[2]])){
+  printThis[[2]][i] <- prettyNum(printThis[[2]][i], big.mark = ",")  
+}
+out_html <- knitr::kable(printThis, col.names = NULL, "html")
+kable_styling(out_html, "striped", position = "left")
+```
+
+
+Applying a size selection of minimum length `r minLength` and maximum length `r maxLength`, the distributions changes to
+
+```{r}
+printThis <- summary(selectedInsilico)
+for(i in 1:length(printThis[[2]])){
+  printThis[[2]][i] <- prettyNum(printThis[[2]][i], big.mark = ",")  
+}
+out_html <- knitr::kable(printThis, col.names = NULL, "html")
+kable_styling(out_html, "striped", position = "left")
+```
+
+That means, given the provided enzymes and target size, one would expect `r prettyNum(length(selectedInsilico), big.mark=",")` fragments in the mock reference.
+
+## Alignments
+
+### Full in-silico digestion
+Lets see, how the alignment rate behave. First against the full set. Please keep in mind, that this is more or less the reference genome...
+
+```{r}
+flagstatFiles <- list.files(file.path(projFolder, "BAM", "Insilico", "full"), pattern="*flagstat")
+flagstats <- list()
+for(i in 1:length(flagstatFiles)){
+  flagstats[[i]] <- readLines(file.path(projFolder, "BAM", "Insilico", "full",flagstatFiles[i]))
+}
+```
+
+Visualization of the alignments
+
+```{r vis mapping stats}
+par(oma=c(6,3,0,0))
+mapStats <- matrix(0,ncol=length(flagstatFiles), nrow=2)
+
+sampleNames <- gsub(".sam.flagstat", "", flagstatFiles)
+
+colnames(mapStats) <- sampleNames
+
+tmp <- as.numeric(sapply(strsplit(sapply(flagstats,"[",1), " +"),"[",1))
+mapStats[1,] <- as.numeric(sapply(strsplit(sapply(flagstats,"[",5), " +"),"[",1))
+mapStats[2,] <- tmp - mapStats[1,]
+
+p <- barplot(mapStats, col=c(report.colours[1], report.colours[2]), las=2)
+
+legend("topleft", pch=c(20,20), col=c(report.colours[2], report.colours[1]), legend=c("Unmapped", "Mapped"), fill="white")
+```
+
+```{r mapping percentage}
+barplot(mapStats[1,] / (apply(mapStats,2,sum)) * 100, ylim=c(0,100), ylab="Mapping in Percent", col=report.colours[1], las=2)
+```
+
+And the same information in table format.
+
+```{r}
+mappingRates <- mapStats[1,] / apply(mapStats,2,sum)
+out <- as.matrix(mappingRates)
+colnames(out)[1] <- "Mapping rate"
+
+tmp <- cbind(colnames(mapStats), out[,1])
+
+if(nrow(tmp)>0){
+  rownames(tmp) <- 1:nrow(tmp)
+  colnames(tmp) <- c("Sample", "Alignment rate")
+  #knitr::kable(tmp) %>% kable_styling
+  datatable(tmp, extensions = 'Buttons',
+            options = list(dom = 'Blfrtip',
+                           buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                           lengthMenu = list(c(10,25,50,-1),
+                                             c(10,25,50,"All"))))
+}
+```
+
+### Full in-silico digestion
+
+Currently, we only support paired-end reads and for paired-end reads the here used coverage function frm samtools counts for a paired-end read
+two, so we half for now the value as a good estimate.
+
+```{r importFullClusterCoverage, warning=FALSE}
+clusterFiles <- list.files(file.path(projFolder, "BAM", "Insilico", "full"), pattern="*.coverage")
+clusterCoverage <- read.table(file.path(projFolder, "BAM", "Insilico", "full", clusterFiles[1]))
+names(clusterCoverage)[1:2] <- c("cluster", clusterFiles[1])
+
+for(i in 2:length(clusterFiles)){
+  tmp <- read.table(file.path(projFolder, "BAM", "Insilico", "full", clusterFiles[i]))
+  names(tmp)[1:2] <- c("cluster", clusterFiles[i])
+  clusterCoverage <- merge(clusterCoverage, tmp, by="cluster")
+}
+clusterCoverage <- clusterCoverage[-which(clusterCoverage$cluster=="*"),]
+rownames(clusterCoverage) <- clusterCoverage[,1]
+clusterCoverage <- clusterCoverage[,-1]
+
+names(clusterCoverage)[length(clusterFiles)] <- clusterFiles
+clusterCoverage.full <- clusterCoverage
+```
+
+```{r}
+covFrag.full <- data.frame(frag=rownames(clusterCoverage.full),
+                      ceiling(clusterCoverage.full/2))
+
+fragLength.tmp <- nchar(fullInsilico)
+fragLength <- data.frame(frag=trimws(gsub(">", "", names(fragLength.tmp))),
+                         length=fragLength.tmp)
+covFrag.full <- merge(fragLength, covFrag.full, by="frag")
+```
+
+Now reads per fragment length
+
+```{r}
+readSums <- apply(covFrag.full[,-c(1:2)], 1, sum)
+names(readSums) <- covFrag.full$length
+tmp <- range(covFrag.full$length)
+output.full <- rep(0, length(tmp[1]:tmp[2]) + 1)
+names(output.full) <- tmp[1]:tmp[2]
+
+for(i in 1:length(output.full)){
+  output.full[i] <- sum(readSums[names(readSums)==names(output.full)[i]])
+}
+```
+
+Overall fragments
+
+```{r}
+barplot(output.full, col=report.colours[1], xlab="Fragment length", ylab="Sum of reads")
+```
+
+And fragments between 0 and 1000, weighted by the reads originating from them.
+
+```{r}
+plot(as.numeric(names(output.full)), output.full, col=report.colours[2], xlab="Fragment length", ylab="Sum of reads", xlim=c(0, 1000), type="h")
+abline(v=c(as.numeric(minLength), as.numeric(maxLength)), col="red")
+```
+
+Restriced to the upper 0.999 quartile, to avoid impact of outliers
+
+```{r}
+plot(as.numeric(names(output.full)), output.full, col=report.colours[2], xlab="Fragment length", ylab="Sum of reads", xlim=c(0, 1000), ylim=c(0,quantile(output.full[output.full!=0],0.999, na.rm=TRUE)), las=2, xaxt="n", type="h")
+abline(v=c(as.numeric(minLength), as.numeric(maxLength)), col="red", lwd=2)
+axis(1, seq(0,1000,100))
+```
+
+Check, ratio of reads that originate from the area that was selected for vs reads from other areas.
+
+```{r}
+aimReads <- matrix(0,nrow=2, ncol=(ncol(covFrag.full)-2))
+
+aimedRows <- covFrag.full$length>=as.numeric(minLength) & covFrag.full$length<=as.numeric(maxLength)
+unaimedRows <- !aimedRows 
+```
+
+
+Reads from location of different length (aimed and unaimed size selected areas)
+
+```{r}
+par(mar=c(7,6,1,1))
+barplot(rbind(apply(covFrag.full[aimedRows,-c(1:2)],2,sum),
+              apply(covFrag.full[unaimedRows,-c(1:2)],2,sum)), col=report.colours[1:2], las=2, ylab="Reads from locations")
+legend("topright", pch=c(20,20), col=c(report.colours[2], report.colours[1]), legend=c("Unaimed", "Aimed"), fill="white")
+```
+
+Well-covered (more than 9 reads) locations per sample, split for aimed / unaimed areas.
+
+```{r}
+par(mar=c(7,6,1,1))
+barplot(rbind(apply(covFrag.full[aimedRows,-c(1,2)]>9,2,sum),
+              apply(covFrag.full[unaimedRows,-c(1,2)]>9,2,sum)), col=report.colours[1:2], las=2, ylab="Reads from well covered locations")
+legend("topright", pch=c(20,20), col=c(report.colours[2], report.colours[1]), legend=c("Unaimed", "Aimed"), fill="white")
+```
+
+
+### Size-selected in-silico digestion
+Lets see, how the alignment rate behave. These are now the fragments restricted to the provided size selection
+
+```{r}
+flagstatFiles <- list.files(file.path(projFolder, "BAM", "Insilico", "selected"), pattern="*flagstat")
+flagstats <- list()
+for(i in 1:length(flagstatFiles)){
+  flagstats[[i]] <- readLines(file.path(projFolder, "BAM", "Insilico", "selected", flagstatFiles[i]))
+}
+```
+
+Visualization of the alignments
+
+```{r vis mapping stats}
+par(oma=c(6,3,0,0))
+mapStats <- matrix(0,ncol=length(flagstatFiles), nrow=2)
+
+sampleNames <- gsub(".sam.flagstat", "", flagstatFiles)
+
+colnames(mapStats) <- sampleNames
+
+tmp <- as.numeric(sapply(strsplit(sapply(flagstats,"[",1), " +"),"[",1))
+mapStats[1,] <- as.numeric(sapply(strsplit(sapply(flagstats,"[",5), " +"),"[",1))
+mapStats[2,] <- tmp - mapStats[1,]
+
+p <- barplot(mapStats, col=c(report.colours[1], report.colours[2]), las=2)
+
+legend("topleft", pch=c(20,20), col=c(report.colours[2], report.colours[1]), legend=c("Unmapped", "Mapped"), fill="white")
+```
+
+```{r mapping percentage}
+barplot(mapStats[1,] / (apply(mapStats,2,sum)) * 100, ylim=c(0,100), ylab="Mapping in Percent", col=report.colours[1], las=2)
+```
+
+And the same information in table format.
+
+```{r}
+mappingRates <- mapStats[1,] / apply(mapStats,2,sum)
+out <- as.matrix(mappingRates)
+colnames(out)[1] <- "Mapping rate"
+
+tmp <- cbind(colnames(mapStats), out[,1])
+
+if(nrow(tmp)>0){
+  rownames(tmp) <- 1:nrow(tmp)
+  colnames(tmp) <- c("Sample", "Alignment rate")
+  #knitr::kable(tmp) %>% kable_styling
+  datatable(tmp, extensions = 'Buttons',
+            options = list(dom = 'Blfrtip',
+                           buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                           lengthMenu = list(c(10,25,50,-1),
+                                             c(10,25,50,"All"))))
+}
+```
+
+
+Lets consider in more detail the coverages. Also here, we assume paired-end reads, meaning the coverage files contain each read "twice", one for the forward and one for the reverse strand. For the sake of simplicity, we assume that all alignments are properly paired and divide the total number by two, In later version, (e.g. when single-end reads are supported), we should give here a more
+precise estimate, but normally that value should be 95%+ accurate. 
+
+```{r importClusterCoverage, warning=FALSE}
+clusterFiles <- list.files(file.path(projFolder, "BAM", "Insilico", "selected"), pattern="*.coverage")
+clusterCoverage <- read.table(file.path(projFolder, "BAM", "Insilico", "selected", clusterFiles[1]))
+names(clusterCoverage)[1:2] <- c("cluster", clusterFiles[1])
+
+for(i in 2:length(clusterFiles)){
+  tmp <- read.table(file.path(projFolder, "BAM", "Insilico", "selected", clusterFiles[i]))
+  names(tmp)[1:2] <- c("cluster", clusterFiles[i])
+  clusterCoverage <- merge(clusterCoverage, tmp, by="cluster")
+}
+clusterCoverage <- clusterCoverage[-which(clusterCoverage$cluster=="*"),]
+rownames(clusterCoverage) <- clusterCoverage[,1]
+clusterCoverage <- clusterCoverage[,-1]
+
+clusterCoverage <- ceiling(clusterCoverage/2)
+
+names(clusterCoverage)[length(clusterFiles)] <- clusterFiles
+clusterCoverage.size <- clusterCoverage
+
+```
+
+Here is the lorenz-curve visualisation of the alignment concentration
+
+```{r lorenz}
+plot(cumsum(sort(clusterCoverage[,1] / sum(clusterCoverage[,1]))), type="l", xlab="Cluster", ylab="Concentration")
+for(i in 2:ncol(clusterCoverage)){
+  lines(cumsum(sort(clusterCoverage[,i] / sum(clusterCoverage[,i]))))
+}
+```
+
+Further, we check the number of samples with reads on a predicted locus
+
+```{r}
+miss <- apply(clusterCoverage!=0, 1,sum)
+groups <- table(miss)
+barplot(groups, col=report.colours[1])
+```
+And then the overall reads within each group
+
+```{r}
+group.names <- names(groups)
+missCover <- rep(0, length(group.names))
+names(missCover) <- group.names
+
+for(i in 1:length(missCover)){
+  tmpRows <- which(miss==names(missCover[i]))
+  missCover[i] <- sum(apply(clusterCoverage[tmpRows,],1,sum))
+}
+
+barplot(missCover, col=report.colours[1])
+```
+
+```{r}
+covFrag <- data.frame(frag=rownames(clusterCoverage),
+                      clusterCoverage)
+
+fragLength.tmp <- nchar(selectedInsilico)
+fragLength <- data.frame(frag=trimws(gsub(">", "", names(fragLength.tmp))),
+                         length=fragLength.tmp)
+covFrag <- merge(fragLength, covFrag, by="frag")
+```
+
+Before going into the reads per fragment analysis, I will check how the different fragment lengths are distributed
+
+```{r}
+barplot(table(covFrag$length), col=report.colours[1])
+```
+
+Now we check, how many reads (summed over all samples!) coming from different predicted fragment lengths
+
+
+Now the reads per fragment length
+
+```{r}
+readSums <- apply(covFrag[,-c(1:2)], 1, sum)
+names(readSums) <- covFrag$length
+output <- rep(0, as.numeric(maxLength) - as.numeric(minLength) + 1)
+names(output) <- as.numeric(minLength):as.numeric(maxLength)
+
+for(i in 1:length(output)){
+  output[i] <- sum(readSums[names(readSums)==names(output)[i]])
+}
+
+barplot(output, col=report.colours[1], xlab="Fragment length", ylab="Sum of reads")
+```
+
+To avoid impact of outliers on the plot, we limit now still the y-axis to three times the median of the sum of reads per locus
+```{r}
+barplot(output, col=report.colours[1], ylim=c(0,3*median(output)), xlab="Fragment length", ylab="Sum of reads (limited to 3xmedian)")
+```
+For simplicity, we check grouped sizes also
+
+```{r}
+ws <- 10
+chunks <- length(output)%/%ws + length(output)%%ws
+chunks.out <- rep(0, chunks)
+
+for(i in 1:(chunks-1)){
+  tmp <- output[(1+(i-1)*ws):(i*ws)]
+  names(chunks.out)[i] <- paste0(names(output)[1+(i-1)*ws], "-", names(output)[(i*ws)])
+  chunks.out[i] <- sum(tmp)/length(tmp)
+}
+```
+
+```{r}
+barplot(chunks.out, col=report.colours[1], las=2)
+```
+
+Knowing the number of reads and the number of fragments, we can calculate also the average coverage per fragment, depending on the size, lines are at 10, 20, 30 and 40
+
+```{r}
+barplot(output/table(covFrag$length)/(ncol(covFrag)-2), col=report.colours[1])
+abline(h=c(10, 20, 30, 40))
+```
+
+Now check for individual outliers in the data
+
+```{r}
+
+outputMat <- matrix(0, ncol=ncol(covFrag)-2, nrow=length(output))
+colnames(outputMat) <- colnames(covFrag)[-c(1:2)]
+rownames(outputMat) <- names(output)
+
+for(j in 1:nrow(outputMat)){
+  lengthRows <- which(covFrag$length==rownames(outputMat)[j])
+  for(i in 3:ncol(covFrag)){
+    outputMat[j,i-2] <- sum(covFrag[lengthRows,i])
+  }
+}
+```
+
+
+```{r}
+plot(smooth.spline(outputMat[,1], df=50), ylim=c(0,2*median(output)), xlab="Fragment length", ylab="Sum of reads (limited to 2xmedian)", type="l")
+for(i in 2:ncol(outputMat)){
+  lines(smooth.spline(outputMat[,i], df=50))
+}
+```
+
+The same plot, but standardised (using quantile normalisation) to the total reads aligned to fragments
+
+```{r}
+
+outputMat_rank <- apply(outputMat,2,rank,ties.method="min")
+
+outputMat_sorted <- data.frame(apply(outputMat, 2, sort))
+
+outputMat_mean <- apply(outputMat_sorted, 1, mean)
+
+index_to_mean <- function(my_index, my_mean){
+  return(my_mean[my_index])
+}
+ 
+outputMat_std <- apply(outputMat_rank, 2, index_to_mean, my_mean=outputMat_mean)
+
+plot(smooth.spline(outputMat_std[,1], df=50), ylim=c(0,10*median(outputMat_std)), xlab="Fragment length", ylab="Quantile normalised coverage", type="l")
+for(i in 2:ncol(outputMat_std)){
+  lines(smooth.spline(outputMat_std[,i], df=50))
+}
+```
+
+### Coverage distribution
+
+```{r}
+barplot(table(apply(clusterCoverage.size>0, 1, sum)), col=report.colours[1], main="Sample coverage with at least one read on aimed contig")
+```
+```{r}
+barplot(table(apply(clusterCoverage.size>4, 1, sum)), col=report.colours[1], main="Sample coverage with at least five read on aimed contig")
+```
+
+```{r}
+barplot(table(apply(clusterCoverage.size>9, 1, sum)), col=report.colours[1], main="Sample coverage with at least ten read on aimed contig")
+```
+```{r}
+barplot(table(apply(clusterCoverage.full>0, 1, sum)), col=report.colours[1], main="Sample coverage with at least one read on unaimed contig")
+```
+
+```{r}
+barplot(table(apply(clusterCoverage.full>4, 1, sum)), col=report.colours[1], main="Sample coverage with at least five read on unaimed contig")
+```
+
+```{r}
+barplot(table(apply(clusterCoverage.full>9, 1, sum)), col=report.colours[1], main="Sample coverage with at least ten read on unaimed contig")
+```
+
+### Sample similarity
+
+We want to check, how similar different samples behave. For that we try different things
+
+Here are the pairwise similarities between the samples, as darker the colour as more joint locations the samples have
+
+```{r}
+similarity.size <- matrix(0, ncol=ncol(clusterCoverage.size), nrow=ncol(clusterCoverage.size))
+for(i in 1:ncol(clusterCoverage.size)){
+  for(j in i:ncol(clusterCoverage.size)){
+    covI <- clusterCoverage.size[,i]>0
+    covJ <- clusterCoverage.size[,j]>0
+    covIJ <- covI*covJ
+    similarity.size[i,j] <- sum(covIJ)/sum(covI)
+    similarity.size[j,i] <- sum(covIJ)/sum(covJ)
+  }
+}
+
+par(mfrow=c(1,2))
+image(similarity.size, main="At least one read per aimed locus", zlim=c(0,1))
+plotScale <- rep(10,12)
+names(plotScale) <- round(seq(0.1,1, length.out=12 ),2)
+barplot(plotScale, col=hcl.colors(12, "YlOrRd", rev = TRUE), horiz = TRUE, las=2, xaxt="n")
+
+```
+```{r}
+similarity.size <- matrix(0, ncol=ncol(clusterCoverage.size), nrow=ncol(clusterCoverage.size))
+for(i in 1:ncol(clusterCoverage.size)){
+  for(j in i:ncol(clusterCoverage.size)){
+    covI <- clusterCoverage.size[,i]>4
+    covJ <- clusterCoverage.size[,j]>4
+    covIJ <- covI*covJ
+    similarity.size[i,j] <- sum(covIJ)/sum(covI)
+    similarity.size[j,i] <- sum(covIJ)/sum(covJ)
+  }
+}
+
+par(mfrow=c(1,2))
+image(similarity.size, main="At least five reads per aimed locus", zlim=c(0,1))
+plotScale <- rep(10,12)
+names(plotScale) <- round(seq(0.1,1, length.out=12 ),2)
+barplot(plotScale, col=hcl.colors(12, "YlOrRd", rev = TRUE), horiz = TRUE, las=2, xaxt="n")
+
+```
+
+```{r}
+similarity.size <- matrix(0, ncol=ncol(clusterCoverage.size), nrow=ncol(clusterCoverage.size))
+for(i in 1:ncol(clusterCoverage.size)){
+  for(j in i:ncol(clusterCoverage.size)){
+    covI <- clusterCoverage.size[,i]>9
+    covJ <- clusterCoverage.size[,j]>9
+    covIJ <- covI*covJ
+    similarity.size[i,j] <- sum(covIJ)/sum(covI)
+    similarity.size[j,i] <- sum(covIJ)/sum(covJ)
+  }
+}
+
+par(mfrow=c(1,2))
+image(similarity.size, main="At least ten reads per aimed locus", zlim=c(0,1))
+plotScale <- rep(10,12)
+names(plotScale) <- round(seq(0.1,1, length.out=12 ),2)
+barplot(plotScale, col=hcl.colors(12, "YlOrRd", rev = TRUE), horiz = TRUE, las=2, xaxt="n")
+
+```
+
+
+```{r}
+similarity.full<- matrix(0, ncol=ncol(clusterCoverage.full), nrow=ncol(clusterCoverage.full))
+for(i in 1:ncol(clusterCoverage.full)){
+  for(j in i:ncol(clusterCoverage.full)){
+    covI <- clusterCoverage.full[,i]>0
+    covJ <- clusterCoverage.full[,j]>0
+    covIJ <- covI*covJ
+    similarity.full[i,j] <- sum(covIJ)/sum(covI)
+    similarity.full[j,i] <- sum(covIJ)/sum(covJ)
+  }
+}
+
+par(mfrow=c(1,2))
+image(similarity.full, main="At least one read per unaimed locus", zlim=c(0,1))
+plotScale <- rep(10,12)
+names(plotScale) <- round(seq(0.1,1, length.out=12 ),2)
+barplot(plotScale, col=hcl.colors(12, "YlOrRd", rev = TRUE), horiz = TRUE, las=2, xaxt="n")
+
+```
+
+
+```{r}
+similarity.full<- matrix(0, ncol=ncol(clusterCoverage.full), nrow=ncol(clusterCoverage.full))
+for(i in 1:ncol(clusterCoverage.full)){
+  for(j in i:ncol(clusterCoverage.full)){
+    covI <- clusterCoverage.full[,i]>4
+    covJ <- clusterCoverage.full[,j]>4
+    covIJ <- covI*covJ
+    similarity.full[i,j] <- sum(covIJ)/sum(covI)
+    similarity.full[j,i] <- sum(covIJ)/sum(covJ)
+  }
+}
+
+par(mfrow=c(1,2))
+image(similarity.full, main="At least five reads per unaimed locus", zlim=c(0,1))
+plotScale <- rep(10,12)
+names(plotScale) <- round(seq(0.1,1, length.out=12 ),2)
+barplot(plotScale, col=hcl.colors(12, "YlOrRd", rev = TRUE), horiz = TRUE, las=2, xaxt="n")
+```
+
+
+```{r}
+similarity.full<- matrix(0, ncol=ncol(clusterCoverage.full), nrow=ncol(clusterCoverage.full))
+for(i in 1:ncol(clusterCoverage.full)){
+  for(j in i:ncol(clusterCoverage.full)){
+    covI <- clusterCoverage.full[,i]>9
+    covJ <- clusterCoverage.full[,j]>9
+    covIJ <- covI*covJ
+    similarity.full[i,j] <- sum(covIJ)/sum(covI)
+    similarity.full[j,i] <- sum(covIJ)/sum(covJ)
+  }
+}
+
+par(mfrow=c(1,2))
+image(similarity.full, main="At least ten reads per unaimed locus", zlim=c(0,1))
+plotScale <- rep(10,12)
+names(plotScale) <- round(seq(0.1,1, length.out=12 ),2)
+barplot(plotScale, col=hcl.colors(12, "YlOrRd", rev = TRUE), horiz = TRUE, las=2, xaxt="n")
+
+```

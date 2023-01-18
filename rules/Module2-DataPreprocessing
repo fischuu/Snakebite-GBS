@@ -15,9 +15,8 @@ rule cutadapt_trim_reads:
     log:
         "%s/logs/CUTADAPT/cutadapt.{samples}.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/CUTADAPT/cutadapt.{samples}.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/cutadapt_trim_reads.{samples}.tsv" % (config["project-folder"])
     threads: 1
-    conda:"envs/cutadapt.yaml"
     singularity: config["singularity"]["cutadapt"]
     shell:"""
         export TMPDIR={params.tmpdir}
@@ -69,8 +68,7 @@ rule TrimBasedOnQuality:
     log:
         "%s/logs/TRIMMOMATIC/trimmomatic_{samples}.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/TRIMMOMATIC/trimmomatic_{samples}.benchmark.tsv" % (config["project-folder"])
-    conda:"envs/cutadapt.yaml"
+        "%s/benchmark/TrimBasedOnQuality.{samples}.tsv" % (config["project-folder"])
     singularity: config["singularity"]["gbs"]
     shell:"""
        java -jar /Trimmomatic-0.38/trimmomatic-0.38.jar PE -phred33 -threads {params.threads} -trimlog {output.trimlog} {input.R1} {input.R2} {output.R1} {output.R1SE} {output.R2} {output.R2SE} MINLEN:{params.minlen} ILLUMINACLIP:{params.ad}:{params.iclip} LEADING:{params.leading} SLIDINGWINDOW:{params.slwin} TRAILING:{params.trail} &>{log}
@@ -93,7 +91,7 @@ rule SubstituteLowQualityBases:
         R1="%s/logs/FASTQ_MASKER/Fastq_masker_{samples}_R1.log" % (config["project-folder"]),
         R2="%s/logs/FASTQ_MASKER/Fastq_masker_{samples}_R2.log" % (config["project-folder"])
     benchmark:
-        "%s/benchmark/FASTQ_MASKER/Fastq_masker_{samples}.benchmark.tsv" % (config["project-folder"])
+        "%s/benchmark/SubstituteLowQualityBases.{samples}.tsv" % (config["project-folder"])
     conda:"envs/gbs.yaml"
     singularity: config["singularity"]["gbs"]
     shell:"""

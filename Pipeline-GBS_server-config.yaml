@@ -15,61 +15,84 @@ __default__:
 ################################################################################
 
 star_create_index:
-    time: 05:00:00
     job-name:  Create-StarIndex
+    time: 05:00:00
     cpus-per-task: 20
     mem-per-cpu: 4000
 
 Concatenate_lanes:
-    time: 01:00:00
     job-name: Concatenate_lanes
-  
+    time: 01:00:00
+    cpus-per-task: 1
+    mem-per-cpu: 4000
+
 bwa_create_index:
-    time: 05:00:00
     job-name:  Create-bwaIndex
+    time: 05:00:00
+    cpus-per-task: 1
     mem-per-cpu: 50000
 
+bwa_create_insilico_index:
+    job-name: bwa_create_insilico_index
+    time: 05:00:00
+    cpus-per-task: 1
+    mem-per-cpu: 4000
+    
 IndexMockReferenceBWA:
-    time: 02:00:00
     job-name:  IndexMockRefGenome_BWA
+    time: 02:00:00
+    cpus-per-task: 1
     mem-per-cpu: 25000
     
 IndexMockReferenceSamtools:
-    time: 02:00:00
     job-name:  IndexMockRefGenome_Samtools
+    time: 02:00:00
+    cpus-per-task: 1
     mem-per-cpu: 25000
 
 IndexClustersBWA:
-    time: 02:00:00
     job-name:  IndexMockRefClusters_BWA
+    time: 02:00:00
+    cpus-per-task: 1
     mem-per-cpu: 25000
 
 IndexClustersSamtools:
-    time: 02:00:00
     job-name:  IndexMockRefClusters_Samtools
+    time: 02:00:00
+    cpus-per-task: 1
     mem-per-cpu: 25000
 
 IndexFinalMockBWA:
-    time: 02:00:00
     job-name:  IndexFinalMockBWA
+    time: 02:00:00
+    cpus-per-task: 1
     mem-per-cpu: 25000
 
 IndexFinalMockSamtools:
-    time: 02:00:00
     job-name:  IndexFinalMockSamtools
+    time: 02:00:00
+    cpus-per-task: 1
     mem-per-cpu: 25000
+
+R_createBarcodesID_file:
+    job-name: R_createBarcodesID_file
+    time: 00:00:10
+    cpus-per-task: 1
+    mem-per-cpu: 4000
 
 # Module 1 - QC:
 ################################################################################
-fastqc_quality_control_raw_data:
+fastqc_quality_control_raw_data_r1:
     time: 05:00:00
     job-name: fastqc-raw
     cpus-per-task: 20
-
-multiqc_quality_control_raw_data:
+    mem-per-cpu: 4000
+    
+multiqc_quality_control_raw_data_r1:
     time: 05:00:00
     job-name: multiqc-raw
     mem-per-cpu: 32000
+    cpus-per-task: 1
     nvme: 10
 
 qualDist_raw_data:
@@ -163,6 +186,10 @@ refine_mock_reference:
     time: 05:00:00
     job-name: refine_mock_reference
     mem-per-cpu: 64000
+
+Mockrefloci_vs_samplealignments:
+    time: 05:00:00
+    job-name: Mockrefloci_vs_samplealignments
 
 # Module 4 - Read alignment
 ################################################################################   
@@ -262,20 +289,33 @@ ParseMpileup_createCountFiles:
     job-name:  createCountFiles_mockref
     mem-per-cpu: 16000
 
+ParseMpileup_createCountFiles_finalMock:
+    time: 05:00:00
+    job-name:  createCountFiles_finalmock
+    mem-per-cpu: 16000
+
 ParseMpileup_createCountFiles_reference:
     time: 05:00:00
     job-name:  createCountFiles_reference
     mem-per-cpu: 16000
 
 create_verticalRef:
-    time: 01:00:00
+    time: 05:00:00
     job-name:  create_verticalRef
-    mem-per-cpu: 16000
+    mem-per-cpu: 32000
+    nvme: 50
+
+create_verticalRef_finalMock:
+    time: 05:00:00
+    job-name:  create_verticalRef_finalMock
+    mem-per-cpu: 32000
+    nvme: 50
 
 create_verticalRef_reference:
-    time: 01:00:00
+    time: 05:00:00
     job-name:  create_verticalRef_reference
-    mem-per-cpu: 16000
+    mem-per-cpu: 32000
+    nvme: 50
 
 cut_verticalRef:
     job-name: cut_verticalRef
@@ -287,36 +327,35 @@ cut_verticalRef_finalMock:
     job-name: cut_verticalRef_finalMock
 
 create_MasterMatrix_parallel:
-    time: 0-12:00:00
+    time: 1-00:00:00
     job-name:  create_MasterMatrix_parallel
-    mem-per-cpu: 64000
-
-create_MasterMatrix_parallel_reference:
-    time: 0-12:00:00
-    job-name:  create_MasterMatrix_parallel_reference
-    mem-per-cpu: 64000
+    mem-per-cpu: 128000
 
 create_MasterMatrix_parallel_finalMock:
-    time: 0-12:00:00
+    time: 1-00:00:00
     job-name:  create_MasterMatrix_parallel_finalMock
-    mem-per-cpu: 64000
+    mem-per-cpu: 128000
 
+create_MasterMatrix_parallel_reference:
+    time: 1-00:00:00
+    job-name:  create_MasterMatrix_parallel_reference
+    mem-per-cpu: 128000
 
 aggregate_MasterMatrix:
     job-name: aggregate_MasterMatrix
     time: 0-12:00:00
-    mem-per-cpu: 48000
+    mem-per-cpu: 84000
+
+aggregate_MasterMatrix_finalMock:
+    job-name: aggregate_MasterMatrix_finalMock
+    time: 0-12:00:00
+    mem-per-cpu: 84000
     
 aggregate_MasterMatrix_reference:
     job-name: aggregate_MasterMatrix_reference
     time: 0-12:00:00
-    mem-per-cpu: 48000
+    mem-per-cpu: 84000
     
-aggregate_MasterMatrix_finalMock:
-    job-name: aggregate_MasterMatrix_finalMock
-    time: 0-12:00:00
-    mem-per-cpu: 48000
-
 FilterVariants:
     time: 1-12:00:00
     job-name:  filterVariants
@@ -346,16 +385,6 @@ CreateVCF_finalMock:
     time: 01:00:00
     job-name:  CreateVCF_finalMock
     mem-per-cpu: 30000
-
-ParseMpileup_createCountFiles_finalMock:
-    time: 05:00:00
-    job-name:  createCountFiles_finalmock
-    mem-per-cpu: 16000
-    
-create_verticalRef_finalMock:
-    time: 01:00:00
-    job-name:  create_verticalRef_finalMock
-    mem-per-cpu: 16000
 
 # Module 6 - Postprocessing
 ################################################################################
@@ -388,6 +417,17 @@ R_QCReport:
     time: 0-06:00:00
     job-name: QCreport
     mem-per-cpu: 80000
+
+R_VariantCallingReport:
+    time: 0-03:00:00
+    job-name: VariantCallingreport
+    mem-per-cpu: 80000
+
+R_InsilicoReport:
+    time: 0-03:00:00
+    job-name: InsilicoReport
+    mem-per-cpu: 32000
+
 
 # Module 8 - Call new data
 ################################################################################
@@ -459,4 +499,28 @@ CreateVCF_existingMockreference:
 featureCounts_quantify_ReferenceAlignments:
     job-name: featureCounts_quantify_ReferenceAlignments
     time: 01:00:00
+    mem-per-cpu: 30000
+    
+# Module 10:
+###############################################################################
+R_createInSilicoFasta:
+    job-name:  R_createInSilicoFasta
+    time: 01:00:00
+    mem-per-cpu: 30000
+    
+InsilicoGenome_AlignReads:
+    job-name: InsilicoGenome_AlignReads
+    time: 05:00:00
+    cpus-per-task: 20
+    mem-per-cpu: 15000   
+    
+InsilicoGenome_SamToSortedBam:
+    job-name: InsilicoGenome_SamToSortedBam
+    time: 05:00:00
+    mem-per-cpu: 30000
+    
+Insilico_AlignmentStats:
+    job-name: Insilico_AlignmentStats
+    time: 05:00:00
+    cpus-per-task: 1
     mem-per-cpu: 30000

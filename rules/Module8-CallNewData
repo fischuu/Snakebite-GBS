@@ -15,7 +15,7 @@ else:
         log:
             "%s/logs/BWA/ExMockRefGenome_AlignReads.{samples}.log" % (config["project-folder"])
         benchmark:
-            "%s/benchmark/BWA/RefGenome_AlignReads.{samples}.benchmark.tsv" % (config["project-folder"])
+            "%s/benchmark/ExistingMockRefGenome_AlignReads.{samples}.tsv" % (config["project-folder"])
         threads: lambda cores: cpu_count()
         singularity: config["singularity"]["gbs"]
         shell:"""
@@ -38,7 +38,7 @@ else:
         log:
             "%s/logs/Samtools/ExMockRefGenome_SamToSortedBam.{samples}.log" % (config["project-folder"])
         benchmark:
-            "%s/benchmark/Samtools/ExMockRefGenome_SamToSortedBam.{samples}.benchmark.tsv" % (config["project-folder"])
+            "%s/benchmark/ExistingMockRefGenome_SamToSortedBam.{samples}.tsv" % (config["project-folder"])
         threads: lambda cores: cpu_count()
         params:
             q=config["params"]["step5d"]["q"],
@@ -70,7 +70,7 @@ else:
         log:
             "%s/logs/Samtools/ExMockRefGenome_AlignmentStats.{samples}.log" % (config["project-folder"])
         benchmark:
-            "%s/benchmark/Samtools/ExMockRefGenome_AlignmentStats.{samples}.benchmark.tsv" % (config["project-folder"])
+            "%s/benchmark/ExistingMockRefGenome_AlignmentStats.{samples}.tsv" % (config["project-folder"])
         threads: lambda cores: cpu_count()
         singularity: config["singularity"]["gbs"]
         shell:"""
@@ -93,6 +93,8 @@ else:
             "%s/references/existing_variants.bed" % (config["project-folder"])
         log:
             "%s/logs/BASH/vcf2bed.log" % (config["project-folder"])
+        benchmark:
+            "%s/benchmark/transformVCFtoBed.tsv" % (config["project-folder"])
         params:
             pipefolder=config["pipeline-folder"]
         singularity: config["singularity"]["gbs"]
@@ -117,7 +119,7 @@ else:
         log:
             "%s/logs/Samtools/ExMockRefGenome_SortedBamToMpileup.{samples}.log" % (config["project-folder"])
         benchmark:
-            "%s/benchmark/Samtools/ExMockRefGenome_SortedBamToMpileup.{samples}.benchmark.tsv" % (config["project-folder"])
+            "%s/benchmark/ExistingMockRefGenome_SortedBamToVCF.{samples}.tsv" % (config["project-folder"])
         singularity: config["singularity"]["samtools"]
         shell:"""
             samtools mpileup --positions {input.bed} -B -g -f {input.reference} {input.bam} | bcftools call -c -Ob > {output.vcf}
@@ -138,6 +140,8 @@ else:
             "%s/VCF/variants_existingMock.vcf" % (config["project-folder"])
         log:
             "%s/logs/bcftools/ExMockRefGenome_mergeVCF.log" % (config["project-folder"])
+        benchmark:
+            "%s/benchmark/ExistingMockRefGenome_mergeVCFs.tsv" % (config["project-folder"])
         singularity: config["singularity"]["samtools"]
         shell:"""
             bcftools merge {input} --threads 5 -Ov | grep -v '##contig=<ID=' > {output} 2> {log}
