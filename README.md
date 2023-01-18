@@ -1,6 +1,10 @@
 # Pipeline-GBS
 The snakemake pipeline based on GBS-SNP-Crop and further extended.
 
+# DAG
+The visual overview of the various rules of the pipeline
+![alt text](https://github.com/fischuu/Pipeline-GBS/blob/main/workflow.png?raw=true)
+
 # Configuration
 The pipeline parameter configuration takes place in the file
 
@@ -47,3 +51,7 @@ Here, we ran a previous de-novo approach and obtained from there a set of varian
 
 ## Reference genome and variant set available
 A reference genome as well as a set of variants is available.
+
+# FUNDING
+The development of this pipeline received funding from the ARCTAQUA project (https://site.nord.no/arctaqua/) and GENOTYPE, Natural Resources Institute Finland (LUKE) (https://www.luke.fi) 
+
