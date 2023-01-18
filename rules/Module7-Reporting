@@ -148,15 +148,25 @@ rule R_QCReport:
              options(knitr.duplicate.label = 'allow');\
              source('{input.script}')" &> {log}
     """
+
+def get_vc_files(wildcards):
+    if config["genome"] == "":
+        return []
+    else:
+        path = config["project-folder"]
+        file1 = "/VCF/FinalSetVariants_referenceGenome.vcf"
+
+        output = [path + file1]
+        return output   
     
 rule R_VariantCallingReport:
     """
     Create the final report (R).
     """
     input:
+        get_vc_files,
         script=config["variant-script"],
         mockvcf="%s/VCF/FinalSetVariants_finalMock.vcf" % (config["project-folder"]),
-        refvcf="%s/VCF/FinalSetVariants_referenceGenome.vcf" % (config["project-folder"]),
         unfinalVcf="%s/FASTQ/TRIMMED/GSC.vcf" % (config["project-folder"])
     output:
         "%s/VariantCalling-Report.html" % (config["project-folder"])
