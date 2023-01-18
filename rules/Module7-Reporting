@@ -1,41 +1,68 @@
 # vim: set filetype=sh :
 
+def get_reference_files(wildcards):
+    if config["genome"] == "":
+        return []
+    else:
+        path = config["project-folder"]
+        file1 = "/References/full_inSilico_reference.fa"
+        file2 = "/References/sizeSelected_inSilico_reference.fa"
+        file3 = "/BAM/Mockref/mockToRef.sorted.bam"
+        file4 = "/BAM/Mockref/mockToRef.sam.samflags"
+        file5 = "/MPILEUP/mpileup_reference/GSC.vcf.fa"
+        file6 = "/BAM/FinalMockref/mockToRef.sam.flagstat"
+        file7 = "/VCF/FinalSetVariants_referenceGenome.vcf"
+        file8 = "/MPILEUP/mpileup_reference/variants/GSC.GenoMatrix.txt"
+        file9 = "/MPILEUP/mpileup_reference/GSC.vcf.fa"
+        file10 = "/BAM/mockVariantsToReference/mockVariantsToReference.bam"
+
+        output = [path + file1, path + file2, path + file3, path + file4, path + file5, path + file6, path + file7, path + file8, path + file9, path + file10]
+        return output   
+
+def get_reference_expand_files(wildcards):
+    if config["genome"] == "":
+        return []
+    else:    
+        samples = set(samplesheet["sample_name"])
+        path = config["project-folder"]
+        output1 = [path + "/FASTQ/TRIMMED/alignments_reference/" + x + ".coverage" for x in samples]
+        output2 = [path + "/FASTQ/TRIMMED/alignments_reference/" + x + ".sorted.bam" for x in samples]
+        output3 = [path + "/FASTQ/TRIMMED/alignments_reference/" + x + ".sam.flagstat" for x in samples]
+        output4 = [path + "/FASTQ/TRIMMED/alignments_reference/" + x + ".paired_alignments" for x in samples]
+        output5 = [path + "/FASTQ/TRIMMED/alignments_reference/" + x + ".flanking_left.fa" for x in samples]
+        output6 = [path + "/FASTQ/TRIMMED/alignments_reference/" + x + ".flanking_right.fa" for x in samples]
+        output7 = [path + "/BAM/Insilico/full/" + x + ".sam.flagstat" for x in samples]
+        output8 = [path + "/BAM/Insilico/full/" + x + ".coverage" for x in samples]
+        output9 = [path + "/BAM/Insilico/selected/" + x + ".sam.flagstat" for x in samples]
+        output10 = [path + "/BAM/Insilico/selected/" + x + ".coverage" for x in samples]
+        output11 = [path + "/QUANTIFICATION/Reference_contigs/" + x + "_reference_contigs_fc.txt" for x in samples]
+        output12 = [path + "/Stringtie/" + x + ".intersected_with_mockOnRef_loci.is" for x in samples]
+    
+        output = output1 + output2 + output3 + output4 + output5 + output6 + output7 + output8 + output9 + output10 + output11 + output12
+        return output
+   
+   
 rule R_finalReport:
     """
     Create the final report (R).
     """
     input:
+        get_reference_files,
+        get_reference_expand_files,
         script=config["report-script"],
         fa="%s/FASTQ/TRIMMED/GSC.vcf.fa" % (config["project-folder"]),
-        mockToRef="%s/BAM/Mockref/mockToRef.sorted.bam" % (config["project-folder"]),
-        mockToRefSamflags="%s/BAM/Mockref/mockToRef.sam.samflags" % (config["project-folder"]), 
         mockFlagstats=expand("%s/FASTQ/TRIMMED/alignments/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
         c=expand("%s/FASTQ/TRIMMED/alignments_clusters/{samples}.coverage" % (config["project-folder"]), samples=samples),
         mqcraw="%s/QC/RAW/multiqc_R1/" % (config["project-folder"]),
         mqcconcatenated="%s/QC/CONCATENATED/multiqc_R1/" % (config["project-folder"]),
         mqctrimmed="%s/QC/TRIMMED/multiqc_R1/" % (config["project-folder"]),
-        faRef="%s/MPILEUP/mpileup_reference/GSC.vcf.fa" % (config["project-folder"]),
         qdRaw=expand("%s/QC/RAW/{rawsamples}_R1_qualdist.txt" % (config["project-folder"]), rawsamples=rawsamples),
         qdConc=expand("%s/QC/CONCATENATED/{samples}_R1_qualdist.txt" % (config["project-folder"]), samples=samples),
         qdTrimmed=expand("%s/QC/TRIMMED/{samples}_R1_qualdist.txt" % (config["project-folder"]), samples=samples),
         fsFinal=expand("%s/BAM/alignments_finalMock/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
-        fsFinalVsRef="%s/BAM/FinalMockref/mockToRef.sam.flagstat" % (config["project-folder"]),
         finalSetVariants="%s/VCF/FinalSetVariants_finalMock.vcf" % (config["project-folder"]),
         unfinalVcf="%s/FASTQ/TRIMMED/GSC.vcf" % (config["project-folder"]),
-        fsRef=expand("%s/FASTQ/TRIMMED/alignments_reference/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
-        cRef=expand("%s/FASTQ/TRIMMED/alignments_reference/{samples}.coverage" % (config["project-folder"]), samples=samples),
-        cFinalMock=expand("%s/BAM/alignments_finalMock/{samples}.coverage" % (config["project-folder"]), samples=samples),
-        pa=expand("%s/FASTQ/TRIMMED/alignments_reference/{samples}.paired_alignments" % (config["project-folder"]), samples=samples),
-        isSample=expand("%s/Stringtie/{samples}.intersected_with_mockOnRef_loci.is" % (config["project-folder"]), samples=samples),
-        leftSample=expand("%s/FASTQ/TRIMMED/alignments_reference/{samples}.flanking_left.fa" % (config["project-folder"]), samples=samples),
-        rightSample=expand("%s/FASTQ/TRIMMED/alignments_reference/{samples}.flanking_right.fa" % (config["project-folder"]), samples=samples),
-        full="%s/References/full_inSilico_reference.fa" % (config["project-folder"]),
-        selected="%s/References/sizeSelected_inSilico_reference.fa" % (config["project-folder"]),
-        fsFull=expand("%s/BAM/Insilico/full/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
-        cFull=expand("%s/BAM/Insilico/full/{samples}.coverage" % (config["project-folder"]), samples=samples),
-        fsSelected=expand("%s/BAM/Insilico/selected/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
-        cSelected=expand("%s/BAM/Insilico/selected/{samples}.coverage" % (config["project-folder"]), samples=samples)
-
+        cFinalMock=expand("%s/BAM/alignments_finalMock/{samples}.coverage" % (config["project-folder"]), samples=samples)
     output:
         "%s/finalReport.html" % (config["project-folder"])
     log:

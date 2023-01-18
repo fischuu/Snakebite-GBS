@@ -1,0 +1,364 @@
+# Alignment
+
+## Preliminary Mock Reference
+### Mapping stats
+ 
+Here, we present the mapping statistics for the preliminary mock reference.
+
+```{r import flagstats}
+flagstatFiles <- list.files(file.path(projFolder,"FASTQ", "TRIMMED", "alignments"), pattern="*.flagstat")
+flagstats <- list()
+for(i in 1:length(flagstatFiles)){
+  flagstats[[i]] <- readLines(file.path(projFolder,"FASTQ", "TRIMMED", "alignments",flagstatFiles[i]))
+}
+```
+
+Visualization of the alignments, red stars indicate the samples that were used to build the mock reference.
+
+```{r vis mapping stats}
+par(oma=c(6,3,0,0))
+mapStats <- matrix(0,ncol=length(flagstatFiles), nrow=2)
+
+sampleNames <- gsub(".sam.flagstat", "", flagstatFiles)
+
+colnames(mapStats) <- sampleNames
+
+tmp <- as.numeric(sapply(strsplit(sapply(flagstats,"[",1), " +"),"[",1))
+mapStats[1,] <- as.numeric(sapply(strsplit(sapply(flagstats,"[",5), " +"),"[",1))
+mapStats[2,] <- tmp - mapStats[1,]
+
+p <- barplot(mapStats, col=c(report.colours[1], report.colours[2]), las=2)
+
+legend("topleft", pch=c(20,20), col=c(report.colours[2], report.colours[1]), legend=c("Unmapped", "Mapped"), fill="white")
+
+# highlight the mock reference samples
+mockFiles <- paste(mockSamples, ".sam.flagstat", sep="")
+mockPos <- which(is.element(flagstatFiles, mockFiles))
+
+points(p[mockPos], rep(200000, length(mockPos)), pch="*", col="red", cex=4)
+```
+
+```{r mapping percentage}
+barplot(mapStats[1,] / (apply(mapStats,2,sum)) * 100, ylim=c(0,100), ylab="Mapping in Percent", col=report.colours[1], las=2)
+```
+
+And the same information in table format.
+
+```{r}
+mappingRates <- mapStats[1,] / apply(mapStats,2,sum)
+out <- as.matrix(mappingRates)
+colnames(out)[1] <- "Mapping rate"
+
+tmp <- cbind(colnames(mapStats), out[,1])
+
+if(nrow(tmp)>0){
+  rownames(tmp) <- 1:nrow(tmp)
+  colnames(tmp) <- c("Sample", "Alignment rate")
+  #knitr::kable(tmp) %>% kable_styling
+  datatable(tmp, extensions = 'Buttons',
+            options = list(dom = 'Blfrtip',
+                           buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                           lengthMenu = list(c(10,25,50,-1),
+                                             c(10,25,50,"All"))))
+}
+```
+
+The average mapping rate is `r mean(mappingRates)`.
+
+### Coverage
+
+Here, the coverage statistics for reads mapped against the clusters are presented.
+
+```{r importClusterCoverage, warning=FALSE}
+clusterFiles <- list.files(file.path(projFolder, "FASTQ", "TRIMMED", "alignments_clusters"), pattern="*.coverage")
+clusterCoverage <- read.table(file.path(projFolder, "FASTQ", "TRIMMED", "alignments_clusters", clusterFiles[1]))
+names(clusterCoverage)[1:2] <- c("cluster", clusterFiles[1])
+
+for(i in 2:length(clusterFiles)){
+  tmp <- read.table(file.path(projFolder, "FASTQ", "TRIMMED", "alignments_clusters", clusterFiles[i]))
+  names(tmp)[1:2] <- c("cluster", clusterFiles[i])
+  clusterCoverage <- merge(clusterCoverage, tmp, by="cluster")
+}
+names(clusterCoverage)[2:(length(clusterFiles)+1)] <- clusterFiles
+clusterCoverage[,1] <- as.numeric(gsub("Cluster", "", clusterCoverage[,1]))
+clusterCoverage <- clusterCoverage[order(clusterCoverage[,1]),]
+clusterCoverage <- clusterCoverage[is.na(clusterCoverage[,1])==FALSE,]
+
+clusterCoverage.std <- t(t(clusterCoverage)/apply(clusterCoverage,2,sum))*100000
+```
+
+### Lorenz curve
+The Lorenz curve is a graphical representation of the distribution of a particular variable, here for example reads. It is used to visualize and measure read coverage inequality within the alignments of a sample.
+
+To create a Lorenz curve, the clusters are ranked from lowest to highest coverage. The cumulative percentage of the reads are then plotted on the y-axis, while the cumulative percentage of the clusters is plotted on the x-axis.
+
+A perfectly equal distribution of the reads across the different clusters would be represented by a straight diagonal line from the bottom left to the top right of the graph, indicating that each cluster has the same percentage of the total read number
+aligned. In contrast, a curve that is further from the diagonal line indicates a greater degree of inequality, with a smaller portion of the clusters gathering a larger proportion of the total read coverage.
+
+```{r lorenz}
+plot(cumsum(sort(clusterCoverage[,2] / sum(clusterCoverage[,2]))), type="l", xlab="Sorted clusters", ylab="Concentration")
+for(i in 3:ncol(clusterCoverage)){
+  lines(cumsum(sort(clusterCoverage[,i] / sum(clusterCoverage[,i]))))
+}
+```
+
+### Stats on coverage
+
+These are the amounts of clusters with reads from different samples. For example, the bar at 4 on the x-axis gives the amount of clusters with reads from four different samples. Naturally, one would like to see here as high as possible bars on the right hand side of the plot.
+
+```{r cluster coverage stats}
+coveredClusters <- apply(clusterCoverage[,-1]>0,1,sum)
+barplot(table(coveredClusters), xlab="No. of different samples aligned to cluster", col=report.colours[1])
+```
+
+Now we have here the number of reads per coverage class. That means, instead of having it binary as in the previous plot, we now count all the reads per coverage group, which is more representative for the true coverage.
+
+```{r reads per coverage group}
+readsPerCoverageGroup <- c()
+
+for(i in 1:max(coveredClusters)){
+  if(sum(coveredClusters==i)>0){
+    readsPerCoverageGroup[i] <-  sum(clusterCoverage[coveredClusters==i,-1])
+  } else {
+    readsPerCoverageGroup[i] <- 0
+  }
+}
+
+names(readsPerCoverageGroup) <- 1:max(coveredClusters)
+
+barplot(readsPerCoverageGroup, xlab="Coverage group", ylab="Reads on cluster group", col=report.colours[1])
+```
+And the same still with percentages
+
+```{r reads per coverage group in percent}
+barplot(readsPerCoverageGroup/sum(readsPerCoverageGroup)*100, xlab="Coverage group", ylab="Reads on cluster group (in %)", ylim=c(0,100), col=report.colours[1])
+```
+
+Then still the number of clusters without coverage per sample
+
+```{r clusters without coverage}
+par(mar=c(7,4,1,1))
+nonHittedClusters <- apply(clusterCoverage[,-1]==0,2,sum)
+names(nonHittedClusters) <- gsub(".coverage", "", names(nonHittedClusters))
+barplot(nonHittedClusters, col=report.colours[1], las=2)
+lines(c(0,100000), c(nrow(clusterCoverage), nrow(clusterCoverage)), lty="dotted")
+```
+
+And then also this as percentage
+
+```{r clusterhits percentage}
+barplot(nonHittedClusters/nrow(clusterCoverage), ylim=c(0,1), las=2, col=report.colours[1])
+lines(c(0,10000),c(0.2,0.2), lty="dotted")
+lines(c(0,10000),c(0.4,0.4), lty="dotted")
+lines(c(0,10000),c(0.5,0.5), lty="dashed")
+lines(c(0,10000),c(0.6,0.6), lty="dotted")
+lines(c(0,10000),c(0.8,0.8), lty="dotted")
+```
+
+
+### Smoothed log-coverage per cluster
+
+```{r vizCusterCoverage}
+plot(smooth.spline(clusterCoverage[,1], log(clusterCoverage[,2]+1), all.knots=FALSE), type="l", xlab="Cluster", ylab="Log-coverage", ylim=c(0, max(log(clusterCoverage))/2))
+
+for(i in 3:ncol(clusterCoverage)){
+  lines(smooth.spline(clusterCoverage[,1], log(clusterCoverage[,i]+1), all.knots=FALSE))  
+}
+```
+
+### Smoothed std-log-coverage per cluster
+
+Now the coverages are divided by the total amount of reads per sample and then multiplied by 10^5.
+
+```{r vizStdCusterCoverage}
+# I use here the first column of the other matrix to keep the same coordinates. It does not affect the plot.
+plot(smooth.spline(clusterCoverage[,1], log(clusterCoverage.std[,2]+1), all.knots=FALSE), type="l", xlab="Cluster", ylab="", ylim=c(0, max(log(clusterCoverage.std))/4))
+
+for(i in 3:ncol(clusterCoverage)){
+  lines(smooth.spline(clusterCoverage[,1], log(clusterCoverage.std[,i]+1), all.knots=FALSE))  
+}
+```
+
+## Mock Reference
+### Mapping stats
+
+```{r import final flagstats}
+# Import the mapping statistics to the Mock reference
+flagstatFiles <- list.files(file.path(projFolder,"BAM", "alignments_finalMock"), pattern="*.flagstat")
+flagstats <- list()
+for(i in 1:length(flagstatFiles)){
+  flagstats[[i]] <- readLines(file.path(projFolder,"BAM", "alignments_finalMock",flagstatFiles[i]))
+}
+```
+
+Visualization of the alignments, red stars indicate the mock reference samples
+
+```{r vis mapping final stats}
+par(oma=c(6,3,0,0))
+mapStats <- matrix(0,ncol=length(flagstatFiles), nrow=2)
+
+sampleNames <- gsub(".sam.flagstat", "", flagstatFiles)
+
+colnames(mapStats) <- sampleNames
+
+tmp <- as.numeric(sapply(strsplit(sapply(flagstats,"[",1), " +"),"[",1))
+mapStats[1,] <- as.numeric(sapply(strsplit(sapply(flagstats,"[",5), " +"),"[",1))
+mapStats[2,] <- tmp - mapStats[1,]
+
+p <- barplot(mapStats, col=c(report.colours[1], report.colours[2]), las=2)
+
+legend("topleft", pch=c(20,20), col=c(report.colours[2], report.colours[1]), legend=c("Unmapped", "Mapped"), fill="white")
+
+# highlight the mock reference samples
+mockFiles <- paste(mockSamples, ".sam.flagstat", sep="")
+mockPos <- which(is.element(flagstatFiles, mockFiles))
+
+points(p[mockPos], rep(200000, length(mockPos)), pch="*", col="red", cex=4)
+```
+
+```{r mapping final percentage}
+barplot(mapStats[1,] / (apply(mapStats,2,sum)) * 100, ylim=c(0,100), ylab="Mapping in Percent", col=report.colours[1], las=2)
+```
+
+And the same information in table format.
+
+```{r}
+mappingRates <- mapStats[1,] / apply(mapStats,2,sum)
+out <- as.matrix(mappingRates)
+colnames(out)[1] <- "Mapping rate"
+tmp <- cbind(colnames(mapStats), out[,1])
+
+if(nrow(tmp)>0){
+  rownames(tmp) <- 1:nrow(tmp)
+  colnames(tmp) <- c("Sample", "Alignment rate")
+  #knitr::kable(tmp) %>% kable_styling
+  datatable(tmp, extensions = 'Buttons',
+            options = list(dom = 'Blfrtip',
+                           buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                           lengthMenu = list(c(10,25,50,-1),
+                                             c(10,25,50,"All"))))
+}
+```
+
+The average mapping rate is `r mean(mappingRates)`.
+
+### Coverage
+
+Data mapped against the clusters and then the reads per cluster visualized
+
+```{r importFinalClusterCoverage, warning=FALSE}
+clusterFiles <- list.files(file.path(projFolder, "BAM", "alignments_finalMock"), pattern="*.coverage")
+clusterCoverage <- read.table(file.path(projFolder, "BAM", "alignments_finalMock", clusterFiles[1]))
+names(clusterCoverage)[1:2] <- c("cluster", clusterFiles[1])
+
+for(i in 2:length(clusterFiles)){
+  tmp <- read.table(file.path(projFolder, "BAM", "alignments_finalMock", clusterFiles[i]))
+  names(tmp)[1:2] <- c("cluster", clusterFiles[i])
+  clusterCoverage <- merge(clusterCoverage, tmp, by="cluster")
+}
+names(clusterCoverage)[2:(length(clusterFiles)+1)] <- clusterFiles
+clusterCoverage[,1] <- as.numeric(gsub("Cluster", "", clusterCoverage[,1]))
+clusterCoverage <- clusterCoverage[order(clusterCoverage[,1]),]
+clusterCoverage <- clusterCoverage[is.na(clusterCoverage[,1])==FALSE,]
+
+clusterCoverage.std <- t(t(clusterCoverage)/apply(clusterCoverage,2,sum))*100000
+```
+
+### Lorenz curve
+
+The Lorenz curve is a graphical representation of the distribution of a particular variable, here for example reads. It is used to visualize and measure read coverage inequality within the alignments of a sample.
+
+To create a Lorenz curve, the clusters are ranked from lowest to highest coverage. The cumulative percentage of the reads are then plotted on the y-axis, while the cumulative percentage of the clusters is plotted on the x-axis.
+
+A perfectly equal distribution of the reads across the different clusters would be represented by a straight diagonal line from the bottom left to the top right of the graph, indicating that each cluster has the same percentage of the total read number
+aligned. In contrast, a curve that is farther from the diagonal line indicates a greater degree of inequality, with a smaller portion of the clusters gathering a larger proportion of the total read coverage.
+
+
+```{r final lorenz}
+plot(cumsum(sort(clusterCoverage[,2] / sum(clusterCoverage[,2]))), type="l", xlab="Cluster", ylab="Concentration")
+for(i in 3:ncol(clusterCoverage)){
+  lines(cumsum(sort(clusterCoverage[,i] / sum(clusterCoverage[,i]))))
+}
+```
+
+
+### Stats on coverage
+
+These are the amounts of clusters with different samples. 
+
+```{r final  cluster coverage stats}
+coveredClusters <- apply(clusterCoverage[,-1]>0,1,sum)
+barplot(table(coveredClusters), xlab="No. of different samples aligned to cluster", col=report.colours[1])
+```
+
+Now we have here the number of reads per coverage class. That means, instead of having it binary as in the previous plot, we now count all the reads per coverage group.
+
+```{r final reads per coverage group}
+readsPerCoverageGroup <- c()
+
+for(i in 1:max(coveredClusters)){
+ rowsOI <- which(coveredClusters==i)
+ if(length(rowsOI)>0){
+   readsPerCoverageGroup[i] <-  sum(clusterCoverage[rowsOI,-1])   
+ } else {
+   readsPerCoverageGroup[i] <-  0 
+ }
+}
+
+names(readsPerCoverageGroup) <- 1:max(coveredClusters)
+
+barplot(readsPerCoverageGroup, xlab="Coverage group", ylab="Reads on cluster group", col=report.colours[1])
+```
+
+
+```{r final reads per coverage group in percent}
+barplot(readsPerCoverageGroup/sum(readsPerCoverageGroup)*100, xlab="Coverage group", ylab="Reads on cluster group (in %)", ylim=c(0,100), col=report.colours[1])
+```
+
+Then still the number of clusters without coverage per sample
+
+```{r final clusters without coverage}
+par(mar=c(7,4,1,1))
+nonHittedClusters <- apply(clusterCoverage[,-1]==0,2,sum)
+names(nonHittedClusters) <- gsub(".coverage", "", names(nonHittedClusters))
+barplot(nonHittedClusters, col=report.colours[1], las=2)
+lines(c(0,100000), c(nrow(clusterCoverage), nrow(clusterCoverage)), lty="dotted")
+```
+
+And then this still as percentage
+
+```{r final clusterhits percentage}
+par(mar=c(7,4,1,1))
+barplot(nonHittedClusters/nrow(clusterCoverage), ylim=c(0,1), las=2, col=report.colours[1])
+lines(c(0,10000),c(0.2,0.2), lty="dotted")
+lines(c(0,10000),c(0.4,0.4), lty="dotted")
+lines(c(0,10000),c(0.5,0.5), lty="dashed")
+lines(c(0,10000),c(0.6,0.6), lty="dotted")
+lines(c(0,10000),c(0.8,0.8), lty="dotted")
+```
+
+### Smoothed log-coverage per cluster
+
+```{r final vizCusterCoverage}
+plot(smooth.spline(clusterCoverage[,1], log(clusterCoverage[,2]+1), all.knots=FALSE), type="l", xlab="Cluster", ylab="Log-coverage", ylim=c(0, max(log(clusterCoverage))/2))
+
+for(i in 3:ncol(clusterCoverage)){
+  lines(smooth.spline(clusterCoverage[,1], log(clusterCoverage[,i]+1), all.knots=FALSE))  
+}
+```
+
+### Smoothed std-log-coverage per cluster
+
+Now the coverages are divided by the total amount of reads per sample and then multiplied by 10^5.
+
+```{r final vizStdCusterCoverage}
+# I use here the first column of the other matrix to keep the same coordinates. It does not affect the plot.
+plot(smooth.spline(clusterCoverage[,1], log(clusterCoverage.std[,2]+1), all.knots=FALSE), type="l", xlab="Cluster", ylab="", ylim=c(0, max(log(clusterCoverage.std))/4))
+
+for(i in 3:ncol(clusterCoverage)){
+  lines(smooth.spline(clusterCoverage[,1], log(clusterCoverage.std[,i]+1), all.knots=FALSE))  
+}
+```
+
+
+

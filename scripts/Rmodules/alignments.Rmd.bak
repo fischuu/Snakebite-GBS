@@ -427,14 +427,24 @@ The average mapping rate on the reference genome is `r mean(refGenome.mappingSta
 
 Now we check still the precise coverage (in terms of alignment loci) per sample for the sake of simplicity we'll do it here for the first sample only and also only for the first 40 chromosomes (if there are as many...). Here, one can possibly see issues in the reference genome, when the coverage is not uniformly distributed. Areas with a coverage of more than 20 reads are indicated in red, those below 10 are in blue and areas in between are represented with black.
 
-```{r}
-mpile_files <- list.files(file.path(projFolder, "MPILEUP", "mpileup_reference"), pattern="*.mpileup")
-covData <- fread(file.path(projFolder, "MPILEUP", "mpileup_reference", mpile_files[10]), sep="\t")
-```
 ```{r, fig.width=20, fig.height=10}
 mpile_files <- list.files(file.path(projFolder, "MPILEUP", "mpileup_reference"), pattern="*.mpileup")
 
-for(sam in 1:1){
+# Chose the best sam, with the largest file
+sam <- 1
+fileSize <- -1
+for(i in 1:length(mpile_files)){
+  fileInfo <- file.info(file.path(projFolder, "MPILEUP", "mpileup_reference", mpile_files[i]))  
+  if(fileInfo$size>fileSize){
+    sam <- i
+    fileSize <- fileInfo$size
+  }
+}
+
+
+
+
+
   covData <- fread(file.path(projFolder, "MPILEUP", "mpileup_reference", mpile_files[sam]), sep="\t")
   chrNames <- names(table(covData[,1]))
   chrNames <- chrNames[1:min(49, length(chrNames))]
@@ -460,7 +470,7 @@ for(sam in 1:1){
         plot(out, col=plotcol, xaxt="n",yaxt="n", ylim=c(0,40), main=paste0("Chr ",i))     
      }
   }
-}
+  
 ```
 
 ### Read alignments
@@ -773,8 +783,11 @@ flankingLeft <- list()
 flankingRight <- list()
 
 for(i in 1:length(flankingLeft.list)){
-  flankingLeft[[i]] <- importFA(file.path(projFolder,"FASTQ", "TRIMMED", "alignments_reference", flankingLeft.list[i]))
-  flankingRight[[i]] <- importFA(file.path(projFolder,"FASTQ", "TRIMMED", "alignments_reference", flankingRight.list[i]))
+  fileInfo <- file.info(file.path(projFolder,"FASTQ", "TRIMMED", "alignments_reference", flankingLeft.list[i]))
+  if(fileInfo$size>0){
+    flankingLeft[[i]] <- importFA(file.path(projFolder,"FASTQ", "TRIMMED", "alignments_reference", flankingLeft.list[i]))
+    flankingRight[[i]] <- importFA(file.path(projFolder,"FASTQ", "TRIMMED", "alignments_reference", flankingRight.list[i]))
+  }
 }
 
 

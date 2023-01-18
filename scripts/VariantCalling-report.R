@@ -5,12 +5,23 @@ if(!is.element("snakemake",ls())){
   refGenome.file <- ""
 }
 
-createRMD.command <- paste0("cat ",pipelineFolder,"/scripts/Rmodules/VariantCalling-header.Rmd ",
-                                   pipelineFolder,"/scripts/Rmodules/helpFunctions.Rmd ",
-                                   pipelineFolder,"/scripts/Rmodules/generalWorkflow.Rmd ",
-                                   pipelineFolder,"/scripts/Rmodules/basicStats.Rmd ",
-                                   pipelineFolder,"/scripts/Rmodules/variants.Rmd ",
-                                   "> ",projFolder,"/VariantCalling-Report.Rmd")
+if(refGenome.file == ""){
+  createRMD.command <- paste0("cat ",pipelineFolder,"/scripts/Rmodules/VariantCalling-header.Rmd ",
+                              pipelineFolder,"/scripts/Rmodules/helpFunctions.Rmd ",
+                              pipelineFolder,"/scripts/Rmodules/generalWorkflow.Rmd ",
+                              pipelineFolder,"/scripts/Rmodules/basicStats.Rmd ",
+                              pipelineFolder,"/scripts/Rmodules/variants_mockPart.Rmd ",
+                              "> ",projFolder,"/VariantCalling-Report.Rmd")
+} else {
+  createRMD.command <- paste0("cat ",pipelineFolder,"/scripts/Rmodules/VariantCalling-header.Rmd ",
+                              pipelineFolder,"/scripts/Rmodules/helpFunctions.Rmd ",
+                              pipelineFolder,"/scripts/Rmodules/generalWorkflow.Rmd ",
+                              pipelineFolder,"/scripts/Rmodules/basicStats.Rmd ",
+                              pipelineFolder,"/scripts/Rmodules/variants_mockPart.Rmd ",
+                              pipelineFolder,"/scripts/Rmodules/variants_refPart.Rmd ",
+                              "> ",projFolder,"/VariantCalling-Report.Rmd")
+}
+
 
 system(createRMD.command)
 

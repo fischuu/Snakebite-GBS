@@ -1,7 +1,6 @@
 
 ```{r setup, include=FALSE}
 .libPaths()
-#library("knitr")
 library("GenomicTools")
 library("Luke")
 library("xtable")   # Needed for LaTeX output of the tables

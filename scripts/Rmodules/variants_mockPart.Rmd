@@ -1,0 +1,315 @@
+
+# Variants
+
+```{r}
+getBasicStats <- function(x){
+  output <- list()
+  out <- c()
+  out[1] <- dim(x$map)[1]
+  names(out)[1] <- "Total number of variants"
+
+  out[2] <- sum(sapply(apply(x$genotypes,2,table),length)==1)
+  names(out)[2] <- "Monomorphic sites"
+
+  out_html <- knitr::kable(out, col.names = NULL, "html")
+  
+  output[[1]] <- out_html
+  
+  output[[2]] <-  knitr::kable(table(x$map[,c(5,6)]), "html")
+  
+  output
+  
+}
+
+getInfoSummary <- function(x){
+  y <- x$info
+  
+  out <- rbind(summary(y[, "AC"]),
+               summary(y[, "AF"]),
+               summary(y[, "DP"]),
+               summary(y[, "AV"]),
+               summary(y[, "NS"]))
+  
+  rownames(out) <- c("Allele count",
+                     "Allele frequency",
+                     "Total depth",
+                     "Average depth",
+                     "Samples with data")
+ 
+  colnames(out) <- c("Minimum",
+                     "1st Quartile",
+                     "Median",
+                     "Mean",
+                     "3rd Quartile",
+                     "Maximum")
+   
+  out_html <- knitr::kable(out, "html")
+    
+  out_html
+}
+
+if(refAvail){
+  refInfo.file <- paste0(refGenome.full,".fai")
+  refInfo <- read.table(refInfo.file)
+}
+```
+
+
+```{r import vcf, echo=FALSE, message=FALSE, warning=FALSE}
+# Import the Result vcfs
+vcf <- importVCF(file.path(projFolder, "MPILEUP", "mpileup_finalMock", "GSC.vcf"), getInfo = TRUE)
+vcfUnfiltered <- importVCF(file.path(projFolder, "MPILEUP", "mpileup_finalMock", "GSC.unfiltered.vcf"), getInfo = TRUE)
+
+vcfGSC <- importVCF(file.path(projFolder, "FASTQ", "TRIMMED", "GSC.vcf"), getInfo = TRUE)
+vcfGSCUnfiltered <- importVCF(file.path(projFolder, "FASTQ", "TRIMMED", "GSC.unfiltered.vcf"), getInfo = TRUE)
+
+if(refAvail){
+  vcfRef <- importVCF(file.path(projFolder, "MPILEUP", "mpileup_reference", "GSC.vcf"), getInfo = TRUE)
+  vcfRefUnfiltered <- importVCF(file.path(projFolder, "MPILEUP", "mpileup_reference", "GSC.unfiltered.vcf"), getInfo = TRUE)
+}
+```
+
+## Final mock
+
+### Basic stats
+
+#### Filtered VCF
+Basic stats and combinations for the called variants for filtered calls.
+
+```{r}
+out <- getBasicStats(vcf)
+  kable_styling(out[[1]], "striped", position = "left")  
+  
+  kable_styling(out[[2]], "striped", position = "left")  
+```
+
+#### Unfiltered VCF
+Basic stats and combinations for the called variants for unfiltered calls.
+
+```{r}
+out <- getBasicStats(vcfUnfiltered)
+  kable_styling(out[[1]], "striped", position = "left")  
+  
+  kable_styling(out[[2]], "striped", position = "left")  
+```
+
+### Info Stats
+
+#### Filtered VCF
+Genotype stats for called variants for filtered calls.
+
+```{r}
+kable_styling(getInfoSummary(vcf), "striped", position = "left")  
+```
+
+#### Unfiltered VCF
+Genotype stats for called variants for unfiltered calls.
+
+```{r}
+kable_styling(getInfoSummary(vcfUnfiltered), "striped", position = "left")  
+```
+
+
+### Visuals
+
+#### SNP position vs snp index
+Plot the snp position
+
+```{r, fig.width=10}
+par(mfrow=c(1,2))
+plot(as.vector(as.matrix(vcf$map[,4])), ylab="Pos. on mock", xlab="SNP index", main="Filtered")
+plot(as.vector(as.matrix(vcfUnfiltered$map[,4])), ylab="Pos. on mock", xlab="SNP index", main="Unfiltered")
+```
+
+#### SNP loci on cluster
+Distribution of the variant across the cluster
+
+```{r, fig.width=10}
+par(mfrow=c(1,2))
+hist(as.vector(as.matrix(vcf$map[,4])), main="SNP loci distribution (filtered)", xlab="Position", col=report.colours[1])
+hist(as.vector(as.matrix(vcfUnfiltered$map[,4])), main="SNP loci distribution (unfiltered)", xlab="Position", col=report.colours[1])
+```
+
+#### Missing variants per samples (absolute)
+
+Missing variant calls per sample
+
+```{r, fig.width=10}
+par(mfrow=c(1,2))
+missingnessPerSample <- apply(vcf$genotypesInfo==".,.",2,sum)
+barplot(missingnessPerSample, las=2, main="Missing variants per sample (filtered)", col=report.colours[1])
+missingnessPerSample.filtered <- as.matrix(missingnessPerSample)
+
+missingnessPerSample <- apply(vcfUnfiltered$genotypesInfo==".,.",2,sum)
+barplot(missingnessPerSample, las=2, main="Missing variants per sample (unfiltered)", col=report.colours[1])
+missingnessPerSample.unfiltered <- as.matrix(missingnessPerSample)
+```
+
+And that in relation to the sequencing depth
+
+```{r, fig.width=10}
+par(mfrow=c(1,2))
+missingnessPerSample <- apply(vcf$genotypesInfo==".,.",2,sum)
+plot(totalTrimmedSeq, missingnessPerSample, col=report.colours[1], xlab="Total sequences", ylab="Missing variants")
+
+missingnessPerSample <- apply(vcfUnfiltered$genotypesInfo==".,.",2,sum)
+plot(totalTrimmedSeq, missingnessPerSample, col=report.colours[1], xlab="Total sequences", ylab="Missing variants")
+```
+
+
+#### Missing variants per samples (percent)
+
+```{r, fig.width=10}
+par(mfrow=c(1,2))
+barplot(apply(vcf$genotypesInfo==".,.",2,sum)/nrow(vcf$map)*100, las=2, main="Missing variants per sample (in %), filtered", col=report.colours[1], ylim=c(0,100))
+barplot(apply(vcfUnfiltered$genotypesInfo==".,.",2,sum)/nrow(vcfUnfiltered$map)*100, las=2, main="Missing variants per sample (in %), unfiltered", col=report.colours[1], ylim=c(0,100))
+```
+
+And in relation to sequencing depth
+
+```{r, fig.width=10}
+par(mfrow=c(1,2))
+plot(totalTrimmedSeq, apply(vcf$genotypesInfo==".,.",2,sum)/nrow(vcf$map)*100, col=report.colours[1], ylim=c(0,100), ylab="Missing variants (in %)", xlab="Total sequences")
+plot(totalTrimmedSeq, apply(vcfUnfiltered$genotypesInfo==".,.",2,sum)/nrow(vcfUnfiltered$map)*100, col=report.colours[1], ylim=c(0,100), ylab="Missing variants (in %)", xlab="Total sequences")
+```
+
+```{r}
+out <- apply(vcf$genotypesInfo==".,.",2,sum)/nrow(vcf$map)*100
+tmp <- cbind(names(out), out)
+rownames(tmp) <- NULL
+colnames(tmp) <- c("Sample", "Missingness (Final mock)")
+
+if(nrow(tmp)>0){
+  rownames(tmp) <- 1:nrow(tmp)
+  datatable(tmp, extensions = 'Buttons',
+            options = list(dom = 'Blfrtip',
+                           buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                           lengthMenu = list(c(10,25,50,-1),
+                                             c(10,25,50,"All"))))
+}
+```
+
+## Preliminary mock
+
+### Basic stats
+
+#### Filtered VCF
+
+Basic stats and combinations for the called variants for filtered calls.
+
+```{r}
+out <- getBasicStats(vcfGSC)
+kable_styling(out[[1]], "striped", position = "left")  
+
+kable_styling(out[[2]], "striped", position = "left")  
+```
+
+#### Unfiltered VCF
+Basic stats and combinations for the called variants for unfiltered calls.
+
+```{r}
+out <- getBasicStats(vcfGSCUnfiltered)
+kable_styling(out[[1]], "striped", position = "left")  
+
+kable_styling(out[[2]], "striped", position = "left") 
+```
+
+### Info Stats
+
+#### Filtered VCF
+Genotype stats for called variants for filtered calls.
+
+```{r}
+kable_styling(getInfoSummary(vcfGSC), "striped", position = "left")  
+```
+
+#### Unfiltered VCF
+Genotype stats for called variants for unfiltered calls.
+
+```{r}
+kable_styling(getInfoSummary(vcfGSCUnfiltered), "striped", position = "left")  
+```
+
+
+
+### Visuals
+
+#### SNP position vs snp index
+Plot the snp position
+
+```{r, fig.width=10}
+par(mfrow=c(1,2))
+plot(as.vector(as.matrix(vcfGSC$map[,4])), ylab="Pos. on mock", xlab="SNP index", main="Filtered")
+plot(as.vector(as.matrix(vcfGSCUnfiltered$map[,4])), ylab="Pos. on mock", xlab="SNP index", main="Unfiltered")
+```
+
+#### SNP loci on cluster
+Distribution of the variant across the cluster
+
+```{r, fig.width=10}
+par(mfrow=c(1,2))
+hist(as.vector(as.matrix(vcfGSC$map[,4])), main="SNP loci distribution (filtered)", xlab="Position", col=report.colours[1])
+hist(as.vector(as.matrix(vcfGSCUnfiltered$map[,4])), main="SNP loci distribution (unfiltered)", xlab="Position", col=report.colours[1])
+```
+
+#### Missing variants per samples (absolute)
+
+Missing variant calls per sample
+
+```{r, fig.width=10}
+par(mfrow=c(1,2))
+missingnessPerSample <- apply(vcfGSC$genotypesInfo==".,.",2,sum)
+barplot(missingnessPerSample, las=2, main="Missing variants per sample (filtered)", col=report.colours[1])
+
+missingnessPerSample <- apply(vcfGSCUnfiltered$genotypesInfo==".,.",2,sum)
+barplot(missingnessPerSample, las=2, main="Missing variants per sample (unfiltered)", col=report.colours[1])
+```
+
+And that in relation to the sequencing depth
+
+```{r, fig.width=10}
+par(mfrow=c(1,2))
+missingnessPerSample <- apply(vcfGSC$genotypesInfo==".,.",2,sum)
+plot(totalTrimmedSeq, missingnessPerSample, col=report.colours[1], xlab="Total sequences", ylab="Missing variants")
+
+missingnessPerSample <- apply(vcfGSCUnfiltered$genotypesInfo==".,.",2,sum)
+plot(totalTrimmedSeq, missingnessPerSample, col=report.colours[1], xlab="Total sequences", ylab="Missing variants")
+```
+
+#### Missing variants per samples (percent)
+
+```{r, fig.width=10}
+par(mfrow=c(1,2))
+barplot(apply(vcfGSC$genotypesInfo==".,.",2,sum)/nrow(vcfGSC$map)*100, las=2, main="Missing variants per sample (in %), filtered", col=report.colours[1], ylim=c(0,100))
+barplot(apply(vcfGSCUnfiltered$genotypesInfo==".,.",2,sum)/nrow(vcfGSCUnfiltered$map)*100, las=2, main="Missing variants per sample (in %), unfiltered", col=report.colours[1], ylim=c(0,100))
+```
+
+And that in relation to the sequencing depth
+
+```{r, fig.width=10}
+par(mfrow=c(1,2))
+missingnessPerSample <- apply(vcfGSC$genotypesInfo==".,.",2,sum)/nrow(vcfGSC$map)*100
+plot(totalTrimmedSeq, missingnessPerSample, col=report.colours[1], xlab="Total sequences", ylab="Missing variants")
+
+missingnessPerSample <- apply(vcfGSCUnfiltered$genotypesInfo==".,.",2,sum)/nrow(vcfGSCUnfiltered$map)*100
+plot(totalTrimmedSeq, missingnessPerSample, col=report.colours[1], xlab="Total sequences", ylab="Missing variants")
+```
+
+```{r}
+out <- apply(vcfGSC$genotypesInfo==".,.",2,sum)/nrow(vcfGSC$map)*100
+tmp <- cbind(names(out), out)
+rownames(tmp) <- NULL
+colnames(tmp) <- c("Sample", "Missingness (preliminary mock)")
+
+if(nrow(tmp)>0){
+  rownames(tmp) <- 1:nrow(tmp)
+ # colnames(tmp) <- c("Sample", "Total sequences")
+  #knitr::kable(tmp) %>% kable_styling
+  datatable(tmp, extensions = 'Buttons',
+            options = list(dom = 'Blfrtip',
+                           buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                           lengthMenu = list(c(10,25,50,-1),
+                                             c(10,25,50,"All"))))
+}
+```
+

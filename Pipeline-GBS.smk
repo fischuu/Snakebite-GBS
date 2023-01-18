@@ -12,8 +12,8 @@ import yaml
 ##### Natural Resources Institute Finland (Luke)
 ##### This pipeline is build upon the the GBS-SNP-CROP pipeline:
 ##### https://github.com/halelab/GBS-SNP-CROP
-##### Version: 0.17.50
-version = "0.17.50"
+##### Version: 0.17.69
+version = "0.17.69"
 
 ##### set minimum snakemake version #####
 min_version("6.0")
@@ -254,45 +254,30 @@ rule all:
         conditionalOut,
       # QC OF RAW AND CONCATENATED FILES
         "%s/QC/RAW/multiqc_R1/" % (config["project-folder"]),
-   #     "%s/QC/RAW/multiqc_R2/" % (config["project-folder"]),
         expand("%s/QC/RAW/{rawsamples}_R1_qualdist.txt" % (config["project-folder"]), rawsamples=rawsamples),
         "%s/QC/CONCATENATED/multiqc_R1/" % (config["project-folder"]),
         "%s/QC/TRIMMED/multiqc_R1/" % (config["project-folder"]),
       # OUTPUT STEP 4
         "%s/FASTQ/TRIMMED/GSC.MR.Genome.fa" % (config["project-folder"]),
-        "%s/BAM/Mockref/mockToRef.sam.flagstat" % (config["project-folder"]),
-        "%s/MPILEUP/mpileup_mockToRef/mockToRef.mpileup" % (config["project-folder"]),
       # OUTPUT STEP 5
         expand("%s/FASTQ/TRIMMED/alignments/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
         expand("%s/FASTQ/TRIMMED/alignments/{samples}.sorted.bam" % (config["project-folder"]), samples=samples),
         expand("%s/FASTQ/TRIMMED/alignments_clusters/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
         expand("%s/FASTQ/TRIMMED/alignments_clusters/{samples}.sorted.bam" % (config["project-folder"]), samples=samples),
         expand("%s/FASTQ/TRIMMED/alignments_clusters/{samples}.coverage" % (config["project-folder"]), samples=samples),
-        expand("%s/FASTQ/TRIMMED/alignments_reference/{samples}.sorted.bam" % (config["project-folder"]), samples=samples),
-        expand("%s/FASTQ/TRIMMED/alignments_reference/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
-        expand("%s/MPILEUP/mpileup_reference/{samples}.mpileup" % (config["project-folder"]), samples=samples),
       # OUTPUT STEP 6
         "%s/FASTQ/TRIMMED/GSC.MasterMatrix.txt" % (config["project-folder"]),
-        "%s/MPILEUP/mpileup_reference/GSC.MasterMatrix.txt" % (config["project-folder"]),
         expand("%s/FASTQ/TRIMMED/{samples}.count.txt" % (config["project-folder"]), samples=samples),
       # OUTPUT STEP 7
         "%s/FASTQ/TRIMMED/variants/GSC.GenoMatrix.txt" % (config["project-folder"]),
-        "%s/MPILEUP/mpileup_reference/variants/GSC.GenoMatrix.txt" % (config["project-folder"]),
       # OUTPUT STEP 8  
         "%s/FASTQ/TRIMMED/GSC.vcf" % (config["project-folder"]),
         "%s/FASTQ/TRIMMED/GSC.vcf.fa" % (config["project-folder"]),
-        "%s/VCF/FinalSetVariants_referenceGenome.vcf" % (config["project-folder"]),
-        "%s/MPILEUP/mpileup_reference/GSC.vcf.fa" % (config["project-folder"]),
-      # OUTPUT STEP 9
-        "%s/BAM/mockVariantsToReference/mockVariantsToReference.bam" % (config["project-folder"]),
       # Quality check
         expand("%s/BAM/alignments_finalMock/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
         "%s/MockReference/MockReference.fa" % (config["project-folder"]),
         "%s/VCF/FinalSetVariants_finalMock.vcf" % (config["project-folder"]),
         "%s/finalReport.html" % (config["project-folder"]),
-      # Reference Genome and mock related
-        "%s/Stringtie/merged_STRG.gtf" % (config["project-folder"]),
-        expand("%s/QUANTIFICATION/Reference_contigs/{samples}_reference_contigs_fc.txt" % (config["project-folder"]), samples=samples)
 
 rule insilico:
     input:
@@ -306,10 +291,19 @@ rule insilico:
         expand("%s/BAM/Insilico/selected/{samples}.coverage" % (config["project-folder"]), samples=samples),
         "%s/Insilico-Report.html" % (config["project-folder"])
 
+def get_preparations_files(wildcards):
+    if config["genome"] == "":
+        return []
+    else:
+        file1 = config["genome-star-index"] + "/chrName.txt"
+        file2 = config["genome-bwa-index"]
+        
+        output = [file1, file2]
+        return output   
+
 rule preparations:
     input:
-        "%s/chrName.txt" % (config["genome-star-index"]),
-        config["genome-bwa-index"],
+        get_preparations_files,
         expand("%s/FASTQ/CONCATENATED/{samples}_R1_001.merged.fastq.gz" % (config["project-folder"]), samples=samples),
         expand("%s/FASTQ/CONCATENATED/{samples}_R2_001.merged.fastq.gz" % (config["project-folder"]), samples=samples),
         config["barcodes-file"]
@@ -339,11 +333,22 @@ rule mockreference:
         "%s/FASTQ/TRIMMED/GSC.MR.Genome.fa" % (config["project-folder"]),
         "%s/FASTQ/TRIMMED/GSC.MR.Clusters.fa" % (config["project-folder"])
 
+def get_readalignment_expand_files(wildcards):
+    if config["genome"] == "":
+        return []
+    else:    
+        samples = set(samplesheet["sample_name"])
+        path = config["project-folder"]
+        output1 = [path + "/FASTQ/TRIMMED/alignments_reference/" + x + ".sorted.bam" for x in samples]
+        output2 = [path + "/MPILEUP/mpileup_reference/" + x + ".mpileup" for x in samples]
+        output3 = [path + "/FASTQ/TRIMMED/alignments_reference/" + x + ".sam.flagstat" for x in samples]
+
+        output = output1 + output2 + output3
+        return output
+
 rule readalignment:
     input:
-        expand("%s/FASTQ/TRIMMED/alignments_reference/{samples}.sorted.bam" % (config["project-folder"]), samples=samples),
-        expand("%s/MPILEUP/mpileup_reference/{samples}.mpileup" % (config["project-folder"]), samples=samples),
-        expand("%s/FASTQ/TRIMMED/alignments_reference/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
+        get_readalignment_expand_files,  
         expand("%s/FASTQ/TRIMMED/alignments/{samples}.sorted.bam" % (config["project-folder"]), samples=samples),
         expand("%s/FASTQ/TRIMMED/alignments_clusters/{samples}.sorted.bam" % (config["project-folder"]), samples=samples),
         expand("%s/FASTQ/TRIMMED/{samples}.mpileup" % (config["project-folder"]), samples=samples),
@@ -353,18 +358,39 @@ rule readalignment:
         expand("%s/MPILEUP/mpileup_finalMock/{samples}.mpileup" % (config["project-folder"]), samples=samples),
         expand("%s/BAM/alignments_finalMock/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples)
 
+def get_callvariants_files(wildcards):
+    if config["genome"] == "":
+        return []
+    else:
+        path = config["project-folder"]
+        file1 = path + "/MPILEUP/mpileup_reference/VerticalRefPos.txt"
+        file2 = path + "/MPILEUP/mpileup_reference/GSC.MasterMatrix.txt"
+        file3 = path + "/VCF/FinalSetVariants_referenceGenome.vcf"
+        file4 = path + "/MPILEUP/mpileup_reference/variants/GSC.GenoMatrix.txt"
+        output = [file1, file2, file3, file4]
+        return output   
+
+
+def get_callvariants_expand_files(wildcards):
+    if config["genome"] == "":
+        return []
+    else:    
+        samples = set(samplesheet["sample_name"])
+        path = config["project-folder"]
+        output1 = [path + "/MPILEUP/mpileup_reference/" + x + ".count.txt" + x + ".sorted.bam" for x in samples]
+
+        output = output1
+        return output
+
 rule callvariants:
     input:
+        get_callvariants_files,
+        get_callvariants_expand_files,
         expand("%s/FASTQ/TRIMMED/{samples}.ref.txt" % (config["project-folder"]), samples=samples),
-        expand("%s/MPILEUP/mpileup_reference/{samples}.count.txt" % (config["project-folder"]), samples=samples),
         "%s/FASTQ/TRIMMED/VerticalRefPos.txt" % (config["project-folder"]),
-        "%s/MPILEUP/mpileup_reference/VerticalRefPos.txt" % (config["project-folder"]),
         "%s/FASTQ/TRIMMED/GSC.MasterMatrix.txt" % (config["project-folder"]),
-        "%s/MPILEUP/mpileup_reference/GSC.MasterMatrix.txt" % (config["project-folder"]),
         "%s/FASTQ/TRIMMED/variants/GSC.GenoMatrix.txt" % (config["project-folder"]),
-        "%s/MPILEUP/mpileup_reference/variants/GSC.GenoMatrix.txt" % (config["project-folder"]),
         "%s/FASTQ/TRIMMED/GSC.vcf" % (config["project-folder"]),
-        "%s/VCF/FinalSetVariants_referenceGenome.vcf" % (config["project-folder"]),
         expand("%s/MPILEUP/mpileup_finalMock/{samples}.count.txt" % (config["project-folder"]), samples=samples),
         "%s/MPILEUP/mpileup_finalMock/VerticalRefPos.txt" % (config["project-folder"]),
         "%s/MPILEUP/mpileup_finalMock/GSC.MasterMatrix.txt" % (config["project-folder"]),
@@ -379,15 +405,11 @@ rule postprocessing:
         "%s/SAM/mockVariantsToReference/mockVariantsToReference.sam" % (config["project-folder"]),
         "%s/BAM/mockVariantsToReference/mockVariantsToReference.sorted.bam" % (config["project-folder"])
 
-rule finalreport:
-    input:
-        "%s/finalReport.html" % (config["project-folder"])
-
 rule MockEval:
     input:
         "%s/mockEvalReport.html" % (config["project-folder"])
 
-rule FinalReport:
+rule finalReport:
     input:
         "%s/finalReport.html" % (config["project-folder"])
 

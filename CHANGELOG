@@ -6,6 +6,11 @@
 
 0.17.* UPDATES
 --------------------------------------------------------------------------------
+69: Adjusted the remaining input and report files to work with and without provided reference genome
+68: Adjusted the final report so that it runs also without provided reference genome
+67: Input files changed for final report so that pipeline dependencies work without provided reference genome
+66: Exception handling if the first sample does not have reads aligned to reference genome. Now the sample with the most alignemtns is used for visualisation (instead of the first one)
+65: Missing variables added for variatn calling report
 64: Fixed dependencies from the report
 63: Server resource allocation for the Insilico standalo report added to the server default file
 62: Pairwise comparisons added to the report
