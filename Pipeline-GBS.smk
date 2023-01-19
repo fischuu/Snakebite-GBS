@@ -12,8 +12,8 @@ import yaml
 ##### Natural Resources Institute Finland (Luke)
 ##### This pipeline is build upon the the GBS-SNP-CROP pipeline:
 ##### https://github.com/halelab/GBS-SNP-CROP
-##### Version: 0.18.1
-version = "0.18.1"
+##### Version: 0.19.1
+version = "0.19.1"
 
 ##### set minimum snakemake version #####
 min_version("6.0")
@@ -377,7 +377,7 @@ def get_callvariants_expand_files(wildcards):
     else:    
         samples = set(samplesheet["sample_name"])
         path = config["project-folder"]
-        output1 = [path + "/MPILEUP/mpileup_reference/" + x + ".count.txt" + x + ".sorted.bam" for x in samples]
+        output1 = [path + "/MPILEUP/mpileup_reference/" + x + ".count.txt" for x in samples]
 
         output = output1
         return output
