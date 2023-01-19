@@ -1,4 +1,4 @@
-# Pipeline-GBS
+# Snakebite-GBS
 The snakemake pipeline based on GBS-SNP-Crop and further extended.
 
 # DAG
@@ -8,35 +8,33 @@ The visual overview of the various rules of the pipeline
 # Configuration
 The pipeline parameter configuration takes place in the file
 
-`GBS-pipeline_config.yaml` (there is an example here: `GBS-pipeline_config-example.yaml`)
+`Snakebite-GBS_config.yaml`
 
 Further, the settings important for the computing cluster are defined here:
 
-`GBS-pipeline_server-config.yaml` (example: `GBS-pipeline_puhti-config.yaml`)
+`Snakebite-GBS_server-config.yaml`
 
 # Starting the pipeline
-Before you start the pipeline, make sure you create the corresponding conda environment,
-as defined in this file
 
-`GBS.yaml`
+Currently, the default configuration is such that the pipelines makes use of docker/singularity. If you plan to use local software installation and or conda environments, you would need to install the required tools manually.
 
 Once the environment is created, you are ready to go. 
 
 To start the pipeline, just type
 
-`bash runGBSPipeline-example.sh`
+`bash run_Snakebite-GBS.sh`
 
 You can initiate a dry-run by running
 
-`bash runGBSPipeline-example.sh -np`
+`bash run_Snakebite-GBS.sh -np`
 
 # More information
 For further information, please visit the wiki page here:
-https://github.com/fischuu/Pipeline-GBS/wiki
+https://github.com/fischuu/Snakebite-GBS/wiki
 
 # Current state
 The pipeline is currently under active development, unstable development versions with the latest features
-can be found in the `dev` branch (odd version numbers), the `main` branch should be stable (even version numbers).
+can be found in the `dev` branch (odd version numbers), the `main` branch should be the latest stable version (even version numbers).
 
 # Possible use-cases
 
