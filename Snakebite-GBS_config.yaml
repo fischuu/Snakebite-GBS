@@ -18,18 +18,18 @@ tmpdir: "/scratch/project_2001746/tmp"                                         #
 
 # Parameters for the GBS-SNP-CROP tools
 ################################################################################
-enz1: "GAATTC"                     # First restriction enzyme sequence
-enz2: "GCATGC"                     # Second restriction enzyme sequence
-libname: "AllReads"               # 
-libtype: "PE"                     # Library type, paired-end (PE) or single-end (SE)
-minLength: 300                    # Minimum aimed fragment size (during wetlab size selection phase)
-maxLength: 550                    # Maximum aimed fragment size (during wetlab size selection phase)
+enz1: "GAATTC"                                                                 # First restriction enzyme sequence
+enz2: "GCATGC"                                                                 # Second restriction enzyme sequence
+libname: "AllReads"                                                            # 
+libtype: "PE"                                                                  # Library type, paired-end (PE) or single-end (SE)
+minLength: 300                                                                 # Minimum aimed fragment size (during wetlab size selection phase)
+maxLength: 550                                                                 # Maximum aimed fragment size (during wetlab size selection phase)
 
 # Filter parameters for the mock reference refinement
 ################################################################################
 mockref:
-    TotalReadCoverage: 25         # How many overall reads need to be on a cluster to remain in mock reference?
-    minSampleCoverage: 3          # How many different samples need to have reads on a cluster to remain in mock reference?
+    TotalReadCoverage: 25                                                      # How many overall reads need to be on a cluster to remain in mock reference?
+    minSampleCoverage: 3                                                       # How many different samples need to have reads on a cluster to remain in mock reference?
 
 # Tools specific settings
 ################################################################################
