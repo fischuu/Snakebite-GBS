@@ -4,13 +4,13 @@
 # First, basic configuration and paths:
 ################################################################################
 project-folder: "/scratch/project_2001746/TestProject"                                                              # Absolute path to the project root folder
-pipeline-folder: "/users/fischerd/git/Pipeline-GBS"                                                                 # Absolute path to the pipeline folder
-pipeline-config: "/scratch/project_2001746/TestProject/GBS-pipeline_config.yaml"
-server-config: "/users/fischerd/git/Pipeline-GBS/GBS-pipeline_server-config.yaml"
-rawdata-folder: "/scratch/project_2001746/TestProject/FASTQ/RAW"                                                    # Absolute path to the folder that contain the raw fastq files
-samplesheet-file: "/scratch/project_2001746/TestProject/samplesheet.tsv"                                            # Absolute path to the samplesheet
-sampleinfo-file: ""                                                                                                 # Absolute path to the sample info
-genome: "/scratch/project_2001746/TestProject/References/Vulpes_vulpes.VulVul2.2.dna.toplevel.fa"                   # Absolute path to an existing reference genome, leave empty "" if not available
+pipeline-folder: "/users/fischerd/git/Snakebite-GBS"                                                                 # Absolute path to the pipeline folder
+pipeline-config: "Snakebite-GBS_config.yaml"
+server-config: "Snakebite-GBS_server-config.yaml"
+rawdata-folder: "FASTQ/RAW"                                                                                         # path to the folder that contain the raw fastq files
+samplesheet-file: "samplesheet.tsv"                                                                                 # path to the samplesheet
+sampleinfo-file: ""                                                                                                 # path to the sample info
+genome: "References/genomeFile.fa"                                                                                  # path to an existing reference genome, leave empty "" if not available
 mockreference: ""                                                                                                   # Use an existing mock reference for variant calling
 existingvariants: ""                                                                                                # A vcf file with existing variants
 local-scratch: "/scratch/project_2001746/tmp"                                                                       # Path for fast local storage for tmp files (Here, a system variable is used. Check with your server configs)
@@ -57,7 +57,7 @@ params:
     pl: 32                        #
     p: 0.01                       #
     id: 0.90                      # Default: 0.93
-    db: 1                         # WARNING!!!!! ADD HERE THE LENGTH OF THE SAMPLES VECTOR, THIS MUST NOT BE HARDCODED IN PRODUCTION!!!!
+    db: 1                         # 
     min: 80                       # 
     MR: "GSC.MR"                  #      
   step5:
