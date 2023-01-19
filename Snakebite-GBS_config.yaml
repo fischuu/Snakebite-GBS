@@ -3,18 +3,18 @@
 
 # First, basic configuration and paths:
 ################################################################################
-project-folder: "/scratch/project_2001746/TestProject"                                                              # Absolute path to the project root folder
-pipeline-folder: "/users/fischerd/git/Snakebite-GBS"                                                                 # Absolute path to the pipeline folder
-pipeline-config: "Snakebite-GBS_config.yaml"
-server-config: "Snakebite-GBS_server-config.yaml"
-rawdata-folder: "FASTQ/RAW"                                                                                         # path to the folder that contain the raw fastq files
-samplesheet-file: "samplesheet.tsv"                                                                                 # path to the samplesheet
-sampleinfo-file: ""                                                                                                 # path to the sample info
-genome: "References/genomeFile.fa"                                                                                  # path to an existing reference genome, leave empty "" if not available
-mockreference: ""                                                                                                   # Use an existing mock reference for variant calling
-existingvariants: ""                                                                                                # A vcf file with existing variants
-local-scratch: "/scratch/project_2001746/tmp"                                                                       # Path for fast local storage for tmp files (Here, a system variable is used. Check with your server configs)
-tmpdir: "/scratch/project_2001746/tmp"
+project-folder: "/scratch/project_2001746/TestProject"                         # Absolute path to the project root folder
+pipeline-folder: "/users/fischerd/git/Snakebite-GBS"                           # Absolute path to the pipeline folder
+pipeline-config: "Snakebite-GBS_config.yaml"                                   # path to the pipeline configuration file
+server-config: "Snakebite-GBS_server-config.yaml"                              # path to the server configuration file
+rawdata-folder: "FASTQ/RAW"                                                    # path to the folder that contain the raw fastq files
+samplesheet-file: "samplesheet.tsv"                                            # path to the samplesheet
+sampleinfo-file: ""                                                            # path to the sample info
+genome: "References/genomeFile.fa"                                             # path to an existing reference genome, leave empty "" if not available
+mockreference: ""                                                              # Use an existing mock reference for variant calling
+existingvariants: ""                                                           # A vcf file with existing variants
+local-scratch: "/scratch/project_2001746/tmp"                                  # Path for fast local storage for tmp files
+tmpdir: "/scratch/project_2001746/tmp"                                         # Path that can be used for regular tmp files
 
 # Parameters for the GBS-SNP-CROP tools
 ################################################################################
