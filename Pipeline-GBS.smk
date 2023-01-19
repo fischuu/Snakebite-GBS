@@ -377,7 +377,7 @@ def get_callvariants_expand_files(wildcards):
     else:    
         samples = set(samplesheet["sample_name"])
         path = config["project-folder"]
-        output1 = [path + "/MPILEUP/mpileup_reference/" + x + ".count.txt" + x + ".sorted.bam" for x in samples]
+        output1 = [path + "/MPILEUP/mpileup_reference/" + x + ".count.txt" for x in samples]
 
         output = output1
         return output
