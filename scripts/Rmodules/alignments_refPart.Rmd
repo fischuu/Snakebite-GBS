@@ -77,12 +77,10 @@ for(i in 1:length(mpile_files)){
   }
 }
 
-
-
-
-
   covData <- fread(file.path(projFolder, "MPILEUP", "mpileup_reference", mpile_files[sam]), sep="\t")
-  chrNames <- names(table(covData[,1]))
+  tableTab <- table(covData[,1])
+  tableTab <- sort(tableTab, decreasing=TRUE)
+  chrNames <- names(tableTab)
   chrNames <- chrNames[1:min(49, length(chrNames))]
 
   maxChr <- min(length(chrNames), 40)
@@ -94,8 +92,9 @@ for(i in 1:length(mpile_files)){
     tmpChr <- chrNames[i]
     
     tmpData <- covData[which(covData[,1]==tmpChr),]
+    stepSize <- min(30000, nrow(tmpData))
     
-     out <- stepMean(x=tmpData$V2, y=tmpData$V4, step=30000)
+     out <- stepMean(x=tmpData$V2, y=tmpData$V4, step=stepSize)
      plotcol <- rep("black", length(out))
      plotcol[out[,2]>20] <- "red"
      plotcol[out[,2]<10] <- "blue"
