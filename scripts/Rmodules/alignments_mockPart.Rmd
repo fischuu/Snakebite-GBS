@@ -71,14 +71,15 @@ Here, the coverage statistics for reads mapped against the clusters are presente
 
 ```{r importClusterCoverage, warning=FALSE}
 clusterFiles <- list.files(file.path(projFolder, "FASTQ", "TRIMMED", "alignments_clusters"), pattern="*.coverage")
-clusterCoverage <- read.table(file.path(projFolder, "FASTQ", "TRIMMED", "alignments_clusters", clusterFiles[1]))
+clusterCoverage <- fread(file.path(projFolder, "FASTQ", "TRIMMED", "alignments_clusters", clusterFiles[1]))
 names(clusterCoverage)[1:2] <- c("cluster", clusterFiles[1])
 
 for(i in 2:length(clusterFiles)){
-  tmp <- read.table(file.path(projFolder, "FASTQ", "TRIMMED", "alignments_clusters", clusterFiles[i]))
+  tmp <- fread(file.path(projFolder, "FASTQ", "TRIMMED", "alignments_clusters", clusterFiles[i]))
   names(tmp)[1:2] <- c("cluster", clusterFiles[i])
   clusterCoverage <- merge(clusterCoverage, tmp, by="cluster")
 }
+clusterCoverage <- as.data.frame(clusterCoverage)
 names(clusterCoverage)[2:(length(clusterFiles)+1)] <- clusterFiles
 clusterCoverage[,1] <- as.numeric(gsub("Cluster", "", clusterCoverage[,1]))
 clusterCoverage <- clusterCoverage[order(clusterCoverage[,1]),]
@@ -248,14 +249,15 @@ Data mapped against the clusters and then the reads per cluster visualized
 
 ```{r importFinalClusterCoverage, warning=FALSE}
 clusterFiles <- list.files(file.path(projFolder, "BAM", "alignments_finalMock"), pattern="*.coverage")
-clusterCoverage <- read.table(file.path(projFolder, "BAM", "alignments_finalMock", clusterFiles[1]))
+clusterCoverage <- fread(file.path(projFolder, "BAM", "alignments_finalMock", clusterFiles[1]))
 names(clusterCoverage)[1:2] <- c("cluster", clusterFiles[1])
 
 for(i in 2:length(clusterFiles)){
-  tmp <- read.table(file.path(projFolder, "BAM", "alignments_finalMock", clusterFiles[i]))
+  tmp <- fread(file.path(projFolder, "BAM", "alignments_finalMock", clusterFiles[i]))
   names(tmp)[1:2] <- c("cluster", clusterFiles[i])
   clusterCoverage <- merge(clusterCoverage, tmp, by="cluster")
 }
+clusterCoverage <- as.data.frame(clusterCoverage)
 names(clusterCoverage)[2:(length(clusterFiles)+1)] <- clusterFiles
 clusterCoverage[,1] <- as.numeric(gsub("Cluster", "", clusterCoverage[,1]))
 clusterCoverage <- clusterCoverage[order(clusterCoverage[,1]),]
