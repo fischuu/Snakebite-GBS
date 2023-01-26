@@ -3,7 +3,7 @@
 A concise overview of important runtime parameters and used inputs.
 
 ```{r get pipeline version}
-pipeSMK <- readLines(file.path(pipelineFolder,"Pipeline-GBS.smk"))
+pipeSMK <- readLines(file.path(pipelineFolder,"Snakebite-GBS.smk"))
 pipeVersion <- gsub("##### Version: ","",pipeSMK[grep("##### Version:", pipeSMK)])
 ```
 
