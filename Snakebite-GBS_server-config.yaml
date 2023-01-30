@@ -36,7 +36,7 @@ bwa_create_insilico_index:
     job-name: bwa_create_insilico_index
     time: 05:00:00
     cpus-per-task: 1
-    mem-per-cpu: 4000
+    mem-per-cpu: 50000
     
 IndexMockReferenceBWA:
     job-name:  IndexMockRefGenome_BWA

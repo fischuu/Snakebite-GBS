@@ -85,7 +85,7 @@ out <- cbind(gsub("\\.","",sapply(tmp,"[",1)),
 out_html <- knitr::kable(out, col.names = NULL, "html")
 kable_styling(out_html, "striped", position = "left")
 
-mockSamples <- unique(sapply(strsplit(sapply(strsplit(pearIn[c(startPos, startPos+1)],": "),"[", 2),".R"),"[",1))
+#mockSamples <- unique(sapply(strsplit(sapply(strsplit(pearIn[c(startPos, startPos+1)],": "),"[", 2),".R"),"[",1))
 
 final("mockSamples")
 
