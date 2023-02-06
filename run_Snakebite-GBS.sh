@@ -22,6 +22,6 @@ snakemake -s $pipelineFolder/Snakebite-GBS.smk \
           --cluster-config $projectFolder/Snakebite-GBS_server-config.yaml \
           --cluster "sbatch -t {cluster.time} --account={cluster.account} --gres=nvme:{cluster.nvme} --job-name={cluster.job-name} --tasks-per-node={cluster.ntasks} --cpus-per-task={cluster.cpus-per-task} --mem-per-cpu={cluster.mem-per-cpu} --mail-user={cluster.mail-user} --mail-type={cluster.mail-type} -p {cluster.partition}" \
           --scheduler greedy \
-	  --cluster-cancel scancel \
+	        --cluster-cancel scancel \
           $@
 
