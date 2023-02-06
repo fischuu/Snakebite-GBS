@@ -6,12 +6,12 @@
 
 0.19.* UPDATES
 --------------------------------------------------------------------------------
-1:
+1: New dev branch
 
-0.18.2: Another critial bugfix for variant calling report
-0.18.1: VariantCalling report dependency bugfix
-0.18: Stable release on 18.01.2023
+0.18.*: Stable release on 18.01.2023
 --------------------------------------------------------------------------------
+2: Another critial bugfix for variant calling report
+1: VariantCalling report dependency bugfix
 
 0.17.* UPDATES
 --------------------------------------------------------------------------------
