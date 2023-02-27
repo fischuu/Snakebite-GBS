@@ -133,7 +133,7 @@ if ($dataType eq "PE") {
 		my $Pear_out = join("","$file");
 	
 		print $code_OUT "\n\n###Analyzing paired $R1input1 and $R2input2 reads...\n";
-		print $code_OUT `$pear -f $R1input1 -r $R2input2 -o $Pear_out -p $pvalue -n $pear_length -j $threads -q 0 -t 75`;
+		print $code_OUT `$pear -f $R1input1 -r $R2input2 -o $Pear_out -p $pvalue -n $pear_length -j $threads`;
 		
 		# Transforming FASTQ PEAR assembly output file into FASTA
 		my $Ain =  join (".", "$file","assembled","fastq");

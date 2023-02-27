@@ -6,6 +6,9 @@
 
 0.19.* UPDATES
 --------------------------------------------------------------------------------
+4: Handled the case that no reads were disgarded from the mock reference building step
+3: Removed minimum lengths criteris in pear command
+2: Use N for stitching instead of T
 1: New dev branch
 
 0.18.*: Stable release on 18.01.2023

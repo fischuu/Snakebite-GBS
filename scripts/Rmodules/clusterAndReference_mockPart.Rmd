@@ -135,14 +135,39 @@ In case we used several samples for the mock, the discarded reads are considered
 have here `r length(mockSamples)` samples used to build the mock reference.
 
 ```{r import discard fasta}
+noDiscarded <- FALSE
+
 if(length(mockSamples)==1){
-  discardedReads <- importFQ(file.path(projFolder,"FASTQ", "TRIMMED", paste(mockSamples,".discarded.fastq",sep="") ))
+  fileToLoad <- file.path(projFolder,"FASTQ", "TRIMMED", paste(mockSamples,".discarded.fastq",sep="") )
+  if(file.info(fileToLoad)$size==0){
+     noDiscarded <- TRUE
+     discardedReads <- 0
+  } else {
+     discardedReads <- importFQ(fileToLoad)  
+  }
+  
 } else {
-  discardedReads <- importFQ(file.path(projFolder,"FASTQ", "TRIMMED", paste(mockSamples[1],".discarded.fastq",sep="")))
+  
+  fileToLoad <- file.path(projFolder,"FASTQ", "TRIMMED", paste(mockSamples[1],".discarded.fastq",sep=""))
+  file.info(fileToLoad)
+  if(file.info(fileToLoad)$size==0){
+     noDiscarded <- TRUE
+     discardedReads <- 0
+  } else {
+    discardedReads <- importFQ(fileToLoad)
+  }
+  
   for(i in 2:length(mockSamples)){
-    tmp <- importFQ(file.path(projFolder,"FASTQ", "TRIMMED", paste(mockSamples[i],".discarded.fastq",sep="")))
-    discardedReads$seq <- c(discardedReads$seq, tmp$seq)    
-    discardedReads$qual <- c(discardedReads$qual, tmp$qual)    
+    fileToLoad <- file.path(projFolder,"FASTQ", "TRIMMED", paste(mockSamples[i],".discarded.fastq",sep=""))
+    file.info(fileToLoad)
+
+    if(file.info(fileToLoad)$size==0){
+     noDiscarded <- c(noDiscarded, TRUE)
+    } else {
+     tmp <- importFQ(fileToLoad)
+     discardedReads$seq <- c(discardedReads$seq, tmp$seq)    
+     discardedReads$qual <- c(discardedReads$qual, tmp$qual)    
+    }
   }
 }
 
@@ -151,20 +176,32 @@ if(length(mockSamples)==1){
 Summary on the read length distribution of the discarded reads
 
 ```{r summarise discarded reads}
-out <- summary(discardedReads)
-out_html <- knitr::kable(out, col.names = NULL, "html")
-kable_styling(out_html, "striped", position = "left")
+if(sum(noDiscarded)==length(noDiscarded)){
+  out <- as.matrix(summary(discardedReads))
+  out_html <- knitr::kable(out, "html")
+  kable_styling(out_html, "striped", position = "left")
+} else {
+  out <- summary(discardedReads)
+  out_html <- knitr::kable(out, col.names = NULL, "html")
+  kable_styling(out_html, "striped", position = "left")
+}
 ```
 
 Quality values for the first 100,000 sequences. As a rule of thumb, capital letters are good, special characters represent bad quality.
 ```{r quality measues}
-outQual <- table(unlist(strsplit(discardedReads$qual[1:100000],"")))
-out_html <- knitr::kable(formatC(outQual,  format="d", big.mark=","), "html")
-kable_styling(out_html, "striped", position = "left")
+if(sum(noDiscarded)==length(noDiscarded)){
+} else {
+  outQual <- table(unlist(strsplit(discardedReads$qual[1:100000],"")))
+  out_html <- knitr::kable(formatC(outQual,  format="d", big.mark=","), "html")
+  kable_styling(out_html, "striped", position = "left")
+}
 ```
 
 ```{r visualize Quality scores}
-barplot(outQual, ylab="Frequency", main="Quality-score distribution", col=report.colours[1])
+if(sum(noDiscarded)==length(noDiscarded)){
+} else {
+  barplot(outQual, ylab="Frequency", main="Quality-score distribution", col=report.colours[1])
+}
 ```
 
 ### Ratio samples used to length Mock reference
