@@ -50,23 +50,18 @@ ifelse(refGenome.file == "", refAvail <- FALSE, refAvail <- TRUE)
 
 ```{r help functions}
 
-stepMean <- function(x,y,step=30000){
+stepMean <-  function(x, y, step = 30000) {
   rx <- range(x)
-  locs <- seq(1,max(rx), step)
-  pos <- rep(0, length(locs)-1)
-  out <- rep(0, length(locs)-1)
+  locs <- seq(1, max(rx), step)
+  pos <- (locs[-1] + locs[-length(locs)]) / 2
   
-  for(i in 2:length(locs)){
-    takeThose <- which(x>=locs[i-1] & x<locs[i])
-    if(length(takeThose)>0){
-        out[i-1] <- mean(y[takeThose])      
-    } else {
-        out[i-1] <- 0
-    }
-    pos[i-1] <- mean(locs[i], locs[i-1])
-  }
-  cbind(pos,out)
+  intervals <- cut(x, breaks = locs, include.lowest = TRUE)
+  out <- tapply(y, intervals, mean)
+  out[is.na(out)] <- 0
+  
+  cbind(pos, out)
 }
+
 
   gini <- function (x, w=NULL){
     
