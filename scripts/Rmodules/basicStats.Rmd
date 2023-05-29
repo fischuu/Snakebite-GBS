@@ -48,7 +48,8 @@ out <- data.frame(c("Number of raw-samples",
                     "Enzyme 1 sequence",
                     "Enzyme 2 sequence",
                     "Aimed min. fragment length",
-                    "Aimed max. fragment length"),
+                    "Aimed max. fragment length",
+                    "Library type"),
                   c(length(unique(sampleSheet$rawsample)),
                     length(unique(sampleSheet$sample_name)),
                     numberGroupingNames,
@@ -64,7 +65,8 @@ out <- data.frame(c("Number of raw-samples",
                     enz1,
                     enz2,
                     paste(minLength, "bp"),
-                    paste(maxLength, "bp")))
+                    paste(maxLength, "bp"),
+                    libtype))
 
 out_html <- knitr::kable(out, col.names = NULL, "html")
 kable_styling(out_html, "striped", position = "left")

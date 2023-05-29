@@ -412,20 +412,20 @@ kable_styling(out_html, "striped", position = "left")
 ```
 
 ```{r}
-flankingLeft.list <- list.files(file.path(projFolder,"FASTQ", "TRIMMED", "alignments_reference"), pattern="*left.fa")
-flankingRight.list <- list.files(file.path(projFolder,"FASTQ", "TRIMMED", "alignments_reference"), pattern="*right.fa")
-flankingLeft <- list()
-flankingRight <- list()
-
-for(i in 1:length(flankingLeft.list)){
-  fileInfo <- file.info(file.path(projFolder,"FASTQ", "TRIMMED", "alignments_reference", flankingLeft.list[i]))
-  if(fileInfo$size>0){
-    flankingLeft[[i]] <- importFA(file.path(projFolder,"FASTQ", "TRIMMED", "alignments_reference", flankingLeft.list[i]))
-    flankingRight[[i]] <- importFA(file.path(projFolder,"FASTQ", "TRIMMED", "alignments_reference", flankingRight.list[i]))
+if(libtype=="PE"){
+  flankingLeft.list <- list.files(file.path(projFolder,"FASTQ", "TRIMMED", "alignments_reference"), pattern="*left.fa")
+  flankingRight.list <- list.files(file.path(projFolder,"FASTQ", "TRIMMED", "alignments_reference"), pattern="*right.fa")
+  flankingLeft <- list()
+  flankingRight <- list()
+  
+  for(i in 1:length(flankingLeft.list)){
+    fileInfo <- file.info(file.path(projFolder,"FASTQ", "TRIMMED", "alignments_reference", flankingLeft.list[i]))
+    if(fileInfo$size>0){
+      flankingLeft[[i]] <- importFA(file.path(projFolder,"FASTQ", "TRIMMED", "alignments_reference", flankingLeft.list[i]))
+      flankingRight[[i]] <- importFA(file.path(projFolder,"FASTQ", "TRIMMED", "alignments_reference", flankingRight.list[i]))
+    }
   }
 }
-
-
 ```
 
 First, the distributions per sample of the most abundant flanking sequence (top-10)
@@ -435,37 +435,44 @@ First, the distributions per sample of the most abundant flanking sequence (top-
 This table is as we take it from the data, the most abundant sequences at the left site of the aligned reads.
 
 ```{r}
-flankSeqLeft <- list()
-for(i in 1:length(flankingLeft))
-flankSeqLeft[[i]] <- sort(table(flankingLeft[[i]]), decreasing = TRUE)[1:10]/length(flankingLeft[[i]])
+if(libtype=="PE"){
+  flankSeqLeft <- list()
+  for(i in 1:length(flankingLeft))
+  flankSeqLeft[[i]] <- sort(table(flankingLeft[[i]]), decreasing = TRUE)[1:10]/length(flankingLeft[[i]])
+}
 ```
 
 ```{r}
-out <- paste0(names(flankSeqLeft[[1]]), " - ",round(flankSeqLeft[[1]]*100,1),"%")
-for(i in 2:length(flankSeqLeft)){
-  out <- cbind(out, paste0(names(flankSeqLeft[[i]]), " - ",round(flankSeqLeft[[i]]*100,1),"%"))
+if(libtype=="PE"){
+  out <- paste0(names(flankSeqLeft[[1]]), " - ",round(flankSeqLeft[[1]]*100,1),"%")
+  for(i in 2:length(flankSeqLeft)){
+    out <- cbind(out, paste0(names(flankSeqLeft[[i]]), " - ",round(flankSeqLeft[[i]]*100,1),"%"))
+  }
+  colnames(out) <- gsub(".flanking_left.fa","",flankingLeft.list)
+  data.table(out)
 }
-colnames(out) <- gsub(".flanking_left.fa","",flankingLeft.list)
-data.table(out)
 ```
 #### Flanking sequences 'right'
 
 Those are the most abundant sequences that we find at the right site of the aligned reads.
 
 ```{r}
-flankSeqRight <- list()
-for(i in 1:length(flankingRight))
-flankSeqRight[[i]] <- sort(table(flankingRight[[i]]), decreasing = TRUE)[1:10]/length(flankingRight[[i]])
+if(libtype=="PE"){
+  flankSeqRight <- list()
+  for(i in 1:length(flankingRight))
+  flankSeqRight[[i]] <- sort(table(flankingRight[[i]]), decreasing = TRUE)[1:10]/length(flankingRight[[i]])
+}
 ```
 
 ```{r}
-out <- paste0(names(flankSeqRight[[1]]), " - ",round(flankSeqRight[[1]]*100,1),"%")
-for(i in 2:length(flankSeqRight)){
-  out <- cbind(out, paste0(names(flankSeqRight[[i]]), " - ",round(flankSeqRight[[i]]*100,1),"%"))
+if(libtype=="PE"){
+  out <- paste0(names(flankSeqRight[[1]]), " - ",round(flankSeqRight[[1]]*100,1),"%")
+  for(i in 2:length(flankSeqRight)){
+    out <- cbind(out, paste0(names(flankSeqRight[[i]]), " - ",round(flankSeqRight[[i]]*100,1),"%"))
+  }
+  colnames(out) <- gsub(".flanking_right.fa","",flankingRight.list)
+  data.table(out)
 }
-colnames(out) <- gsub(".flanking_right.fa","",flankingRight.list)
-data.table(out)
-
 ```
 
 #### Combined left and right sequences
@@ -473,18 +480,18 @@ data.table(out)
 And finally still the top10 combinations
 
 ```{r}
-
-tmp <- paste(flankingLeft[[1]], flankingRight[[1]], sep="-")
-tmp2 <- sort(table(tmp), decreasing=TRUE)[1:20]/length(tmp)
-out <- paste0(names(tmp2), " - ",round(tmp2*100,1),"%")
-
-for(i in 2:length(flankingLeft)){
-   tmp <- paste(flankingLeft[[i]], flankingRight[[i]], sep="-")
-   tmp2 <- sort(table(tmp), decreasing=TRUE)[1:20]/length(tmp)
-   out <- cbind(out, paste0(names(tmp2), " - ",round(tmp2*100,1),"%"))
+if(libtype=="PE"){
+  tmp <- paste(flankingLeft[[1]], flankingRight[[1]], sep="-")
+  tmp2 <- sort(table(tmp), decreasing=TRUE)[1:20]/length(tmp)
+  out <- paste0(names(tmp2), " - ",round(tmp2*100,1),"%")
+  
+  for(i in 2:length(flankingLeft)){
+     tmp <- paste(flankingLeft[[i]], flankingRight[[i]], sep="-")
+     tmp2 <- sort(table(tmp), decreasing=TRUE)[1:20]/length(tmp)
+     out <- cbind(out, paste0(names(tmp2), " - ",round(tmp2*100,1),"%"))
+  }
+  colnames(out) <- gsub(".flanking_right.fa","",flankingRight.list)
+  data.table(out)
 }
-colnames(out) <- gsub(".flanking_right.fa","",flankingRight.list)
-data.table(out)
-
 ```
 

@@ -82,7 +82,8 @@ rule R_finalReport:
        enz1=config["enz1"],
        enz2=config["enz2"],
        minLength=config["minLength"],
-       maxLength=config["maxLength"]
+       maxLength=config["maxLength"],
+       libtype=config["libtype"]
     shell:"""
        R -e "projFolder <- '{params.projFolder}'; \
              pipelineFolder <- '{params.pipeFolder}'; \
@@ -95,6 +96,7 @@ rule R_finalReport:
              maxLength <- '{params.maxLength}'; \
              fullInsilico <- '{params.fullInsilico}'; \
              selectedInsilico <- '{params.selectedInsilico}'; \
+             libtype <- '{params.libtype}'; \
              snakemake <- TRUE;\
              options(knitr.duplicate.label = 'allow');\
              source('{input.script}')" &> {log}

@@ -12,8 +12,8 @@ import yaml
 ##### Natural Resources Institute Finland (Luke)
 ##### This pipeline is build upon the the GBS-SNP-CROP pipeline:
 ##### https://github.com/halelab/GBS-SNP-CROP
-##### Version: 0.18.4
-version = "0.18.4"
+##### Version: 0.19.1
+version = "0.19.1"
 
 ##### set minimum snakemake version #####
 min_version("6.0")
@@ -67,12 +67,13 @@ for r in reads1_tmp:
 
 reads2_tmp = list(samplesheet.read2)
 reads2_trim = []
-for r in reads2_tmp:
-    for e in possible_ext:
-        if r.endswith(e):
-            addThis = r[:-len(e)]
-            reads2_trim += [addThis] 
-            ext=e
+if(config["libtype"][0]=='PE'):
+    for r in reads2_tmp:
+        for e in possible_ext:
+            if r.endswith(e):
+                addThis = r[:-len(e)]
+                reads2_trim += [addThis] 
+                ext=e
 
 mockSamples = list(samplesheet.useForMock)
 samplesUsedForMock = str(mockSamples.count('YES'))
@@ -305,7 +306,7 @@ rule preparations:
     input:
         get_preparations_files,
         expand("%s/FASTQ/CONCATENATED/{samples}_R1_001.merged.fastq.gz" % (config["project-folder"]), samples=samples),
-        expand("%s/FASTQ/CONCATENATED/{samples}_R2_001.merged.fastq.gz" % (config["project-folder"]), samples=samples),
+#        expand("%s/FASTQ/CONCATENATED/{samples}_R2_001.merged.fastq.gz" % (config["project-folder"]), samples=samples),
         config["barcodes-file"]
 
 rule QC:
@@ -314,19 +315,19 @@ rule QC:
         "%s/QC/CONCATENATED/multiqc_R1/" % (config["project-folder"]),
         "%s/QC/TRIMMED/multiqc_R1/" % (config["project-folder"]),
         expand("%s/QC/RAW/{rawsamples}_R1_qualdist.txt" % (config["project-folder"]), rawsamples=rawsamples),
-        expand("%s/QC/RAW/{rawsamples}_R2_qualdist.txt" % (config["project-folder"]), rawsamples=rawsamples),
+#        expand("%s/QC/RAW/{rawsamples}_R2_qualdist.txt" % (config["project-folder"]), rawsamples=rawsamples),
         expand("%s/QC/CONCATENATED/{samples}_R1_qualdist.txt" % (config["project-folder"]), samples=samples),
-        expand("%s/QC/CONCATENATED/{samples}_R2_qualdist.txt" % (config["project-folder"]), samples=samples),
+#        expand("%s/QC/CONCATENATED/{samples}_R2_qualdist.txt" % (config["project-folder"]), samples=samples),
         expand("%s/QC/TRIMMED/{samples}_R1_qualdist.txt" % (config["project-folder"]), samples=samples),
-        expand("%s/QC/TRIMMED/{samples}_R2_qualdist.txt" % (config["project-folder"]), samples=samples),
+#        expand("%s/QC/TRIMMED/{samples}_R2_qualdist.txt" % (config["project-folder"]), samples=samples),
         "%s/QC-Report.html" % (config["project-folder"])
 
 rule preprocessing:
     input:
         expand("%s/FASTQ/TRIMMED/{samples}.R1.fq.gz" % (config["project-folder"]), samples=samples),
-        expand("%s/FASTQ/TRIMMED/{samples}.R2.fq.gz" % (config["project-folder"]), samples=samples),
+#        expand("%s/FASTQ/TRIMMED/{samples}.R2.fq.gz" % (config["project-folder"]), samples=samples),
         expand("%s/FASTQ/SUBSTITUTED/{samples}.R1.fq.gz" % (config["project-folder"]), samples=samples),
-        expand("%s/FASTQ/SUBSTITUTED/{samples}.R2.fq.gz" % (config["project-folder"]), samples=samples),
+#        expand("%s/FASTQ/SUBSTITUTED/{samples}.R2.fq.gz" % (config["project-folder"]), samples=samples),
 
 rule mockreference:
     input:

@@ -20,6 +20,7 @@ enz1.2 <- paste(enz1[[1]][-1], collapse="")
 enz2.1 <- enz2[[1]][1]
 enz2.2 <- paste(enz2[[1]][-1], collapse="")
 
+# TODO: CHECK IF THIS FUNCTION REPORTS THE CORRECT FRAGMENTS!!
 ddout <- insilico.digest(fasta, cut_site_5prime1 = enz1.1, 
                          cut_site_3prime1 = enz1.2,
                          cut_site_5prime2 = enz2.1,

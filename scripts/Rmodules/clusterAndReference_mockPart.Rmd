@@ -55,78 +55,89 @@ lines(c(-100,10000),c(10,10), lty="dotted")
 
 ### Pear Stats
 
+Please note, Pear step is only required for PE libraries
+
 ```{r import pear stats}
-pearIn <- readLines(file.path(projFolder, "FASTQ", "TRIMMED", "Pear.log"))
-pearIn <- pearIn[-grep("Assemblying reads", pearIn)]
-startPos <- which(pearIn=="Zhang et al (2014) Bioinformatics 30(5): 614-620 | doi:10.1093/bioinformatics/btt593")+2
+if(libtype=="PE"){
+  pearIn <- readLines(file.path(projFolder, "FASTQ", "TRIMMED", "Pear.log"))
+  pearIn <- pearIn[-grep("Assemblying reads", pearIn)]
+  startPos <- which(pearIn=="Zhang et al (2014) Bioinformatics 30(5): 614-620 | doi:10.1093/bioinformatics/btt593")+2
+}
 ```
 
 ### Pear settings used
 
 ```{r pear settings}
-tmp <- pearIn[(startPos[1]+2):(startPos[1]+12)]
-tmp <- strsplit(tmp, ": ")
-out <- cbind(gsub("\\.","",sapply(tmp,"[",1)),
-             sapply(tmp,"[",2))
-
-out_html <- knitr::kable(out, col.names = NULL, "html")
-kable_styling(out_html, "striped", position = "left")
-
+if(libtype=="PE"){
+  tmp <- pearIn[(startPos[1]+2):(startPos[1]+12)]
+  tmp <- strsplit(tmp, ": ")
+  out <- cbind(gsub("\\.","",sapply(tmp,"[",1)),
+               sapply(tmp,"[",2))
+  
+  out_html <- knitr::kable(out, col.names = NULL, "html")
+  kable_styling(out_html, "striped", position = "left")
+}
 ```
 
-In total, `r length(startPos)` sample(s) were used to build the preliminary mock reference.
+In total, `r if(libtype=="PE"){length(startPos)}` sample(s) were used to build the preliminary mock reference.
 
 ```{r report Pear stats}
-
-tmp <- pearIn[c(startPos, startPos+1)]
-tmp <- strsplit(tmp, ": ")
-out <- cbind(gsub("\\.","",sapply(tmp,"[",1)),
-             sapply(tmp,"[",2))
-out_html <- knitr::kable(out, col.names = NULL, "html")
-kable_styling(out_html, "striped", position = "left")
-
-#mockSamples <- unique(sapply(strsplit(sapply(strsplit(pearIn[c(startPos, startPos+1)],": "),"[", 2),".R"),"[",1))
-
-final("mockSamples")
-
+if(libtype=="PE"){
+  tmp <- pearIn[c(startPos, startPos+1)]
+  tmp <- strsplit(tmp, ": ")
+  out <- cbind(gsub("\\.","",sapply(tmp,"[",1)),
+               sapply(tmp,"[",2))
+  out_html <- knitr::kable(out, col.names = NULL, "html")
+  kable_styling(out_html, "striped", position = "left")
+  
+  #mockSamples <- unique(sapply(strsplit(sapply(strsplit(pearIn[c(startPos, startPos+1)],": "),"[", 2),".R"),"[",1))
+  
+  final("mockSamples")
+}
 ```
 
 The ACGT-distribution across the samples used for building the mock reference.
 
 ```{r vis atcg distribution}
-# Get the ATCG distribution
-atDist <- matrix(-1, ncol=length(startPos), nrow=4)
-for(i in 1:4){
-  atDist[i,] <- as.numeric(sapply(strsplit(pearIn[startPos+i+16], ": "),"[",2))
+if(libtype=="PE"){
+  # Get the ATCG distribution
+  atDist <- matrix(-1, ncol=length(startPos), nrow=4)
+  for(i in 1:4){
+    atDist[i,] <- as.numeric(sapply(strsplit(pearIn[startPos+i+16], ": "),"[",2))
+  }
+  rownames(atDist) <- c("A", "C", "G", "T")
+  
+  barplot(t(atDist), main="A,C,T,G distribution", col=report.colours[1:ncol(atDist)], beside = TRUE)
 }
-rownames(atDist) <- c("A", "C", "G", "T")
-
-barplot(t(atDist), main="A,C,T,G distribution", col=report.colours[1:ncol(atDist)], beside = TRUE)
 ```
 
 ### Assembling statistics
 Statistics on how many reads have been assembled (=had a minimum overlap of x-bases (see table above) between R1 and R2), have been discarded ( due to length and/or quality) or were not possible to overlap.
 
 ```{r assembling stat}
-tmp <- pearIn[c(startPos+23, startPos+24, startPos+25)]
-pearAssembly <- matrix(sapply(strsplit(tmp,": "),"[",2), ncol=length(startPos), byrow=TRUE)
-rownames(pearAssembly) <- sapply(strsplit(tmp," .."),"[",1)[seq(1,length(tmp), by=length(startPos))]
-colnames(pearAssembly) <- paste("Sample",1:length(startPos))
-
-out_html <- knitr::kable(pearAssembly, col.names = NULL, "html")
-kable_styling(out_html, "striped", position = "left")
+if(libtype=="PE"){
+  tmp <- pearIn[c(startPos+23, startPos+24, startPos+25)]
+  pearAssembly <- matrix(sapply(strsplit(tmp,": "),"[",2), ncol=length(startPos), byrow=TRUE)
+  rownames(pearAssembly) <- sapply(strsplit(tmp," .."),"[",1)[seq(1,length(tmp), by=length(startPos))]
+  colnames(pearAssembly) <- paste("Sample",1:length(startPos))
+  
+  out_html <- knitr::kable(pearAssembly, col.names = NULL, "html")
+  kable_styling(out_html, "striped", position = "left")
+}
 ```
 
 The stitching merges the unassembled paired reads together to single reads by adding just 20 T's in between them. Only reads of a certain length are stitched together, namely the rl (set to 100) parameter -19 respective -5
 
 ```{r stitching stat}
-tmp <- pearIn[c(startPos+35, startPos+36, startPos+37)]
-stitching <- matrix(sapply(strsplit(tmp,"= "),"[",2), ncol=length(startPos), byrow=TRUE)
-rownames(stitching) <- sapply(strsplit(tmp," ="),"[",1)[seq(1,length(tmp), by=length(startPos))]
-colnames(stitching) <- paste("Sample",1:length(startPos))
-
-out_html <- knitr::kable(stitching, col.names = NULL, "html")
-kable_styling(out_html, "striped", position = "left")
+if(libtype=="PE"){
+  tmp <- pearIn[c(startPos+35, startPos+36, startPos+37)]
+  stitching <- matrix(sapply(strsplit(tmp,"= "),"[",2), ncol=length(startPos), byrow=TRUE)
+  rownames(stitching) <- sapply(strsplit(tmp," ="),"[",1)[seq(1,length(tmp), by=length(startPos))]
+  colnames(stitching) <- paste("Sample",1:length(startPos))
+  
+  out_html <- knitr::kable(stitching, col.names = NULL, "html")
+  kable_styling(out_html, "striped", position = "left")
+}
 ```
 
 ### Discarded reads
@@ -135,72 +146,79 @@ In case we used several samples for the mock, the discarded reads are considered
 have here `r length(mockSamples)` samples used to build the mock reference.
 
 ```{r import discard fasta}
-noDiscarded <- FALSE
-
-if(length(mockSamples)==1){
-  fileToLoad <- file.path(projFolder,"FASTQ", "TRIMMED", paste(mockSamples,".discarded.fastq",sep="") )
-  if(file.info(fileToLoad)$size==0){
-     noDiscarded <- TRUE
-     discardedReads <- 0
-  } else {
-     discardedReads <- importFQ(fileToLoad)  
-  }
+if(libtype=="PE"){
+  noDiscarded <- FALSE
   
-} else {
-  
-  fileToLoad <- file.path(projFolder,"FASTQ", "TRIMMED", paste(mockSamples[1],".discarded.fastq",sep=""))
-  file.info(fileToLoad)
-  if(file.info(fileToLoad)$size==0){
-     noDiscarded <- TRUE
-     discardedReads <- 0
-  } else {
-    discardedReads <- importFQ(fileToLoad)
-  }
-  
-  for(i in 2:length(mockSamples)){
-    fileToLoad <- file.path(projFolder,"FASTQ", "TRIMMED", paste(mockSamples[i],".discarded.fastq",sep=""))
-    file.info(fileToLoad)
-
+  if(length(mockSamples)==1){
+    fileToLoad <- file.path(projFolder,"FASTQ", "TRIMMED", paste(mockSamples,".discarded.fastq",sep="") )
     if(file.info(fileToLoad)$size==0){
-     noDiscarded <- c(noDiscarded, TRUE)
+       noDiscarded <- TRUE
+       discardedReads <- 0
     } else {
-     tmp <- importFQ(fileToLoad)
-     discardedReads$seq <- c(discardedReads$seq, tmp$seq)    
-     discardedReads$qual <- c(discardedReads$qual, tmp$qual)    
+       discardedReads <- importFQ(fileToLoad)  
+    }
+    
+  } else {
+    
+    fileToLoad <- file.path(projFolder,"FASTQ", "TRIMMED", paste(mockSamples[1],".discarded.fastq",sep=""))
+    file.info(fileToLoad)
+    if(file.info(fileToLoad)$size==0){
+       noDiscarded <- TRUE
+       discardedReads <- 0
+    } else {
+      discardedReads <- importFQ(fileToLoad)
+    }
+    
+    for(i in 2:length(mockSamples)){
+      fileToLoad <- file.path(projFolder,"FASTQ", "TRIMMED", paste(mockSamples[i],".discarded.fastq",sep=""))
+      file.info(fileToLoad)
+  
+      if(file.info(fileToLoad)$size==0){
+       noDiscarded <- c(noDiscarded, TRUE)
+      } else {
+       tmp <- importFQ(fileToLoad)
+       discardedReads$seq <- c(discardedReads$seq, tmp$seq)    
+       discardedReads$qual <- c(discardedReads$qual, tmp$qual)    
+      }
     }
   }
 }
-
 ```
 
 Summary on the read length distribution of the discarded reads
 
 ```{r summarise discarded reads}
-if(sum(noDiscarded)==length(noDiscarded)){
-  out <- as.matrix(summary(discardedReads))
-  out_html <- knitr::kable(out, "html")
-  kable_styling(out_html, "striped", position = "left")
-} else {
-  out <- summary(discardedReads)
-  out_html <- knitr::kable(out, col.names = NULL, "html")
-  kable_styling(out_html, "striped", position = "left")
+if(libtype=="PE"){
+  if(sum(noDiscarded)==length(noDiscarded)){
+    out <- as.matrix(summary(discardedReads))
+    out_html <- knitr::kable(out, "html")
+    kable_styling(out_html, "striped", position = "left")
+  } else {
+    out <- summary(discardedReads)
+    out_html <- knitr::kable(out, col.names = NULL, "html")
+    kable_styling(out_html, "striped", position = "left")
+  }
 }
 ```
 
 Quality values for the first 100,000 sequences. As a rule of thumb, capital letters are good, special characters represent bad quality.
 ```{r quality measues}
-if(sum(noDiscarded)==length(noDiscarded)){
-} else {
-  outQual <- table(unlist(strsplit(discardedReads$qual[1:100000],"")))
-  out_html <- knitr::kable(formatC(outQual,  format="d", big.mark=","), "html")
-  kable_styling(out_html, "striped", position = "left")
+if(libtype=="PE"){
+  if(sum(noDiscarded)==length(noDiscarded)){
+  } else {
+    outQual <- table(unlist(strsplit(discardedReads$qual[1:100000],"")))
+    out_html <- knitr::kable(formatC(outQual,  format="d", big.mark=","), "html")
+    kable_styling(out_html, "striped", position = "left")
+  }
 }
 ```
 
 ```{r visualize Quality scores}
-if(sum(noDiscarded)==length(noDiscarded)){
-} else {
-  barplot(outQual, ylab="Frequency", main="Quality-score distribution", col=report.colours[1])
+if(libtype=="PE"){
+  if(sum(noDiscarded)==length(noDiscarded)){
+  } else {
+    barplot(outQual, ylab="Frequency", main="Quality-score distribution", col=report.colours[1])
+  }
 }
 ```
 
