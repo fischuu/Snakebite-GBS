@@ -41,7 +41,7 @@ else:
 if config["genome"] == "":
     pass
 else:
-    if(config["libtype"][0]=='PE'):
+    if(config["libtype"]=='PE'):
         rule InsilicoGenome_AlignReads:
             """
             Align reads to the in-silico Genome (BWA).

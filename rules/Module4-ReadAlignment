@@ -1,7 +1,7 @@
 if config["genome"] == "":
     pass
 else:
-    if(config["libtype"][0]=='PE'):
+    if(config["libtype"]=='PE'):
         rule RefGenome_AlignReads:
             """
             Align reads to the Reference Genome (BWA).
@@ -179,7 +179,7 @@ else:
             samtools idxstats {input.sbam} | awk '{{print $1\" \"$3}}' > {output.c}
       	"""
 
-if(config["libtype"][0]=='PE'):
+if(config["libtype"]=='PE'):
     rule MockRef_AlignReads:
         """
         Align reads to the mock reference Genome.
@@ -227,7 +227,7 @@ else:
             bwa mem -t {params.threads} -M {input.reference} {input.R1} > {output} 2> {log}
       	"""
 
-if(config["libtype"][0]=='PE'):
+if(config["libtype"]=='PE'):
     rule MockRefClusters_AlignReads:
         """
         Index the Mock Reference Genome Clusters.
@@ -408,7 +408,7 @@ rule MockRefClusters_AlignmentStats:
 ##
 ## Process the final Mock
 
-if(config["libtype"][0]=='PE'):
+if(config["libtype"]=='PE'):
     rule FinalMockRef_AlignReads:
         """
         Align reads to the final mock reference Genome.

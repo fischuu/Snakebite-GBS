@@ -1,4 +1,4 @@
-if(config["libtype"][0]=='PE'):
+if(config["libtype"]=='PE'):
     rule cutadapt_trim_reads:
         """
         Trim adapters / enzymes (CUTADAPT).
@@ -86,7 +86,7 @@ else:
           	cutadapt -g {params.adapter_file_R1} -o {output.first} {input} &> {log}  
     	"""
 
-if(config["libtype"][0]=='PE'):
+if(config["libtype"]=='PE'):
     rule TrimBasedOnQuality:
         """
         Trimming based on quality.
@@ -145,7 +145,7 @@ else:
            java -jar /Trimmomatic-0.38/trimmomatic-0.38.jar SE -phred33 -threads {params.threads} -trimlog {output.trimlog} {input.R1} {output.R1} MINLEN:{params.minlen} ILLUMINACLIP:{params.ad}:{params.iclip} LEADING:{params.leading} SLIDINGWINDOW:{params.slwin} TRAILING:{params.trail} &>{log}
       	"""
 
-if(config["libtype"][0]=='PE'):
+if(config["libtype"]=='PE'):
     rule SubstituteLowQualityBases:
         """
         Substitute low quality reads with N.

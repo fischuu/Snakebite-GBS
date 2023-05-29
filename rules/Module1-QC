@@ -48,7 +48,7 @@ rule multiqc_quality_control_raw_data_r1:
         multiqc -f --interactive -o {output} {input} &> {log};
     """
 
-if(config["libtype"][0]=='PE'):
+if(config["libtype"]=='PE'):
     rule qualDist_raw_data:
         """
         Quality control of fastq files (FASTQC).
@@ -88,7 +88,7 @@ else:
             {params.pipeFolder}/scripts/getQualDist.sh {input.R1} > {output.R1}
         """
     
-if(config["libtype"][0]=='PE'):
+if(config["libtype"]=='PE'):
     rule fastqc_quality_control_concatenated_data:
         """
         Quality control of trimmed fastq files (FASTQC).
@@ -137,7 +137,7 @@ else:
             fastqc -t {threads} -o {params.outfolder} --extract {input.R1} &> {log.R1};
         """
 
-if(config["libtype"][0]=='PE'):
+if(config["libtype"]=='PE'):
     rule multiqc_quality_control_concatenated_data:
         """
         Quality control of trimmed fastq files(MULTIQC).
@@ -189,7 +189,7 @@ else:
                 multiqc -f --interactive -o {output.R1} {params.R1} &> {log.R1};
             """
 
-if(config["libtype"][0]=='PE'):
+if(config["libtype"]=='PE'):
     rule qualDist_concateated_data:
         """
         Quality control of fastq files (FASTQC).
@@ -229,7 +229,7 @@ else:
             {params.pipeFolder}/scripts/getQualDist.sh {input.R1} > {output.R1}
         """
 
-if(config["libtype"][0]=='PE'):
+if(config["libtype"]=='PE'):
     rule fastqc_quality_control_trimmed_data:
         """
         Quality control of fastq files (FASTQC).
@@ -276,7 +276,7 @@ else:
             fastqc -t {threads} -o {params.outfolder} --extract {input.R1} &> {log.R1};
         """
 
-if(config["libtype"][0]=='PE'):
+if(config["libtype"]=='PE'):
     rule multiqc_quality_control_trimmed_data:
         """
         Quality control of trimmed fastq files(MULTIQC).
@@ -329,7 +329,7 @@ else:
             echo $TMPDIR
             multiqc -f --interactive -o {output.R1} {params.R1} &> {log.R1};
         """
-if(config["libtype"][0]=='PE'):
+if(config["libtype"]=='PE'):
     rule qualDist_trimmed_data:
         """
         Quality control of fastq files (FASTQC).
