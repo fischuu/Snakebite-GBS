@@ -364,3 +364,25 @@ else:
             bedtools getfasta -fi {input.ref} -bed {input.left} > {output.left}
             bedtools getfasta -fi {input.ref} -bed {input.right} > {output.right}
         """
+
+if config["genome"] == "":
+    pass
+else:  	
+    rule MockInRef_similarity:
+        """
+        Intersect positions of mock reference on reference against the sample alignments
+        """
+        input:
+            ref=config["genome"],
+            mock="%s/FASTQ/TRIMMED/GSC.MR.Clusters.fa" % (config["project-folder"])
+        output:
+            "%s/FASTQ/TRIMMED/GSC.MR.Clusters.report.txt" % (config["project-folder"])
+        log:
+            "%s/logs/MockInRef_similarity.log" % (config["project-folder"])
+        benchmark:
+            "%s/benchmark/MockInRef_similarity.tsv" % (config["project-folder"])
+        params: out="%s/FASTQ/TRIMMED/GSC.MR.Clusters" % (config["project-folder"])
+        singularity: config["singularity"]["mummer"]
+        shell:"""
+             compare-sets.pl -1 {input.ref} -2 {input.mock} -o {params.out} &> {log}
+        """

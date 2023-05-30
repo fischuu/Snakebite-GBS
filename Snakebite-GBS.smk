@@ -191,6 +191,7 @@ config["singularity"]["samtools"] = "docker://fischuu/samtools:1.9-0.2"
 config["singularity"]["r-gbs"] = "docker://fischuu/r-gbs:4.2.1-0.6"
 config["singularity"]["stringtie"] = "docker://fischuu/stringtie:2.2.1-0.1"
 config["singularity"]["subread"] = "docker://fischuu/subread:2.0.1-0.1"
+config["singularity"]["mummer"] = "docker://fischuu/mummer:4.0.0-0.6"
 
 ##### Print the welcome screen #####
 print("#################################################################################")
@@ -221,6 +222,7 @@ print("##### r-gbs     : "+config["singularity"]["r-gbs"])
 print("##### samtools  : "+config["singularity"]["samtools"])
 print("##### subread   : "+config["singularity"]["subread"])
 print("##### stringtie : "+config["singularity"]["stringtie"])
+print("##### MUMmer    : "+config["singularity"]["mummer"])
 print("#####")
 print("##### Runtime-configurations")
 print("##### --------------------------------")
@@ -259,6 +261,8 @@ rule all:
         expand("%s/QC/RAW/{rawsamples}_R1_qualdist.txt" % (config["project-folder"]), rawsamples=rawsamples),
         "%s/QC/CONCATENATED/multiqc_R1/" % (config["project-folder"]),
         "%s/QC/TRIMMED/multiqc_R1/" % (config["project-folder"]),
+      # OUTPUT STEP 3  
+        "%s/FASTQ/TRIMMED/GSC.MR.Clusters.report.txt" % (config["project-folder"]),
       # OUTPUT STEP 4
         "%s/FASTQ/TRIMMED/GSC.MR.Genome.fa" % (config["project-folder"]),
       # OUTPUT STEP 5
@@ -333,7 +337,8 @@ rule preprocessing:
 rule mockreference:
     input:
         "%s/FASTQ/TRIMMED/GSC.MR.Genome.fa" % (config["project-folder"]),
-        "%s/FASTQ/TRIMMED/GSC.MR.Clusters.fa" % (config["project-folder"])
+        "%s/FASTQ/TRIMMED/GSC.MR.Clusters.fa" % (config["project-folder"]),
+        "%s/FASTQ/TRIMMED/GSC.MR.Clusters.report.txt" % (config["project-folder"])
 
 def get_readalignment_expand_files(wildcards):
     if config["genome"] == "":

@@ -6,6 +6,7 @@
 
 0.19.* UPDATES
 --------------------------------------------------------------------------------
+6: Added the mock to reference similarity step, using MUMmer
 5: Enabled the SE option, so the pipeline should now be ready to handle also single-end input (not in the reports, yet)
 4: Handled the case that no reads were disgarded from the mock reference building step
 3: Removed minimum lengths criteris in pear command

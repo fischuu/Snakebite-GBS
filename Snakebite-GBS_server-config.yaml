@@ -191,6 +191,12 @@ Mockrefloci_vs_samplealignments:
     time: 05:00:00
     job-name: Mockrefloci_vs_samplealignments
 
+MockInRef_similarity:
+    time: 05:00:00
+    job-name: MockInRef_similarity
+    mem-per-cpu: 150000
+
+
 # Module 4 - Read alignment
 ################################################################################   
 RefGenome_AlignReads:
