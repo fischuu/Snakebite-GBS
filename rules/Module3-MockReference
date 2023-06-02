@@ -498,7 +498,7 @@ else:
 if config["genome"] == "":
     pass
 else:  	
-    rule MockVsRef_AlignmentStats:
+    rule MockVsInsilico_AlignmentStats:
         """
         Get the mapping stats for the mock vs. reference.
         """

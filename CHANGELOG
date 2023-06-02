@@ -6,6 +6,7 @@
 
 0.19.* UPDATES
 --------------------------------------------------------------------------------
+8: Mock reference is now also aligned against the different in-silico predictions
 7: Removed the previous additions and started an own similarity metric script instead.
 6: Added the mock to reference similarity step, using MUMmer
 5: Enabled the SE option, so the pipeline should now be ready to handle also single-end input (not in the reports, yet)
