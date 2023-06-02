@@ -380,7 +380,19 @@ else:
             mtrsf="%s/BAM/Mockref/mockToRef.sam.samflags" % (config["project-folder"]),
             fmtrs="%s/BAM/FinalMockref/mockToRef.sam.stats" % (config["project-folder"]),
             mfs=expand("%s/FASTQ/TRIMMED/alignments/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
-            fmfs=expand("%s/BAM/alignments_finalMock/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples)
+            fmfs=expand("%s/BAM/alignments_finalMock/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
+            mockVsFullfs="%s/BAM/MockVsInsilico/mockToFullInsilico.sam.flagstat" % (config["project-folder"]),
+            mockVsFullsamflags="%s/BAM/MockVsInsilico/mockToFullInsilico.sam.samflags" % (config["project-folder"]), 
+            mockVsFullstats="%s/BAM/MockVsInsilico/mockToFullInsilico.sam.stats" % (config["project-folder"]),
+            finalVsFullfs="%s/BAM/MockVsInsilico/finalToFullInsilico.sam.flagstat" % (config["project-folder"]),
+            finalVsFullsamflags="%s/BAM/MockVsInsilico/finalToFullInsilico.sam.samflags" % (config["project-folder"]), 
+            finalVsFullstats="%s/BAM/MockVsInsilico/finalToFullInsilico.sam.stats" % (config["project-folder"]),
+            mockVsSelectedfs="%s/BAM/MockVsInsilico/mockToSelectedInsilico.sam.flagstat" % (config["project-folder"]),
+            mockVsSelectedsamflags="%s/BAM/MockVsInsilico/mockToSelectedInsilico.sam.samflags" % (config["project-folder"]), 
+            mockVsSelectedstats="%s/BAM/MockVsInsilico/mockToSelectedInsilico.sam.stats" % (config["project-folder"]),
+            finalVsSelectedfs="%s/BAM/MockVsInsilico/finalToSelectedInsilico.sam.flagstat" % (config["project-folder"]),
+            finalVsSelectedsamflags="%s/BAM/MockVsInsilico/finalToSelectedInsilico.sam.samflags" % (config["project-folder"]), 
+            finalVsSelectedstats="%s/BAM/MockVsInsilico/finalToSelectedInsilico.sam.stats" % (config["project-folder"])
         output:
             report="%s/REPORTS/DATA/MockReference_Reference_similarity.report.txt" % (config["project-folder"])
         log:
@@ -400,3 +412,141 @@ else:
                  options(knitr.duplicate.label = 'allow');\
                  source('{input.script}')" &> {log}
         """
+
+################################################################################
+##
+## Alignments of mock reference against the in silico predictions
+##
+
+if config["genome"] == "":
+    pass
+else:
+    rule MockVsInsilico_alignment:
+        """
+        Map the mock reference clusters to the genome (minimap2).
+        """
+        input:
+            full="%s/References/full_inSilico_reference.fa" % (config["project-folder"]),
+            selected="%s/References/sizeSelected_inSilico_reference.fa" % (config["project-folder"]),
+            mockgenome="%s/FASTQ/TRIMMED/GSC.MR.Clusters.fa" % (config["project-folder"]),
+            finalmock="%s/MockReference/MockReference.fa" % (config["project-folder"])
+        output:
+            mockVsFull="%s/SAM/mockToFullInsilico.sam" % (config["project-folder"]),
+            finalVsFull="%s/SAM/finalToFullInsilico.sam" % (config["project-folder"]),
+            mockVsSelected="%s/SAM/mockToSelectedInsilico.sam" % (config["project-folder"]),
+            finalVsSelected="%s/SAM/finalToSelectedInsilico.sam" % (config["project-folder"])
+        log:
+            "%s/logs/MINIMAP2/mm2_map_mockVSis.log" % (config["project-folder"])
+        benchmark:
+            "%s/benchmark/MockVsRef_alignment.tsv" % (config["project-folder"])
+        threads: 20
+        conda:"envs/minimap2.yaml"
+        singularity: config["singularity"]["minimap2"]
+        shell:"""
+           minimap2 -ax sr -I8g --split-prefix=tmp {input.full} {input.mockgenome} > {output.mockVsFull}
+           minimap2 -ax sr -I8g --split-prefix=tmp {input.full} {input.finalmock} > {output.finalVsFull}
+           minimap2 -ax sr -I8g --split-prefix=tmp {input.selected} {input.mockgenome} > {output.mockVsSelected}
+           minimap2 -ax sr -I8g --split-prefix=tmp {input.selected} {input.finalmock} > {output.finalVsSelected}
+        """
+
+if config["genome"] == "":
+    pass
+else:
+    rule MockVsInsilico_samtools_SamToSortedBam:
+        """
+        Index the Mock Reference Genome.
+        """
+        input:
+            mockVsFull="%s/SAM/mockToFullInsilico.sam" % (config["project-folder"]),
+            finalVsFull="%s/SAM/finalToFullInsilico.sam" % (config["project-folder"]),
+            mockVsSelected="%s/SAM/mockToSelectedInsilico.sam" % (config["project-folder"]),
+            finalVsSelected="%s/SAM/finalToSelectedInsilico.sam" % (config["project-folder"])
+        output:
+            mockVsFullBam="%s/BAM/MockVsInsilico/mockToFullInsilico.bam" % (config["project-folder"]),
+            finalVsFullBam="%s/BAM/MockVsInsilico/finalToFullInsilico.bam" % (config["project-folder"]),
+            mockVsSelectedBam="%s/BAM/MockVsInsilico/mockToSelectedInsilico.bam" % (config["project-folder"]),
+            finalVsSelectedBam="%s/BAM/MockVsInsilico/finalToSelectedInsilico.bam" % (config["project-folder"]),
+            mockVsFullSortedBam="%s/BAM/MockVsInsilico/mockToFullInsilico.sorted.bam" % (config["project-folder"]),
+            finalVsFullSortedBam="%s/BAM/MockVsInsilico/finalToFullInsilico.sorted.bam" % (config["project-folder"]),
+            mockVsSelectedSortedBam="%s/BAM/MockVsInsilico/mockToSelectedInsilico.sorted.bam" % (config["project-folder"]),
+            finalVsSelectedSortedBam="%s/BAM/MockVsInsilico/finalToSelectedInsilico.sorted.bam" % (config["project-folder"])
+        log:
+            "%s/logs/Samtools/MockVsRef_samtools_SamToSortedBam.log" % (config["project-folder"])
+        benchmark:
+            "%s/benchmark/MockVsRef_samtools_SamToSortedBam.tsv" % (config["project-folder"])
+        conda:"envs/step3.yaml"
+        singularity: config["singularity"]["gbs"]
+        shell:"""
+          samtools view -b {input.mockVsFull} > {output.mockVsFullBam} 2>> {log}
+    	    samtools sort {output.mockVsFullBam} -o {output.mockVsFullSortedBam} &>> {log}
+    	    samtools index -c {output.mockVsFullSortedBam} &>> {log}
+    	    
+    	    samtools view -b {input.finalVsFull} > {output.finalVsFullBam} 2>> {log}
+    	    samtools sort {output.finalVsFullBam} -o {output.finalVsFullSortedBam} &>> {log}
+    	    samtools index -c {output.finalVsFullSortedBam} &>> {log}
+
+          samtools view -b {input.mockVsSelected} > {output.mockVsSelectedBam} 2>> {log}
+    	    samtools sort {output.mockVsSelectedBam} -o {output.mockVsSelectedSortedBam} &>> {log}
+    	    samtools index -c {output.mockVsSelectedSortedBam} &>> {log}
+
+          samtools view -b {input.finalVsSelected} > {output.finalVsSelectedBam} 2>> {log}
+    	    samtools sort {output.finalVsSelectedBam} -o {output.finalVsSelectedSortedBam} &>> {log}
+    	    samtools index -c {output.finalVsSelectedSortedBam} &>> {log}
+      	"""
+
+
+if config["genome"] == "":
+    pass
+else:  	
+    rule MockVsRef_AlignmentStats:
+        """
+        Get the mapping stats for the mock vs. reference.
+        """
+        input:
+            mockVsFull="%s/SAM/mockToFullInsilico.sam" % (config["project-folder"]),
+            mockVsFullSortedBam="%s/BAM/MockVsInsilico/mockToFullInsilico.sorted.bam" % (config["project-folder"]),
+            finalVsFull="%s/SAM/finalToFullInsilico.sam" % (config["project-folder"]),
+            finalVsFullSortedBam="%s/BAM/MockVsInsilico/finalToFullInsilico.sorted.bam" % (config["project-folder"]),
+            mockVsSelected="%s/SAM/mockToSelectedInsilico.sam" % (config["project-folder"]),
+            mockVsSelectedSortedBam="%s/BAM/MockVsInsilico/mockToSelectedInsilico.sorted.bam" % (config["project-folder"]),
+            finalVsSelected="%s/SAM/finalToSelectedInsilico.sam" % (config["project-folder"]),
+            finalVsSelectedSortedBam="%s/BAM/MockVsInsilico/finalToSelectedInsilico.sorted.bam" % (config["project-folder"])
+        output:
+            mockVsFullfs="%s/BAM/MockVsInsilico/mockToFullInsilico.sam.flagstat" % (config["project-folder"]),
+            mockVsFullsamflags="%s/BAM/MockVsInsilico/mockToFullInsilico.sam.samflags" % (config["project-folder"]), 
+            mockVsFullstats="%s/BAM/MockVsInsilico/mockToFullInsilico.sam.stats" % (config["project-folder"]),
+            finalVsFullfs="%s/BAM/MockVsInsilico/finalToFullInsilico.sam.flagstat" % (config["project-folder"]),
+            finalVsFullsamflags="%s/BAM/MockVsInsilico/finalToFullInsilico.sam.samflags" % (config["project-folder"]), 
+            finalVsFullstats="%s/BAM/MockVsInsilico/finalToFullInsilico.sam.stats" % (config["project-folder"]),
+            mockVsSelectedfs="%s/BAM/MockVsInsilico/mockToSelectedInsilico.sam.flagstat" % (config["project-folder"]),
+            mockVsSelectedsamflags="%s/BAM/MockVsInsilico/mockToSelectedInsilico.sam.samflags" % (config["project-folder"]), 
+            mockVsSelectedstats="%s/BAM/MockVsInsilico/mockToSelectedInsilico.sam.stats" % (config["project-folder"]),
+            finalVsSelectedfs="%s/BAM/MockVsInsilico/finalToSelectedInsilico.sam.flagstat" % (config["project-folder"]),
+            finalVsSelectedsamflags="%s/BAM/MockVsInsilico/finalToSelectedInsilico.sam.samflags" % (config["project-folder"]), 
+            finalVsSelectedstats="%s/BAM/MockVsInsilico/finalToSelectedInsilico.sam.stats" % (config["project-folder"])
+        log:
+            "%s/logs/MockVsRef_AlignmentStats.log" % (config["project-folder"])
+        benchmark:
+            "%s/benchmark/MockVsRef_AlignmentStats.tsv" % (config["project-folder"])
+        params: tmpdir=config["tmpdir"]
+        singularity: config["singularity"]["gbs"]
+        shell:"""
+            TMPDIR={params.tmpdir}
+            sed '/^@/d' {input.mockVsFull} | cut -f2 | sort | uniq -c > {output.mockVsFullsamflags}
+            samtools flagstat {input.mockVsFull} > {output.mockVsFullfs}
+            samtools stats {input.mockVsFull} > {output.mockVsFullstats}
+            
+            sed '/^@/d' {input.finalVsFull} | cut -f2 | sort | uniq -c > {output.finalVsFullsamflags}
+            samtools flagstat {input.finalVsFull} > {output.finalVsFullfs}
+            samtools stats {input.finalVsFull} > {output.finalVsFullstats}
+
+            sed '/^@/d' {input.mockVsSelected} | cut -f2 | sort | uniq -c > {output.mockVsSelectedsamflags}
+            samtools flagstat {input.mockVsSelected} > {output.mockVsSelectedfs}
+            samtools stats {input.mockVsSelected} > {output.mockVsSelectedstats}
+
+            sed '/^@/d' {input.finalVsSelected} | cut -f2 | sort | uniq -c > {output.finalVsSelectedsamflags}
+            samtools flagstat {input.finalVsSelected} > {output.finalVsSelectedfs}
+            samtools stats {input.finalVsSelected} > {output.finalVsSelectedstats}
+
+      	"""
+      	

@@ -196,6 +196,18 @@ MockInRef_similarity:
     job-name: MockInRef_similarity
     mem-per-cpu: 150000
 
+MockVsInsilico_alignment:
+    time: 05:00:00
+    cpus-per-task: 20
+    job-name:  MockVsInsilico_alignment
+
+MockVsInsilico_samtools_SamToSortedBam:
+    time: 05:00:00
+    job-name:  MockVsInsilico_samtools_SamToSortedBam
+
+MockVsInsilico_AlignmentStats:
+    time: 05:00:00
+    job-name: MockVsInsilico_AlignmentStats
 
 # Module 4 - Read alignment
 ################################################################################   
