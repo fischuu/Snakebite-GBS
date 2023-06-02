@@ -373,16 +373,30 @@ else:
         Intersect positions of mock reference on reference against the sample alignments
         """
         input:
+            script=config["similarity-script"],
             ref=config["genome"],
-            mock="%s/FASTQ/TRIMMED/GSC.MR.Clusters.fa" % (config["project-folder"])
+            mock="%s/FASTQ/TRIMMED/GSC.MR.Clusters.fa" % (config["project-folder"]),
+            mtrs="%s/BAM/Mockref/mockToRef.sam.stats" % (config["project-folder"]),
+            mtrsf="%s/BAM/Mockref/mockToRef.sam.samflags" % (config["project-folder"]),
+            fmtrs="%s/BAM/FinalMockref/mockToRef.sam.stats" % (config["project-folder"]),
+            mfs=expand("%s/FASTQ/TRIMMED/alignments/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
+            fmfs=expand("%s/BAM/alignments_finalMock/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples)
         output:
-            "%s/FASTQ/TRIMMED/GSC.MR.Clusters.report.txt" % (config["project-folder"])
+            report="%s/REPORTS/DATA/MockReference_Reference_similarity.report.txt" % (config["project-folder"])
         log:
             "%s/logs/MockInRef_similarity.log" % (config["project-folder"])
         benchmark:
             "%s/benchmark/MockInRef_similarity.tsv" % (config["project-folder"])
-        params: out="%s/FASTQ/TRIMMED/GSC.MR.Clusters" % (config["project-folder"])
-        singularity: config["singularity"]["mummer"]
+        params:
+           projFolder=config["project-folder"]
+        singularity:
+            config["singularity"]["r-gbs"]
         shell:"""
-             compare-sets.pl -1 {input.ref} -2 {input.mock} -o {params.out} &> {log}
+           R -e "projFolder <- '{params.projFolder}'; \
+                 refGenome.file <- '{input.ref}'; \
+                 mockGenome.file <- '{input.mock}'; \
+                 output.report.file <- '{output.report}'; \
+                 snakemake <- TRUE;\
+                 options(knitr.duplicate.label = 'allow');\
+                 source('{input.script}')" &> {log}
         """
