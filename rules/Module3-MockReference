@@ -436,9 +436,9 @@ else:
             mockVsSelected="%s/SAM/mockToSelectedInsilico.sam" % (config["project-folder"]),
             finalVsSelected="%s/SAM/finalToSelectedInsilico.sam" % (config["project-folder"])
         log:
-            "%s/logs/MINIMAP2/mm2_map_mockVSis.log" % (config["project-folder"])
+            "%s/logs/MINIMAP2/mm2_MockVsInsilico.log" % (config["project-folder"])
         benchmark:
-            "%s/benchmark/MockVsRef_alignment.tsv" % (config["project-folder"])
+            "%s/benchmark/MockVsInsilico_alignment.tsv" % (config["project-folder"])
         threads: 20
         conda:"envs/minimap2.yaml"
         singularity: config["singularity"]["minimap2"]
@@ -471,9 +471,9 @@ else:
             mockVsSelectedSortedBam="%s/BAM/MockVsInsilico/mockToSelectedInsilico.sorted.bam" % (config["project-folder"]),
             finalVsSelectedSortedBam="%s/BAM/MockVsInsilico/finalToSelectedInsilico.sorted.bam" % (config["project-folder"])
         log:
-            "%s/logs/Samtools/MockVsRef_samtools_SamToSortedBam.log" % (config["project-folder"])
+            "%s/logs/Samtools/MockVsInsilico_samtools_SamToSortedBam.log" % (config["project-folder"])
         benchmark:
-            "%s/benchmark/MockVsRef_samtools_SamToSortedBam.tsv" % (config["project-folder"])
+            "%s/benchmark/MockVsInsilico_samtools_SamToSortedBam.tsv" % (config["project-folder"])
         conda:"envs/step3.yaml"
         singularity: config["singularity"]["gbs"]
         shell:"""
@@ -525,9 +525,9 @@ else:
             finalVsSelectedsamflags="%s/BAM/MockVsInsilico/finalToSelectedInsilico.sam.samflags" % (config["project-folder"]), 
             finalVsSelectedstats="%s/BAM/MockVsInsilico/finalToSelectedInsilico.sam.stats" % (config["project-folder"])
         log:
-            "%s/logs/MockVsRef_AlignmentStats.log" % (config["project-folder"])
+            "%s/logs/MockVsInsilico_AlignmentStats.log" % (config["project-folder"])
         benchmark:
-            "%s/benchmark/MockVsRef_AlignmentStats.tsv" % (config["project-folder"])
+            "%s/benchmark/MockVsInsilico_AlignmentStats.tsv" % (config["project-folder"])
         params: tmpdir=config["tmpdir"]
         singularity: config["singularity"]["gbs"]
         shell:"""
