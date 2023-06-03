@@ -66,7 +66,7 @@ else:
         conda:"envs/minimap2.yaml"
         singularity: config["singularity"]["minimap2"]
         shell:"""
-           minimap2 -ax sr -I8g --split-prefix=tmp {input.refgenome} {input.mockgenome} > {output} 2> {log}
+           minimap2 -ax sr -I8g --eqx --split-prefix=tmp {input.refgenome} {input.mockgenome} > {output} 2> {log}
         """
 
 if config["genome"] == "":
@@ -240,7 +240,7 @@ else:
         threads: 20
         singularity: config["singularity"]["minimap2"]
         shell:"""
-           minimap2 -ax sr -I8g --split-prefix=tmp {input.refgenome} {input.mockgenome} > {output} 2> {log}
+           minimap2 -ax sr -I8g --eqx --split-prefix=tmp {input.refgenome} {input.mockgenome} > {output} 2> {log}
         """
 
 if config["genome"] == "":
@@ -443,10 +443,10 @@ else:
         conda:"envs/minimap2.yaml"
         singularity: config["singularity"]["minimap2"]
         shell:"""
-           minimap2 -ax sr -I8g --split-prefix=tmp {input.full} {input.mockgenome} > {output.mockVsFull}
-           minimap2 -ax sr -I8g --split-prefix=tmp {input.full} {input.finalmock} > {output.finalVsFull}
-           minimap2 -ax sr -I8g --split-prefix=tmp {input.selected} {input.mockgenome} > {output.mockVsSelected}
-           minimap2 -ax sr -I8g --split-prefix=tmp {input.selected} {input.finalmock} > {output.finalVsSelected}
+           minimap2 -ax sr -I8g --eqx --split-prefix=tmp {input.full} {input.mockgenome} > {output.mockVsFull}
+           minimap2 -ax sr -I8g --eqx --split-prefix=tmp {input.full} {input.finalmock} > {output.finalVsFull}
+           minimap2 -ax sr -I8g --eqx --split-prefix=tmp {input.selected} {input.mockgenome} > {output.mockVsSelected}
+           minimap2 -ax sr -I8g --eqx --split-prefix=tmp {input.selected} {input.finalmock} > {output.finalVsSelected}
         """
 
 if config["genome"] == "":
@@ -479,19 +479,19 @@ else:
         shell:"""
           samtools view -b {input.mockVsFull} > {output.mockVsFullBam} 2>> {log}
     	    samtools sort {output.mockVsFullBam} -o {output.mockVsFullSortedBam} &>> {log}
-    	    samtools index -c {output.mockVsFullSortedBam} &>> {log}
+    	    samtools index {output.mockVsFullSortedBam} &>> {log}
     	    
     	    samtools view -b {input.finalVsFull} > {output.finalVsFullBam} 2>> {log}
     	    samtools sort {output.finalVsFullBam} -o {output.finalVsFullSortedBam} &>> {log}
-    	    samtools index -c {output.finalVsFullSortedBam} &>> {log}
+    	    samtools index {output.finalVsFullSortedBam} &>> {log}
 
           samtools view -b {input.mockVsSelected} > {output.mockVsSelectedBam} 2>> {log}
     	    samtools sort {output.mockVsSelectedBam} -o {output.mockVsSelectedSortedBam} &>> {log}
-    	    samtools index -c {output.mockVsSelectedSortedBam} &>> {log}
+    	    samtools index {output.mockVsSelectedSortedBam} &>> {log}
 
           samtools view -b {input.finalVsSelected} > {output.finalVsSelectedBam} 2>> {log}
     	    samtools sort {output.finalVsSelectedBam} -o {output.finalVsSelectedSortedBam} &>> {log}
-    	    samtools index -c {output.finalVsSelectedSortedBam} &>> {log}
+    	    samtools index {output.finalVsSelectedSortedBam} &>> {log}
       	"""
 
 

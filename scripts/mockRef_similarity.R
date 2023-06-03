@@ -91,6 +91,21 @@ options(scipen=999)
                                    by="variable")
   }
   
+# Now check the mocks vs insilicos
+  mfifs.file <- file.path(projFolder, "BAM/MockVsInsilico/mockToFullInsilico.sam.flagstat")
+  msifs.file <- file.path(projFolder, "BAM/MockVsInsilico/mockToSelectedInsilico.sam.flagstat")
+  ffifs.file <- file.path(projFolder, "BAM/MockVsInsilico/finalToFullInsilico.sam.flagstat")
+  fsifs.file <- file.path(projFolder, "BAM/MockVsInsilico/finalToSelectedInsilico.sam.flagstat")
+  
+  mfifs <- readLines(mfifs.file)
+  msifs <- readLines(msifs.file)
+  ffifs <- readLines(ffifs.file)
+  fsifs <- readLines(fsifs.file)
+  
+  mfi.mapping_rate <- as.numeric(strsplit(strsplit(mfifs[grep("mapped \\(", mfifs)]," \\(")[[1]][2], "%")[[1]][1])
+  msi.mapping_rate <- as.numeric(strsplit(strsplit(msifs[grep("mapped \\(", msifs)]," \\(")[[1]][2], "%")[[1]][1])
+  ffi.mapping_rate <- as.numeric(strsplit(strsplit(ffifs[grep("mapped \\(", ffifs)]," \\(")[[1]][2], "%")[[1]][1])
+  fsi.mapping_rate <- as.numeric(strsplit(strsplit(fsifs[grep("mapped \\(", fsifs)]," \\(")[[1]][2], "%")[[1]][1])
   
     output <- data.frame(mtrs.reads_mapped = mtrs.reads_mapped,
                        mtrs.secondary_alignments = mtrs.secondary_alignments,
@@ -109,7 +124,11 @@ options(scipen=999)
                        sampleMock.alignment_rate = mean(unlist(mock_alignments[2,-1])),
                        sampleMock.secondary_rate = mean(unlist(mock_alignments[4,-1])),
                        sampleFinalMock.alignment_rate = mean(unlist(final_mock_alignments[2,-1])),
-                       sampleFinalMock.secondary_rate = mean(unlist(final_mock_alignments[4,-1])))
+                       sampleFinalMock.secondary_rate = mean(unlist(final_mock_alignments[4,-1])),
+                       mfi.mapping_rate = mfi.mapping_rate,
+                       msi.mapping_rate = msi.mapping_rate,
+                       ffi.mapping_rate = ffi.mapping_rate,
+                       fsi.mapping_rate = fsi.mapping_rate)
   
   output <- data.frame(variable= colnames(output), value = as.numeric(t(output)))
   
