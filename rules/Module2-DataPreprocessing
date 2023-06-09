@@ -1,3 +1,5 @@
+# This ruleset contains some old artifacts. Currently, only the trimmomatic parts are used.
+
 if(config["libtype"]=='PE'):
     rule cutadapt_trim_reads:
         """

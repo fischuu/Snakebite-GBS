@@ -161,6 +161,16 @@ def get_fastq_for_concatenating_read2(wildcards):
     output = [path + x for x in r1]
     return output   
 
+def get_preparations_files(wildcards):
+    if config["genome"] == "":
+        return []
+    else:
+        file1 = config["genome-star-index"] + "/chrName.txt"
+        file2 = config["genome-bwa-index"]
+        
+        output = [file1, file2]
+        return output   
+
 ##### Complete the input configuration
 config["genome-bwa-index"] = config["genome"]+".bwt"
 config["mockref-bwa-index"] = config["mockreference"]+".bwt"
@@ -250,7 +260,7 @@ if config["mockreference"] != "":
         conditionalOut.append("%s/VCF/FinalSetVariants_existingMock.vcf" % (config["project-folder"]))
 
     
-##### run complete pipeline #####
+##### run-time rules for complete pipeline and submodules #####
 
 rule all:
     input:
@@ -296,21 +306,10 @@ rule insilico:
         expand("%s/BAM/Insilico/selected/{samples}.coverage" % (config["project-folder"]), samples=samples),
         "%s/Insilico-Report.html" % (config["project-folder"])
 
-def get_preparations_files(wildcards):
-    if config["genome"] == "":
-        return []
-    else:
-        file1 = config["genome-star-index"] + "/chrName.txt"
-        file2 = config["genome-bwa-index"]
-        
-        output = [file1, file2]
-        return output   
-
 rule preparations:
     input:
         get_preparations_files,
         expand("%s/FASTQ/CONCATENATED/{samples}_R1_001.merged.fastq.gz" % (config["project-folder"]), samples=samples),
-#        expand("%s/FASTQ/CONCATENATED/{samples}_R2_001.merged.fastq.gz" % (config["project-folder"]), samples=samples),
         config["barcodes-file"]
 
 rule QC:
@@ -319,19 +318,14 @@ rule QC:
         "%s/QC/CONCATENATED/multiqc_R1/" % (config["project-folder"]),
         "%s/QC/TRIMMED/multiqc_R1/" % (config["project-folder"]),
         expand("%s/QC/RAW/{rawsamples}_R1_qualdist.txt" % (config["project-folder"]), rawsamples=rawsamples),
-#        expand("%s/QC/RAW/{rawsamples}_R2_qualdist.txt" % (config["project-folder"]), rawsamples=rawsamples),
         expand("%s/QC/CONCATENATED/{samples}_R1_qualdist.txt" % (config["project-folder"]), samples=samples),
-#        expand("%s/QC/CONCATENATED/{samples}_R2_qualdist.txt" % (config["project-folder"]), samples=samples),
         expand("%s/QC/TRIMMED/{samples}_R1_qualdist.txt" % (config["project-folder"]), samples=samples),
-#        expand("%s/QC/TRIMMED/{samples}_R2_qualdist.txt" % (config["project-folder"]), samples=samples),
         "%s/QC-Report.html" % (config["project-folder"])
 
 rule preprocessing:
     input:
         expand("%s/FASTQ/TRIMMED/{samples}.R1.fq.gz" % (config["project-folder"]), samples=samples),
-#        expand("%s/FASTQ/TRIMMED/{samples}.R2.fq.gz" % (config["project-folder"]), samples=samples),
         expand("%s/FASTQ/SUBSTITUTED/{samples}.R1.fq.gz" % (config["project-folder"]), samples=samples),
-#        expand("%s/FASTQ/SUBSTITUTED/{samples}.R2.fq.gz" % (config["project-folder"]), samples=samples),
 
 rule mockreference:
     input:
@@ -431,6 +425,7 @@ rule MockRefVCF:
 report: "report/workflow.rst"
 
 ##### load rules #####
+
 include: "rules/Module0-PreparationsAndIndexing"
 include: "rules/Module1-QC"
 include: "rules/Module2-DataPreprocessing"
