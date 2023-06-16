@@ -98,3 +98,61 @@ else:
         """
         
         
+
+
+if config["genome"] == "":
+    pass
+else: 
+    rule prepare_liftOverchain_minimap2:
+        """
+        Align the mock reference against the reference genome
+        """
+        input:
+            mock="%s/MockReference/MockReference.fa" % (config["project-folder"]),
+            ref=config["genome"]
+        output:
+            "%s/MockReference/MockReference.paf" % (config["project-folder"])
+        log:
+            "%s/logs/prepare_liftOverchain_minimap2.log" % (config["project-folder"])
+        benchmark:
+            "%s/benchmark/prepare_liftOverchain_minimap2.tsv" % (config["project-folder"])
+        threads: 20
+        singularity: config["singularity"]["minimap2"]
+        shell:"""
+              minimap2 -cx asm5 --cs {input.mock} {input.ref} > {output} 2> {log}
+        """
+        
+if config["genome"] == "":
+    pass
+else: 
+    rule convertVCF_transanno:
+        """
+        Use the previously created liftover to map the mock locations in Ref genome
+        """
+        input:
+            paf="%s/MockReference/MockReference.paf" % (config["project-folder"]),
+            vcf="%s/VCF/FinalSetVariants_finalMock.vcf" % (config["project-folder"]),
+            mock="%s/MockReference/MockReference.fa" % (config["project-folder"]),
+            ref=config["genome"]
+        output:
+            chain="%s/MockReference/MockReference.chain" % (config["project-folder"]),
+            vcfsucc="%s/VCF/FinalSetVariants_finalMock_liftOver-to-Reference_succeeded.vcf" % (config["project-folder"]),
+            vcffail="%s/VCF/FinalSetVariants_finalMock_liftOver-to-Reference_failed.vcf" % (config["project-folder"])
+        log:
+            "%s/logs/convertVCF_transanno.log" % (config["project-folder"])
+        benchmark:
+            "%s/benchmark/convertVCF_transanno.tsv" % (config["project-folder"])
+        threads: 20
+        singularity: config["singularity"]["transanno"]
+        shell:"""
+              transanno minimap2-to-chain {input.paf} --output {output.chain}
+              
+              liftvcf -m --chain {output.chain} \
+                         -o {output.vcfsucc} \
+                         --query {input.mock} \
+                         --reference {input.ref} \
+                         --vcf {vcf} \
+                         --fail {vcffail}  2> {log}
+        """
+
+        

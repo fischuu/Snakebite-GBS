@@ -202,6 +202,7 @@ config["singularity"]["samtools"] = "docker://fischuu/samtools:1.9-0.2"
 config["singularity"]["r-gbs"] = "docker://fischuu/r-gbs:4.2.1-0.6"
 config["singularity"]["stringtie"] = "docker://fischuu/stringtie:2.2.1-0.1"
 config["singularity"]["subread"] = "docker://fischuu/subread:2.0.1-0.1"
+config["singularity"]["transanno"] = "docker://informationsea/transanno:0.2.4"
 
 ##### Print the welcome screen #####
 print("#################################################################################")
@@ -232,6 +233,7 @@ print("##### r-gbs     : "+config["singularity"]["r-gbs"])
 print("##### samtools  : "+config["singularity"]["samtools"])
 print("##### subread   : "+config["singularity"]["subread"])
 print("##### stringtie : "+config["singularity"]["stringtie"])
+print("##### transanno : "+config["singularity"]["transanno"])
 print("#####")
 print("##### Runtime-configurations")
 print("##### --------------------------------")
@@ -288,11 +290,17 @@ rule all:
       # OUTPUT STEP 8  
         "%s/FASTQ/TRIMMED/GSC.vcf" % (config["project-folder"]),
         "%s/FASTQ/TRIMMED/GSC.vcf.fa" % (config["project-folder"]),
+      # OUTPUT STEP 9
+        "%s/VCF/FinalSetVariants_finalMock_liftOver-to-Reference_succeeded.vcf" % (config["project-folder"]),
       # Quality check
         expand("%s/BAM/alignments_finalMock/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
         "%s/MockReference/MockReference.fa" % (config["project-folder"]),
         "%s/VCF/FinalSetVariants_finalMock.vcf" % (config["project-folder"]),
         "%s/finalReport.html" % (config["project-folder"]),
+
+rule liftOver:
+    input:
+        "%s/VCF/FinalSetVariants_finalMock_liftOver-to-Reference_succeeded.vcf" % (config["project-folder"])
 
 rule insilico:
     input:
