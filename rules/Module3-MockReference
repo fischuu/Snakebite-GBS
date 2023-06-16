@@ -78,8 +78,7 @@ else:
         """
         input:
             ref=config["genome"],
-            sam="%s/SAM/mockToRef.sam" % (config["project-folder"]),
-            mockgenome="%s/FASTQ/TRIMMED/GSC.MR.Clusters.fa" % (config["project-folder"])
+            sam="%s/SAM/mockToRef.sam" % (config["project-folder"])
         output:
             bam="%s/BAM/Mockref/mockToRef.bam" % (config["project-folder"]),
             sorted="%s/BAM/Mockref/mockToRef.sorted.bam" % (config["project-folder"])
@@ -98,8 +97,6 @@ else:
             samtools sort {output.bam} -o {output.sorted} &>> {log}
 	    echo "samtools index:\n----------------------------\n" &>> {log}
             samtools index -c {output.sorted} &>> {log}
-            
-            samtools faidx {input.mockgenome}
       	"""
 
 
@@ -255,8 +252,7 @@ else:
         """
         input:
             ref=config["genome"],
-            sam="%s/SAM/finalMockToRef.sam" % (config["project-folder"]),
-            mockgenome="%s/MockReference/MockReference.fa" % (config["project-folder"])
+            sam="%s/SAM/finalMockToRef.sam" % (config["project-folder"])
         output:
             bam="%s/BAM/FinalMockref/mockToRef.bam" % (config["project-folder"]),
             sorted="%s/BAM/FinalMockref/mockToRef.sorted.bam" % (config["project-folder"])
@@ -274,8 +270,6 @@ else:
             samtools sort {output.bam} -o {output.sorted} &>> {log}
 	    echo "samtools index:\n----------------------------\n" &>> {log}
             samtools index -c {output.sorted} &>> {log}
-            
-            samtools faidx {input.mock}
       	"""
 
 

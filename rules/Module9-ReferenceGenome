@@ -151,8 +151,8 @@ else:
                          -o {output.vcfsucc} \
                          --query {input.mock} \
                          --reference {input.ref} \
-                         --vcf {vcf} \
-                         --fail {vcffail}  2> {log}
+                         --vcf {input.vcf} \
+                         --fail {output.vcffail}  2> {log}
         """
 
         

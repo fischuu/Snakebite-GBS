@@ -519,6 +519,16 @@ featureCounts_quantify_ReferenceAlignments:
     time: 01:00:00
     mem-per-cpu: 30000
     
+prepare_liftOverchain_minimap2:
+    job-name: prepare_liftOverchain_minimap2
+    time: 05:00:00
+    cpus-per-task: 20
+
+convertVCF_transanno:
+    job-name: convertVCF_transanno
+    time: 05:00:00
+    cpus-per-task: 20
+    
 # Module 10:
 ###############################################################################
 R_createInSilicoFasta:
