@@ -15,6 +15,7 @@ if(substr(sampleSheet.file,1,1)!="/") sampleSheet.file <- file.path(projFolder, 
 sampleSheet <- read.table(sampleSheet.file, sep="\t", header=TRUE)
 
 sampleInfo.file <- getConfigField("sampleinfo-file")
+if(substr(sampleInfo.file,1,1)!="/") sampleInfo.file <- file.path(projFolder, sampleInfo.file)
 sampleInfo <- NULL
 
 if(sampleInfo.file!="") sampleInfo <- read.table(sampleInfo.file, sep="\t", header=TRUE)

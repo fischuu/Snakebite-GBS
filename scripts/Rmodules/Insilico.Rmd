@@ -487,6 +487,7 @@ names(plotScale) <- round(seq(0.1,1, length.out=12 ),2)
 barplot(plotScale, col=hcl.colors(12, "YlOrRd", rev = TRUE), horiz = TRUE, las=2, xaxt="n")
 
 ```
+
 ```{r}
 similarity.size <- matrix(0, ncol=ncol(clusterCoverage.size), nrow=ncol(clusterCoverage.size))
 for(i in 1:ncol(clusterCoverage.size)){
