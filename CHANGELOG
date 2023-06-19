@@ -6,6 +6,7 @@
 
 0.19.* UPDATES
 --------------------------------------------------------------------------------
+15: Bugfix, when only one group information was provided in samplinfo.tsv the finalReport crashed
 14: Added the liftOver rules to liftover the finalMock based VCF to an existing reference genome
 13: The mock references are now also fa-indexed
 12: Added --eqx option to minimap steps, as the "assert(has_cigar + no_cigar == 1);" test failed sometimes

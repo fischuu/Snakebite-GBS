@@ -27,7 +27,7 @@ serverConfig.info <- serverConfig.file
 groupingNames <- "No file with sample information provided ('sampleinfo-file'-field)!"
 numberGroupingNames <- 0
 if(!is.null(sampleInfo)){
-  groupingNames <- colnames(sampleInfo[,-1])
+  groupingNames <- colnames(sampleInfo)[-1]
   numberGroupingNames <- length(groupingNames)
 } 
 
