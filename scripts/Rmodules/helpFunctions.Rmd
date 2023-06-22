@@ -18,6 +18,7 @@ library("kernlab")
 #library("RDRToolbox")
 library("destiny")
 library("ggplot2")
+library("BGData")
 
 options(scipen=999,
         stringsAsFactors=FALSE)
