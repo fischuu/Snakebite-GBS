@@ -151,6 +151,9 @@ for(i in 2:length(fcFiles)){
 }
 
 colnames(fc.quant$expValues) <- c("Locus", fc.names)
+
+fc.quant.rowsums <- apply(fc.quant$expValues[,-1],1,sum)
+fc.quant.high <- fc.quant$expValues[fc.quant.rowsums>=ncol(fc.quant$expValues),]
 ```
 
 ```{r}
@@ -495,3 +498,29 @@ if(libtype=="PE"){
 }
 ```
 
+### Quantification location heatmap
+
+Heatmap of the well-covered locations on the reference genome. With well-covered, we mean here that the total read coverage ("the row-sums") should be larger than the total number of used samples, so that we have on the average at least one read per sample, here it is `r nrow(fc.quant.high)`
+
+```{r, fig.width=10, eval=FALSE}
+# Perform hierarchical clustering
+data_for_heatmap <- fc.quant.high[,-1]
+dist_matrix <- dist(data_for_heatmap)  # Calculate the distance matrix
+hclust_result <- hclust(dist_matrix)  # Perform hierarchical clustering
+
+# Cut the dendrogram into 100 clusters
+num_clusters <- 1000
+cluster_labels <- cutree(hclust_result, k = num_clusters)
+
+# Aggregate rows based on cluster labels
+aggregated_data <- aggregate(data_for_heatmap, by = list(cluster_labels), FUN = mean)
+
+# Create a simplified matrix for plotting
+heatmap_data <- aggregated_data[, -1]  # Transpose and remove the grouping column
+
+# Create a heatmap with the simplified matrix
+heatmap(as.matrix(heatmap_data),
+        col = colorRampPalette(c("blue", "red"))(100),  # Adjust the color ramp as needed
+        scale = "column",
+        main = "Heatmap")
+```

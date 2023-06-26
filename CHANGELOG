@@ -6,6 +6,7 @@
 
 0.19.* UPDATES
 --------------------------------------------------------------------------------
+20: Added a heatmap function to summarize the quantification locations on the reference genome.
 19: Reintroduced the image visualisation of te VCF image
 18: Bugfix, the pipeline crashed when no sampleinfo.tsv file was given
 17: Bugfix, sampleinfo colnames caused an error in the casecontrol part, that is fixed now. 
