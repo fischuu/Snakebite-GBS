@@ -1,6 +1,8 @@
 library("SimRAD")
 library("GenomicTools")
 
+source(file.path(pipeFolder, "scripts", "modified_digestion_methods.R"))
+
 minLength <- as.numeric(minLength)-1
 maxLength <- as.numeric(maxLength)+1
 
@@ -20,11 +22,12 @@ enz1.2 <- paste(enz1[[1]][-1], collapse="")
 enz2.1 <- enz2[[1]][1]
 enz2.2 <- paste(enz2[[1]][-1], collapse="")
 
-# TODO: CHECK IF THIS FUNCTION REPORTS THE CORRECT FRAGMENTS!!
-ddout <- insilico.digest(fasta, cut_site_5prime1 = enz1.1, 
-                         cut_site_3prime1 = enz1.2,
-                         cut_site_5prime2 = enz2.1,
-                         cut_site_3prime2 = enz2.2)
+# Remember, this function is based on an updated version of the original SimRAD package, and is imported
+# with the source command earlier in this script
+ddout <- insilico.dddigest(fasta, cut_site_5prime1 = enz1.1, 
+                           cut_site_3prime1 = enz1.2,
+                           cut_site_5prime2 = enz2.1,
+                           cut_site_3prime2 = enz2.2)
 
 names(ddout) <- paste0("> Location", 1:length(ddout))
 ddout.selected <- size.select(ddout, min.size = minLength, max.size = maxLength, graph = FALSE)

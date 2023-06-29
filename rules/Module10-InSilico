@@ -19,13 +19,15 @@ else:
         singularity:
             config["singularity"]["r-gbs"]
         params:
+           pipeFolder=config["pipeline-folder"],
            projFolder=config["project-folder"],
            enz1=config["enz1"],
            enz2=config["enz2"],
            min=config["minLength"],
            max=config["maxLength"],
         shell:"""
-           R -e "projFolder <- '{params.projFolder}'; \
+           R -e "pipeFolder <- '{params.pipeFolder}'; \
+                 projFolder <- '{params.projFolder}'; \
                  refGenome.file <- '{input.reference}'; \
                  enz1.in <- '{params.enz1}'; \
                  enz2.in <- '{params.enz2}'; \

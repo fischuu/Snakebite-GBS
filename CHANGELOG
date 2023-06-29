@@ -6,6 +6,7 @@
 
 0.19.* UPDATES
 --------------------------------------------------------------------------------
+21: Updated the in-silico digestion script, as it contained apparently a little bug in the SimRAD package
 20: Added a heatmap function to summarize the quantification locations on the reference genome.
 19: Reintroduced the image visualisation of te VCF image
 18: Bugfix, the pipeline crashed when no sampleinfo.tsv file was given
