@@ -12,8 +12,8 @@ import yaml
 ##### Natural Resources Institute Finland (Luke)
 ##### This pipeline is build upon the the GBS-SNP-CROP pipeline:
 ##### https://github.com/halelab/GBS-SNP-CROP
-##### Version: 0.19.21
-version = "0.19.21"
+##### Version: 0.19.23
+version = "0.19.23"
 
 ##### set minimum snakemake version #####
 min_version("6.0")
@@ -36,7 +36,7 @@ if(config["rawdata-folder"][0]!='/'):
 if(config["samplesheet-file"][0]!='/'):
     config["samplesheet-file"] = config["project-folder"] + '/' + config["samplesheet-file"]
 
-if config["genome"] == "":
+if config["sampleinfo-file"] == "":
     pass
 else:
     if(config["sampleinfo-file"][0]!='/'):

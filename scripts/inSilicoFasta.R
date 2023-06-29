@@ -14,8 +14,17 @@ if(substr(refGenome.file,1,1)!="/") refGenome.file <- file.path(projFolder, refG
 fasta <- importFA(refGenome.file)
 names(fasta) <- NULL
 
-enz1 <- strsplit(enz1.in, "")
-enz2 <- strsplit(enz2.in, "")
+if(grepl("'", enz1.in)){
+  enz1 <- strsplit(enz1.in, "'")
+} else {
+  enz1 <- strsplit(enz1.in, "")  
+}
+
+if(grepl("'", enz2.in)){
+  enz2 <- strsplit(enz2.in, "'")
+} else {
+  enz2 <- strsplit(enz2.in, "")  
+}
 
 enz1.1 <- enz1[[1]][1]
 enz1.2 <- paste(enz1[[1]][-1], collapse="")
@@ -30,7 +39,13 @@ ddout <- insilico.dddigest(fasta, cut_site_5prime1 = enz1.1,
                            cut_site_3prime2 = enz2.2)
 
 names(ddout) <- paste0("> Location", 1:length(ddout))
-ddout.selected <- size.select(ddout, min.size = minLength, max.size = maxLength, graph = FALSE)
 
+refseq.selA <- myadapt.ABBAselect(ddout, enz1.1, enz1.2, enz2.1, enz2.2) 
+
+ddout.selected <- size.select(refseq.selA, min.size = minLength, max.size = maxLength, graph = FALSE)
+ddout.selected.fasta <- as.character(ddout.selected)
+names(ddout.selected.fasta) <- ddout.selected@ranges@NAMES
+
+write.table(refseq.selA@ranges@NAMES, file=file.path(projFolder, "References", "AB_contigs.txt"), row.names = FALSE, col.names = FALSE, quote = FALSE)
 exportFA(ddout, file=full.file)
-exportFA(ddout.selected, file=selected.file)
+exportFA(ddout.selected.fasta, file=selected.file)

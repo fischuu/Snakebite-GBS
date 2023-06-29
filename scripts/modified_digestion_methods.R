@@ -99,7 +99,7 @@ insilico.dddigest.internal<- function (DNAseq, recognition_code)
 }
 
 # original: adapt.select
-adapt.ABBAselect <- function (sequences, cut_site_5prime1, 
+myadapt.ABBAselect <- function (sequences, cut_site_5prime1, 
                               cut_site_3prime1, cut_site_5prime2, cut_site_3prime2) 
 {
   recognition_code1 <- paste(cut_site_5prime1, cut_site_3prime1, 

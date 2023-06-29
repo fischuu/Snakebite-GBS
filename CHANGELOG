@@ -6,6 +6,9 @@
 
 0.19.* UPDATES
 --------------------------------------------------------------------------------
+24: Improvement for Bugfix 0.19.18, there was a copy+paste error that prevented the bugfix to work properly
+23: CRITICAL Bugfix: There was a bug in the in-silico size-selection script, leading to a wrong in-silico reference genome 
+22: The overhang of the restriction enzymes can now be provided
 21: Updated the in-silico digestion script, as it contained apparently a little bug in the SimRAD package
 20: Added a heatmap function to summarize the quantification locations on the reference genome.
 19: Reintroduced the image visualisation of te VCF image
