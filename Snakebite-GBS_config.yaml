@@ -53,7 +53,7 @@ params:
     vsearch: "vsearch"            #
     threads: 20                   #
     cl: "consout"                 #
-    rl: 125                       # Stitching, reads are stichted if length(R1)-19 > rl and length(R2)-5 > rl 
+    rl: 125                       # Length of R1 and stitching, reads are stichted if length(R1)-19 > rl and length(R2)-5 > rl 
     pl: 32                        #
     p: 0.01                       #
     id: 0.90                      # Default: 0.93
