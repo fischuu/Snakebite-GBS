@@ -119,7 +119,7 @@ else:
         threads: 20
         singularity: config["singularity"]["minimap2"]
         shell:"""
-              minimap2 -cx sr --cs {input.ref} {input.mock}  > {output} 2> {log}
+              minimap2 -cx sr --cs {input.ref} {input.mock} > {output} 2> {log}
         """
         
 if config["genome"] == "":
@@ -149,8 +149,8 @@ else:
               
               transanno liftvcf -m --chain {output.chain} \
                                      -o {output.vcfsucc} \
-                                     --query {input.mock} \
-                                     --reference {input.ref} \
+                                     --query {input.ref} \
+                                     --reference {input.mock} \
                                      --vcf {input.vcf} \
                                      --fail {output.vcffail}  2> {log}
         """

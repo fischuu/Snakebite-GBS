@@ -113,7 +113,7 @@ clusterCoverage <- clusterCoverage[-which(clusterCoverage$cluster=="*"),]
 rownames(clusterCoverage) <- clusterCoverage[,1]
 clusterCoverage <- clusterCoverage[,-1]
 
-names(clusterCoverage)[length(clusterFiles)] <- clusterFiles
+# names(clusterCoverage)[length(clusterFiles)] <- clusterFiles
 clusterCoverage.full <- clusterCoverage
 ```
 

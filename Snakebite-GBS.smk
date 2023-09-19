@@ -203,7 +203,7 @@ config["singularity"]["bedtools"] = "docker://fischuu/bedtools:2.30-0.1"
 config["singularity"]["star"] = "docker://fischuu/star:2.7.5a"
 config["singularity"]["gbs"] = "docker://fischuu/gbs:0.2"
 config["singularity"]["cutadapt"] = "docker://fischuu/cutadapt:2.8-0.3"
-config["singularity"]["minimap2"] = "docker://fischuu/minimap2:2.17-0.2"
+config["singularity"]["minimap2"] = "docker://fischuu/minimap2:2.26-0.1"
 config["singularity"]["samtools"] = "docker://fischuu/samtools:1.9-0.2"
 config["singularity"]["r-gbs"] = "docker://fischuu/r-gbs:4.2.1-0.7"
 config["singularity"]["stringtie"] = "docker://fischuu/stringtie:2.2.1-0.1"
@@ -306,6 +306,7 @@ rule all:
 
 rule liftOver:
     input:
+        "%s/MockReference/MockReference.paf" % (config["project-folder"]),
         "%s/VCF/FinalSetVariants_finalMock_liftOver-to-Reference_succeeded.vcf" % (config["project-folder"])
 
 rule insilico:
@@ -431,8 +432,8 @@ rule MockRefVCF:
     input:
         expand("%s/MPILEUP/mpileup_existingMock/{samples}.vcf.gz" % (config["project-folder"]), samples=samples),
         expand("%s/BAM/alignments_existingMock/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
-    #    "%s/VCF/FinalSetVariants_finalMock.vcf" % (config["project-folder"]),
-                    "%s/VCF/variants_existingMock.vcf" % (config["project-folder"])
+    #   "%s/VCF/FinalSetVariants_finalMock.vcf" % (config["project-folder"]),
+        "%s/VCF/variants_existingMock.vcf" % (config["project-folder"])
 
 ### setup report #####
 
