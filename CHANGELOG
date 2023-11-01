@@ -6,6 +6,7 @@
 
 0.19.* UPDATES
 --------------------------------------------------------------------------------
+26: Script getFastaFromVCF could create negative coordinatethat leaad to an error, fixed.
 25: transanno added to minimap2 docker image and updated to version 2.26
 24: Improvement for Bugfix 0.19.18, there was a copy+paste error that prevented the bugfix to work properly
 23: CRITICAL Bugfix: There was a bug in the in-silico size-selection script, leading to a wrong in-silico reference genome 
