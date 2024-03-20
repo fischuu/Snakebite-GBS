@@ -1,4 +1,4 @@
-pipelineFolder="~/git/Snakebite-GBS"
+pipelineFolder="/users/fischerd/git/Snakebite-GBS"
 projectFolder="/scratch/project_2001746/GBS_Example"
 
 module load snakemake
