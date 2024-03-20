@@ -15,6 +15,7 @@ if(substr(sampleSheet.file,1,1)!="/") sampleSheet.file <- file.path(projFolder, 
 sampleSheet <- read.table(sampleSheet.file, sep="\t", header=TRUE)
 
 sampleInfo.file <- getConfigField("sampleinfo-file")
+if( (substr(sampleInfo.file,1,1)!="/") & (nchar(sampleInfo.file)>0) ) sampleInfo.file <- file.path(projFolder, sampleInfo.file)
 sampleInfo <- NULL
 
 if(sampleInfo.file!="") sampleInfo <- read.table(sampleInfo.file, sep="\t", header=TRUE)
@@ -27,7 +28,7 @@ serverConfig.info <- serverConfig.file
 groupingNames <- "No file with sample information provided ('sampleinfo-file'-field)!"
 numberGroupingNames <- 0
 if(!is.null(sampleInfo)){
-  groupingNames <- colnames(sampleInfo[,-1])
+  groupingNames <- colnames(sampleInfo)[-1]
   numberGroupingNames <- length(groupingNames)
 } 
 
@@ -48,7 +49,8 @@ out <- data.frame(c("Number of raw-samples",
                     "Enzyme 1 sequence",
                     "Enzyme 2 sequence",
                     "Aimed min. fragment length",
-                    "Aimed max. fragment length"),
+                    "Aimed max. fragment length",
+                    "Library type"),
                   c(length(unique(sampleSheet$rawsample)),
                     length(unique(sampleSheet$sample_name)),
                     numberGroupingNames,
@@ -64,7 +66,8 @@ out <- data.frame(c("Number of raw-samples",
                     enz1,
                     enz2,
                     paste(minLength, "bp"),
-                    paste(maxLength, "bp")))
+                    paste(maxLength, "bp"),
+                    libtype))
 
 out_html <- knitr::kable(out, col.names = NULL, "html")
 kable_styling(out_html, "striped", position = "left")

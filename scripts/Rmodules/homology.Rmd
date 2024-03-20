@@ -2,6 +2,9 @@
 # Homology comparison
 
 ## Visualization of VCF
+
+### Grouped values
+
 Here, we have Homo. Ref green, Homo. Alt red, hetero blue and missing black
 
 ```{r image vcf, fig.width=15, fig.height=10, warning=FALSE}
@@ -10,6 +13,63 @@ plotThis <- t(apply(as.matrix(vcf$genotypes),1,as.numeric))
 dataForBarplot <- apply(plotThis,1,class.table, classes=c(0,1,2,3))
 colnames(dataForBarplot) <- rownames(vcf$genotypes)
 barplot(dataForBarplot, col=c("green", "blue", "red", "black"), las=2)
+```
+### Image visualisation
+
+Then the same, but without using categories but rather plot the individual values
+
+```{r image2 vcf, fig.width=15, fig.height=10, warning=FALSE}
+par(mar=c(10,5,1,1))
+plotThis <- t(apply(as.matrix(vcf$genotypes),1,as.numeric))
+rownames(plotThis) <- rownames(vcf$genotypes)
+
+image(plotThis, col=c("green", "blue", "red", "black"))
+```
+
+### GRM
+
+```{r, eval=FALSE}
+myBed <- BEDMatrix(paste0(inputpath, "filenamecoreNoending"))
+
+#Creating a BGData object
+
+bg <- as.BGData(myBed)
+
+#Check missing and MAF
+
+chunkedApply(X = geno(bg), MARGIN = 1, FUN = function(x) sum(is.na(x)))
+
+table(chunkedApply(X = geno(bg), MARGIN = 2, FUN = function(x) sum(is.na(x))))
+
+locinfo <- summarize(geno(bg))
+
+apply(locinfo,2,function(x)  {mean(x, na.rm =T)} )
+
+#Calculating relatedness
+
+geno_bg <- geno(bg)
+
+G <- getG(X = geno_bg , center = T, scale = TRUE, impute = TRUE , scaleG = TRUE, 
+
+          minVar = 1e-05, i = seq_len(nrow(geno_bg)), j = seq_len(ncol(geno_bg) ))
+
+#Plotting histogram of relatedness values with and without diagonal
+
+hist(c(G[lower.tri(G)], G[diag(G)]), 100)
+
+hist(G[lower.tri(G)], 100)
+
+#Plotting heatmaps
+
+n.cols = 50
+
+pheatmap::pheatmap(G, main = paste("GRM from",ncol(geno_bg),"SNPs") ,color =topo.colors(n.cols), labels_col=sapply(strsplit(rownames(G),"_"), function(x) paste(x[[1]])), labels_row = sapply(strsplit(colnames(G),"_"), function(x) paste(x[[1]])))
+
+pheatmap::pheatmap(G, main = paste("GRM from",ncol(geno_bg),"SNPs") ,color =rainbow(n.cols), labels_col=rownames(G), labels_row = colnames(G))
+
+heatmap(G)
+
+gplots::heatmap.2(G, trace =  "none")
 ```
 
 ## PCA

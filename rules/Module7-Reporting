@@ -15,8 +15,20 @@ def get_reference_files(wildcards):
         file8 = "/MPILEUP/mpileup_reference/variants/GSC.GenoMatrix.txt"
         file9 = "/MPILEUP/mpileup_reference/GSC.vcf.fa"
         file10 = "/BAM/mockVariantsToReference/mockVariantsToReference.bam"
+        file11 = "/BAM/MockVsInsilico/mockToFullInsilico.sam.flagstat"
 
-        output = [path + file1, path + file2, path + file3, path + file4, path + file5, path + file6, path + file7, path + file8, path + file9, path + file10]
+        output = [path + file1,
+                  path + file2, 
+                  path + file3,
+                  path + file4,
+                  path + file5,
+                  path + file6,
+                  path + file7,
+                  path + file8,
+                  path + file9,
+                  path + file10,
+                  path + file11]
+                  
         return output   
 
 def get_reference_expand_files(wildcards):
@@ -82,7 +94,8 @@ rule R_finalReport:
        enz1=config["enz1"],
        enz2=config["enz2"],
        minLength=config["minLength"],
-       maxLength=config["maxLength"]
+       maxLength=config["maxLength"],
+       libtype=config["libtype"]
     shell:"""
        R -e "projFolder <- '{params.projFolder}'; \
              pipelineFolder <- '{params.pipeFolder}'; \
@@ -95,6 +108,7 @@ rule R_finalReport:
              maxLength <- '{params.maxLength}'; \
              fullInsilico <- '{params.fullInsilico}'; \
              selectedInsilico <- '{params.selectedInsilico}'; \
+             libtype <- '{params.libtype}'; \
              snakemake <- TRUE;\
              options(knitr.duplicate.label = 'allow');\
              source('{input.script}')" &> {log}

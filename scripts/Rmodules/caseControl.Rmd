@@ -10,7 +10,7 @@ accepted mistakes).
 
 ```{r}
 if(!is.null(sampleInfo)){
-  if(is.element(colnames(sampleInfo), "casecontrol")){
+  if(sum(is.element(colnames(sampleInfo), "casecontrol"))>0){
     if(ncol(sampleInfo)>1){
       mmCase <- 2
       mmControl <- 5
@@ -65,7 +65,7 @@ Then we identify the following potentially causative mutations:
 
 ```{r}
 if(!is.null(sampleInfo)){
-  if(is.element(colnames(sampleInfo), "casecontrol")){
+  if(sum(is.element(colnames(sampleInfo), "casecontrol"))>0){
     if(ncol(sampleInfo)>1){
       if(length(causativeRef)>0){
         datatable(as.data.frame(causativeRef))

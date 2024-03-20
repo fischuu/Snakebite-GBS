@@ -6,12 +6,38 @@
 
 0.19.* UPDATES
 --------------------------------------------------------------------------------
-1:
+27: Bugfix, minimap uses now different tmp suffixes for different jobs
+26: Script getFastaFromVCF could create negative coordinatethat leaad to an error, fixed.
+25: transanno added to minimap2 docker image and updated to version 2.26
+24: Improvement for Bugfix 0.19.18, there was a copy+paste error that prevented the bugfix to work properly
+23: CRITICAL Bugfix: There was a bug in the in-silico size-selection script, leading to a wrong in-silico reference genome 
+22: The overhang of the restriction enzymes can now be provided
+21: Updated the in-silico digestion script, as it contained apparently a little bug in the SimRAD package
+20: Added a heatmap function to summarize the quantification locations on the reference genome.
+19: Reintroduced the image visualisation of te VCF image
+18: Bugfix, the pipeline crashed when no sampleinfo.tsv file was given
+17: Bugfix, sampleinfo colnames caused an error in the casecontrol part, that is fixed now. 
+16: Dependency adjusted for mock alignment against reference genome in finalReport
+15: Bugfix, when only one group information was provided in samplinfo.tsv the finalReport crashed
+14: Added the liftOver rules to liftover the finalMock based VCF to an existing reference genome
+13: The mock references are now also fa-indexed
+12: Added --eqx option to minimap steps, as the "assert(has_cigar + no_cigar == 1);" test failed sometimes
+11: Now I write down the mock to insilico mapping rates
+10: Changed the index for Mock vs insilico to bai from csi, as csi threw an error for the mock reference
+9: Adjusted the file paths to the log file
+8: Mock reference is now also aligned against the different in-silico predictions
+7: Removed the previous additions and started an own similarity metric script instead.
+6: Added the mock to reference similarity step, using MUMmer
+5: Enabled the SE option, so the pipeline should now be ready to handle also single-end input (not in the reports, yet)
+4: Handled the case that no reads were disgarded from the mock reference building step
+3: Removed minimum lengths criteris in pear command
+2: Use N for stitching instead of T
+1: New dev branch
 
-0.18.2: Another critial bugfix for variant calling report
-0.18.1: VariantCalling report dependency bugfix
-0.18: Stable release on 18.01.2023
+0.18.*: Stable release on 18.01.2023
 --------------------------------------------------------------------------------
+2: Another critial bugfix for variant calling report
+1: VariantCalling report dependency bugfix
 
 0.17.* UPDATES
 --------------------------------------------------------------------------------

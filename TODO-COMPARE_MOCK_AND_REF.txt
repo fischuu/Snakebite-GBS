@@ -1,0 +1,11 @@
+
+# First, create a liftover for the mock to the existing reference genome:
+https://github.com/fischuu/transanno
+
+# To compare two samples from a vcf, one can do the following...
+bcftools view -Oz -c1 -s sample1 joined.vcf.gz > sample1.vcf.gz
+bcftools view -Oz -c1 -s sample2 joined.vcf.gz > sample2.vcf.gz
+
+and then compare them
+
+bcftools stats sample1.vcf.gz sample2.vcf.gz > joined.stats.txt
