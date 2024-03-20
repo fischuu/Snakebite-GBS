@@ -66,7 +66,7 @@ else:
         conda:"envs/minimap2.yaml"
         singularity: config["singularity"]["minimap2"]
         shell:"""
-           minimap2 -ax sr -I8g --eqx --split-prefix=tmp {input.refgenome} {input.mockgenome} > {output} 2> {log}
+           minimap2 -ax sr -I8g --eqx --split-prefix=tmp_mockvsref {input.refgenome} {input.mockgenome} > {output} 2> {log}
         """
 
 if config["genome"] == "":
@@ -240,7 +240,7 @@ else:
         threads: 20
         singularity: config["singularity"]["minimap2"]
         shell:"""
-           minimap2 -ax sr -I8g --eqx --split-prefix=tmp {input.refgenome} {input.mockgenome} > {output} 2> {log}
+           minimap2 -ax sr -I8g --eqx --split-prefix=tmp_finalmockvsref {input.refgenome} {input.mockgenome} > {output} 2> {log}
         """
 
 if config["genome"] == "":
@@ -443,10 +443,10 @@ else:
         conda:"envs/minimap2.yaml"
         singularity: config["singularity"]["minimap2"]
         shell:"""
-           minimap2 -ax sr -I8g --eqx --split-prefix=tmp {input.full} {input.mockgenome} > {output.mockVsFull}
-           minimap2 -ax sr -I8g --eqx --split-prefix=tmp {input.full} {input.finalmock} > {output.finalVsFull}
-           minimap2 -ax sr -I8g --eqx --split-prefix=tmp {input.selected} {input.mockgenome} > {output.mockVsSelected}
-           minimap2 -ax sr -I8g --eqx --split-prefix=tmp {input.selected} {input.finalmock} > {output.finalVsSelected}
+           minimap2 -ax sr -I8g --eqx --split-prefix=tmp_mockVsFull {input.full} {input.mockgenome} > {output.mockVsFull}
+           minimap2 -ax sr -I8g --eqx --split-prefix=tmp_finalVsFull {input.full} {input.finalmock} > {output.finalVsFull}
+           minimap2 -ax sr -I8g --eqx --split-prefix=tmp_mockVsSelected {input.selected} {input.mockgenome} > {output.mockVsSelected}
+           minimap2 -ax sr -I8g --eqx --split-prefix=tmp_finalVsSelectedß {input.selected} {input.finalmock} > {output.finalVsSelected}
         """
 
 if config["genome"] == "":
