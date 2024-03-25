@@ -65,10 +65,12 @@ if(config["libtype"]=='PE'):
             R1=get_fastq_for_concatenating_read1,
             R2=get_fastq_for_concatenating_read2
         output:
-            R1=temp("%s/FASTQ/CONCATENATED/{samples}_R1_001.merged.fastq.gz" % (config["project-folder"])),
+            R1="%s/FASTQ/CONCATENATED/{samples}_R1_001.merged.fastq.gz" % (config["project-folder"]),
             R1Report="%s/FASTQ/CONCATENATED/{samples}_R1_001.merged.fastq.gz.report" % (config["project-folder"]),
-            R2=temp("%s/FASTQ/CONCATENATED/{samples}_R2_001.merged.fastq.gz" % (config["project-folder"])),
-            R2Report="%s/FASTQ/CONCATENATED/{samples}_R2_001.merged.fastq.gz.report" % (config["project-folder"])
+            R1md5="%s/FASTQ/CONCATENATED/{samples}_R1_001.merged.fastq.gz.md5" % (config["project-folder"]),
+            R2="%s/FASTQ/CONCATENATED/{samples}_R2_001.merged.fastq.gz" % (config["project-folder"]),
+            R2Report="%s/FASTQ/CONCATENATED/{samples}_R2_001.merged.fastq.gz.report" % (config["project-folder"]),
+            R2md5="%s/FASTQ/CONCATENATED/{samples}_R2_001.merged.fastq.gz.md5" % (config["project-folder"])
         log:
             "%s/logs/SHELL/catFastq_{samples}.log" % (config["project-folder"])
         benchmark:
@@ -83,8 +85,10 @@ if(config["libtype"]=='PE'):
             mkdir -p {params.outfolder} &> {log}
             cat {input.R1} > {output.R1} 2>> {log}
             ls {input.R1} > {output.R1Report} 2>> {log}
+            md5sum {output.R1} > {output.R1md5}
             cat {input.R2} > {output.R2} 2>> {log}
             ls {input.R2} > {output.R2Report} 2>> {log}
+            md5sum {output.R2} > {output.R2md5}
       	"""
 else:
     rule Concatenate_lanes:

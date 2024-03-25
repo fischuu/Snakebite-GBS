@@ -327,6 +327,12 @@ rule preparations:
         expand("%s/FASTQ/CONCATENATED/{samples}_R1_001.merged.fastq.gz" % (config["project-folder"]), samples=samples),
         config["barcodes-file"]
 
+rule datapublication:
+    input:
+        expand("%s/FASTQ/CONCATENATED/{samples}_R1_001.merged.fastq.gz" % (config["project-folder"]), samples=samples),
+        config["barcodes-file"]
+
+
 rule QC:
     input:
         "%s/QC/RAW/multiqc_R1/" % (config["project-folder"]),
