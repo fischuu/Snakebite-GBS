@@ -10,7 +10,7 @@ __default__:
     nvme: 0
     mail-user: daniel.fischer@luke.fi
     mail-type: FAIL
-    
+
 # Module 0 - PreparationsAndIndexing:
 ################################################################################
 

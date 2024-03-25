@@ -4,8 +4,16 @@
 #####                                                                      #####
 ################################################################################
 
+0.21.* UPDATES
+--------------------------------------------------------------------------------
+1: New dev branch opened
+
+0.20.0: Stable release on 20.03.2024
+--------------------------------------------------------------------------------
+
 0.19.* UPDATES
 --------------------------------------------------------------------------------
+27: Bugfix, minimap uses now different tmp suffixes for different jobs
 26: Script getFastaFromVCF could create negative coordinatethat leaad to an error, fixed.
 25: transanno added to minimap2 docker image and updated to version 2.26
 24: Improvement for Bugfix 0.19.18, there was a copy+paste error that prevented the bugfix to work properly
