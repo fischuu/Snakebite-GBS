@@ -6,6 +6,7 @@
 
 0.21.* UPDATES
 --------------------------------------------------------------------------------
+2: Read coverages are now also displayed for non-called variants in the vcf file
 1: New dev branch opened
 
 0.20.0: Stable release on 20.03.2024
