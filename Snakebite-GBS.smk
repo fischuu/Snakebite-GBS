@@ -196,6 +196,8 @@ config["similarity-script"] = config["pipeline-folder"]+"/scripts/mockRef_simila
 config["insilico-report-script"] = config["pipeline-folder"]+"/scripts/Insilico-report.R"
 config["adapter"]=config["pipeline-folder"]+"/adapter.fa"
 config["barcodes-file"] = config["project-folder"]+"/barcodesID.txt"
+config["enz1_clean"] = re.sub(r"[^A-Za-z]", "", config["enz1"])
+config["enz2_clean"] = re.sub(r"[^A-Za-z]", "", config["enz2"])
 
 ##### Singularity container #####
 config["singularity"] = {}
@@ -303,6 +305,10 @@ rule all:
         "%s/MockReference/MockReference.fa" % (config["project-folder"]),
         "%s/VCF/FinalSetVariants_finalMock.vcf" % (config["project-folder"]),
         "%s/finalReport.html" % (config["project-folder"]),
+
+rule variantsReference:
+    input:
+        "%s/VCF/FinalSetVariants_referenceGenome.vcf" % (config["project-folder"])
 
 rule liftOver:
     input:
