@@ -366,8 +366,12 @@ if ($tools =~ "V" or $tools =~ "v") {
 			my @k = split /\|/, $input[$i];
 			my @l = split /\//, $k[1];
 			if ($k[0] eq "-") {
-				$k[0] = "./.";
-				$k[1] = ".,.";
+   				$k[0] = "./.";
+				#$k[1] = ".,.";
+				$k[1] =~ s/\//,/g;
+				if ($k[1] eq "0,0"){
+				  $k[1] = ".,.";
+				}
 				push @genos, join (":", $k[0],$k[1]);
 				next;
 			} else {
