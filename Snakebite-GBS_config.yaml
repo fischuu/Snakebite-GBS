@@ -78,6 +78,7 @@ params:
     Q: 30                         #
     f: 0                          #
     F: 2308                       #
+    other: -B -C 50
   step5e:
     threads: 20                   #
     q: 0                          #

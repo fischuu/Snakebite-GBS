@@ -143,13 +143,14 @@ else:
         threads: lambda cores: cpu_count()
         params:
             Q=config["params"]["step5d"]["Q"],
-            q=config["params"]["step5d"]["q"]
+            q=config["params"]["step5d"]["q"],
+            other=config["params"]["step5d"]["other"]
         conda:"envs/samtools.yaml"
         singularity: config["singularity"]["gbs"]
         shell:"""
             df -h &> {log}
             echo "Number of threads used:" {threads}
-            samtools mpileup -Q {params.Q} -q {params.q} -B -C 50 -f {input.reference} {input.bam} > {output}
+            samtools mpileup -Q {params.Q} -q {params.q} {params.other} -f {input.reference} {input.bam} > {output}
       	"""
 
 if config["genome"] == "":
@@ -354,12 +355,13 @@ rule MockRef_SortedBamToMpileup:
     params:
         threads=config["params"]["step5d"]["threads"],
         Q=config["params"]["step5d"]["Q"],
-        q=config["params"]["step5d"]["q"]
+        q=config["params"]["step5d"]["q"],
+        other=config["params"]["step5d"]["other"]
     conda:"envs/samtools.yaml"
     singularity: config["singularity"]["gbs"]
     shell:"""
         df -h &> {log}
-        samtools mpileup -Q {params.Q} -q {params.q} -B -C 50 -f {input.reference} {input.bam} > {output}
+        samtools mpileup -Q {params.Q} -q {params.q} {params.other} -f {input.reference} {input.bam} > {output}
   	"""
 
 
@@ -502,12 +504,13 @@ rule FinalMockRef_SortedBamToMpileup:
     params:
         threads=config["params"]["step5d"]["threads"],
         Q=config["params"]["step5d"]["Q"],
-        q=config["params"]["step5d"]["q"]
+        q=config["params"]["step5d"]["q"],
+        other=config["params"]["step5d"]["other"]
     conda:"envs/samtools.yaml"
     singularity: config["singularity"]["gbs"]
     shell:"""
         df -h &> {log}
-        samtools mpileup -Q {params.Q} -q {params.q} -B -C 50 -f {input.reference} {input.bam} > {output}
+        samtools mpileup -Q {params.Q} -q {params.q} {params.other} -f {input.reference} {input.bam} > {output}
   	"""
 
 
