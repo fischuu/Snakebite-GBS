@@ -337,20 +337,13 @@ if ($type eq "indel") {
 				push @maf, 1 - ((2 * $alt_count) / (2 * ($alt_count + 0)));
 
 
-# 2025.01.22 (DF): I change this part from primary,alternative allele order (in terms of sorted by size)
-#                  towards having it such, that the first values represents the number of reads from reference allele and the second from alternative allele
-
-# Now, extract the counts for the reference and alternate alleles
-      my $ref_allele_count = $Var_depth{$ref};
-      my $alt_allele_count = $Var_depth{$Alt_allele};
-
 			# Declaring missing genotypes
 			} elsif ( $primary_count == $minHeteroDepth || $alt_count == $minHeteroDepth ) {
-				$row = "$row\t-|$ref_allele_count/$alt_allele_count";  
+				$row = "$row\t-|$primary_count/$alt_count";  
 			} elsif ( $primary_count == 0 && ($primary_count + $alt_count) < $minHomoDepth ) {
-				$row = "$row\t-|$ref_allele_count/$alt_allele_count";        
+				$row = "$row\t-|$primary_count/$alt_count";        
 			} elsif ( $alt_count == 0 && ($primary_count + $alt_count) < $minHomoDepth ) {
-				$row = "$row\t-|$ref_allele_count/$alt_allele_count";
+				$row = "$row\t-|$primary_count/$alt_count";
 
 			} else {
 				$row = "$row\t-|-";
@@ -648,14 +641,31 @@ if ($type eq "indel") {
 				$row = "$row\t$pop_two_var/$pop_two_var|0/$alt_count";
 				$depth = $alt_count;
 
-# 2025.01.22 (DF): I change this part from primary,alternative allele order (in terms of sorted by size)
-#                  towards having it such, that the first values represents the number of reads from reference allele and the second from alternative allele
-
-# Now, extract the counts for the reference and alternate alleles
-      my $ref_allele_count = $Var_depth{$ref};
-      my $alt_allele_count = $Var_depth{$Alt_allele};
-
 			} else {
+			  
+			 # Reference/Alternative alleles
+    		my $Alt_allele;
+
+    		my $ref_allele_count;
+    		my $alt_allele_count;
+
+    		if ($ref eq $pop_one_var) {
+    			$Alt_allele = $pop_two_var;
+    			$ref_allele_count = $primary_count;
+    		  $alt_allele_count = $alt_count;
+    		} elsif ($ref eq $pop_two_var) {
+    			$Alt_allele = $pop_one_var;
+    			$ref_allele_count = $alt_count;
+    		  $alt_allele_count = $primary_count;
+    		}	else {
+          # Fallback case if no match is found
+          $Alt_allele = $pop_one_var;  # or another suitable default
+          $ref_allele_count = $primary_count;
+    		  $alt_allele_count = $alt_count;
+          warn "Warning: \$ref ($ref) does not match \$pop_one_var ($pop_one_var) or \$pop_two_var ($pop_two_var). Using default (pop_one_var).";
+        }
+    		
+			  
 				$row = "$row\t-|$ref_allele_count/$alt_allele_count";
 			}
 				$cumulative_depth = $cumulative_depth + $depth;
