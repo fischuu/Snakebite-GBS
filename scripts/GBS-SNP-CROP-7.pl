@@ -337,13 +337,20 @@ if ($type eq "indel") {
 				push @maf, 1 - ((2 * $alt_count) / (2 * ($alt_count + 0)));
 
 
+# 2025.01.22 (DF): I change this part from primary,alternative allele order (in terms of sorted by size)
+#                  towards having it such, that the first values represents the number of reads from reference allele and the second from alternative allele
+
+# Now, extract the counts for the reference and alternate alleles
+      my $ref_allele_count = $Var_depth{$ref};
+      my $alt_allele_count = $Var_depth{$Alt_allele};
+
 			# Declaring missing genotypes
 			} elsif ( $primary_count == $minHeteroDepth || $alt_count == $minHeteroDepth ) {
-				$row = "$row\t-|$primary_count/$alt_count";  
+				$row = "$row\t-|$ref_allele_count/$alt_allele_count";  
 			} elsif ( $primary_count == 0 && ($primary_count + $alt_count) < $minHomoDepth ) {
-				$row = "$row\t-|$primary_count/$alt_count";        
+				$row = "$row\t-|$ref_allele_count/$alt_allele_count";        
 			} elsif ( $alt_count == 0 && ($primary_count + $alt_count) < $minHomoDepth ) {
-				$row = "$row\t-|$primary_count/$alt_count";
+				$row = "$row\t-|$ref_allele_count/$alt_allele_count";
 
 			} else {
 				$row = "$row\t-|-";
@@ -641,16 +648,15 @@ if ($type eq "indel") {
 				$row = "$row\t$pop_two_var/$pop_two_var|0/$alt_count";
 				$depth = $alt_count;
 
-			# Declaring missing genotypes
-			#} elsif ( $primary_count == $minHeteroDepth || $alt_count == $minHeteroDepth ) {
-			#	$row = "$row\t-|$primary_count/$alt_count";  
-			#} elsif ( $primary_count == 0 && ($primary_count + $alt_count) < $minHomoDepth ) {
-			#	$row = "$row\t-|$primary_count/$alt_count";        
-			#} elsif ( $alt_count == 0 && ($primary_count + $alt_count) < $minHomoDepth ) {
-			#	$row = "$row\t-|$primary_count/$alt_count";
+# 2025.01.22 (DF): I change this part from primary,alternative allele order (in terms of sorted by size)
+#                  towards having it such, that the first values represents the number of reads from reference allele and the second from alternative allele
+
+# Now, extract the counts for the reference and alternate alleles
+      my $ref_allele_count = $Var_depth{$ref};
+      my $alt_allele_count = $Var_depth{$Alt_allele};
 
 			} else {
-				$row = "$row\t-|$primary_count/$alt_count";
+				$row = "$row\t-|$ref_allele_count/$alt_allele_count";
 			}
 				$cumulative_depth = $cumulative_depth + $depth;
 		}
