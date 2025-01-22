@@ -14,15 +14,15 @@ rawFastQC.R1 <- read.table(file.path(projFolder,"QC","RAW","multiqc_R1","multiqc
 
 # Import the FastQC/MultiQC output for the CONCATENATED data
 conFastQC.R1 <- read.table(file.path(projFolder,"QC","CONCATENATED","multiqc_R1","multiqc_data","multiqc_fastqc.txt"), header=TRUE, sep="\t")
-conFastQC.R2 <- read.table(file.path(projFolder,"QC","CONCATENATED","multiqc_R2","multiqc_data","multiqc_fastqc.txt"), header=TRUE, sep="\t")
+if(libtype=="PE") conFastQC.R2 <- read.table(file.path(projFolder,"QC","CONCATENATED","multiqc_R2","multiqc_data","multiqc_fastqc.txt"), header=TRUE, sep="\t")
 conFastQCJSON.R1 <- getFastQCJSON(file.path(projFolder, "QC", "CONCATENATED", "multiqc_R1", "multiqc_data", "multiqc_data.json"))
-conFastQCJSON.R2 <- getFastQCJSON(file.path(projFolder, "QC", "CONCATENATED", "multiqc_R2", "multiqc_data", "multiqc_data.json"))
+if(libtype=="PE") conFastQCJSON.R2 <- getFastQCJSON(file.path(projFolder, "QC", "CONCATENATED", "multiqc_R2", "multiqc_data", "multiqc_data.json"))
 
 # Import the FastQC/MultiQC output for the TRIMMED data
 trimmedFastQC.R1 <- read.table(file.path(projFolder,"QC","TRIMMED","multiqc_R1","multiqc_data","multiqc_fastqc.txt"), header=TRUE, sep="\t")
-trimmedFastQC.R2 <- read.table(file.path(projFolder,"QC","TRIMMED","multiqc_R2","multiqc_data","multiqc_fastqc.txt"), header=TRUE, sep="\t")
+if(libtype=="PE") trimmedFastQC.R2 <- read.table(file.path(projFolder,"QC","TRIMMED","multiqc_R2","multiqc_data","multiqc_fastqc.txt"), header=TRUE, sep="\t")
 trimmedFastQCJSON.R1 <- getFastQCJSON(file.path(projFolder, "QC", "TRIMMED", "multiqc_R1", "multiqc_data", "multiqc_data.json"))
-trimmedFastQCJSON.R2 <- getFastQCJSON(file.path(projFolder, "QC", "TRIMMED", "multiqc_R2", "multiqc_data", "multiqc_data.json"))
+if(libtype=="PE") trimmedFastQCJSON.R2 <- getFastQCJSON(file.path(projFolder, "QC", "TRIMMED", "multiqc_R2", "multiqc_data", "multiqc_data.json"))
 ```
 
 
@@ -250,7 +250,12 @@ The de-duplication percentage gives the amount of data that remains, if duplicte
 
 ```{r conc data duplication percent}
 #par(mar=c(10,5,1,1))
-plotFastQCFeature(conFastQC.R1, conFastQC.R2, feature="total_deduplicated_percentage", axes=FALSE)
+if(libtype=="PE"){
+  plotFastQCFeature(conFastQC.R1, conFastQC.R2, feature="total_deduplicated_percentage", axes=FALSE)  
+} else {
+  plotFastQCFeature(conFastQC.R1,  feature="total_deduplicated_percentage", axes=FALSE)
+}
+
 abline(h=20, lty="dotted", col="red")
 ```
 
@@ -277,7 +282,11 @@ GC-content, short for "guanine-cytosine content", is a measure of the proportion
 
 ```{r conc data qc content}
 #par(mar=c(10,5,1,1))
-plotFastQCFeature(conFastQC.R1, conFastQC.R2, feature="X.GC", axes=FALSE)
+if(libtype=="PE"){
+  plotFastQCFeature(conFastQC.R1, conFastQC.R2, feature="X.GC", axes=FALSE)
+} else {
+  plotFastQCFeature(conFastQC.R1, feature="X.GC", axes=FALSE)
+}
 abline(h=50, lty="dotted", col="red")
 abline(h=35, lty="dotted", col="red")
 ```
@@ -304,8 +313,12 @@ The average sequence length is an important metric in bioinformatics, particular
 
 ```{r con data sequence length}
 #par(mar=c(10,5,1,1))
-plotFastQCFeature(conFastQC.R1, conFastQC.R2, feature="avg_sequence_length", axes=FALSE)
-tmp <- conFastQC.R1["avg_sequence_length"]
+if(libtype=="PE"){
+  plotFastQCFeature(conFastQC.R1, conFastQC.R2, feature="avg_sequence_length", axes=FALSE)
+} else {
+  plotFastQCFeature(conFastQC.R1, feature="avg_sequence_length", axes=FALSE)
+}
+  tmp <- conFastQC.R1["avg_sequence_length"]
 tmp <- mean(as.vector(as.matrix((tmp)))) 
 abline(h=tmp*0.9, lty="dotted", col="red")
 ```
@@ -345,7 +358,11 @@ In summary, the number of total sequences generated in a bioinformatics sequenci
 
 ```{r con data total sequences}
 par(mar=c(10,5,1,1))
-plotFastQCFeature(conFastQC.R1, conFastQC.R2, feature="Total.Sequences")
+if(libtype=="PE"){
+  plotFastQCFeature(conFastQC.R1, conFastQC.R2, feature="Total.Sequences")
+} else {
+  plotFastQCFeature(conFastQC.R1, feature="Total.Sequences")
+}
 ```
 
 A list of reads per sample
@@ -405,13 +422,22 @@ legend("topright", inset=c(-0.2,0), legend=rownames(plotThis)[(nrow(plotThis)):1
 
 The "Per base N content" provides the ratio of missing bases (due to sequencing problems) per base of the reads. 
 
+Please note, in case of SE libraries both plots show the results for R1.
+
 ```{r con data per base n content}
 par(mar=c(5,5,1,1))
 #plotFastQCJSONFeature(conFastQCJSON.R1, conFastQCJSON.R2, feature="perBaseN")
 
-plotMQCFeature(x=file.path(projFolder,"QC","CONCATENATED","multiqc_R1"),
-               y=file.path(projFolder,"QC","CONCATENATED","multiqc_R2"),
-               feature="fastqc_per_base_n_content_plot")
+if(libtype=="PE"){
+  plotMQCFeature(x=file.path(projFolder,"QC","CONCATENATED","multiqc_R1"),
+                 y=file.path(projFolder,"QC","CONCATENATED","multiqc_R2"),
+                 feature="fastqc_per_base_n_content_plot")
+} else {
+  plotMQCFeature(x=file.path(projFolder,"QC","CONCATENATED","multiqc_R1"),
+                   y=file.path(projFolder,"QC","CONCATENATED","multiqc_R1"),
+                   feature="fastqc_per_base_n_content_plot")
+  
+}
 ```
 
 ### Per base quality (left: R1, right: R2)
@@ -421,10 +447,15 @@ The "Per base quality" value gives the quality value distribution per base acros
 ```{r con data per base sequence quality}
 par(mar=c(5,5,1,1))
 #plotFastQCJSONFeature(conFastQCJSON.R1, conFastQCJSON.R2, feature="sequenceQuality")
-
-plotMQCFeature(x=file.path(projFolder,"QC","CONCATENATED","multiqc_R1"),
-               y=file.path(projFolder,"QC","CONCATENATED","multiqc_R2"),
-               feature="fastqc_per_base_sequence_quality_plot")
+if(libtype=="PE"){
+  plotMQCFeature(x=file.path(projFolder,"QC","CONCATENATED","multiqc_R1"),
+                 y=file.path(projFolder,"QC","CONCATENATED","multiqc_R2"),
+                 feature="fastqc_per_base_sequence_quality_plot")
+} else {
+  plotMQCFeature(x=file.path(projFolder,"QC","CONCATENATED","multiqc_R1"),
+                 y=file.path(projFolder,"QC","CONCATENATED","multiqc_R1"),
+                 feature="fastqc_per_base_sequence_quality_plot")
+}
 ```
 
 ### Summary
@@ -460,8 +491,14 @@ The de-duplication percentage gives the amount of data that remains, if duplicte
 
 ```{r trimmed data duplication percent}
 #par(mar=c(10,5,1,1))
-plotFastQCFeature(trimmedFastQC.R1, trimmedFastQC.R2, feature="total_deduplicated_percentage", axes=FALSE)
-abline(h=20, lty="dotted", col="red")
+if(libtype=="PE"){
+  plotFastQCFeature(trimmedFastQC.R1, trimmedFastQC.R2, feature="total_deduplicated_percentage", axes=FALSE)
+  abline(h=20, lty="dotted", col="red")
+} else {
+  plotFastQCFeature(trimmedFastQC.R1, feature="total_deduplicated_percentage", axes=FALSE)
+  abline(h=20, lty="dotted", col="red")
+  
+}
 ```
 
 The tabular list of samples.
@@ -486,9 +523,15 @@ datatable(tmp, extensions = 'Buttons',
 
 ```{r trimmed data qc content}
 #par(mar=c(10,5,1,1))
-plotFastQCFeature(trimmedFastQC.R1, trimmedFastQC.R2, feature="X.GC", axes=FALSE)
-abline(h=50, lty="dotted", col="red")
-abline(h=35, lty="dotted", col="red")
+if(libtype=="PE"){
+  plotFastQCFeature(trimmedFastQC.R1, trimmedFastQC.R2, feature="X.GC", axes=FALSE)
+  abline(h=50, lty="dotted", col="red")
+  abline(h=35, lty="dotted", col="red")
+} else {
+  plotFastQCFeature(trimmedFastQC.R1, feature="X.GC", axes=FALSE)
+  abline(h=50, lty="dotted", col="red")
+  abline(h=35, lty="dotted", col="red")
+}
 ```
 
 The tabular list of samples.
@@ -514,10 +557,17 @@ The average sequence length is an important metric in bioinformatics, particular
 
 ```{r trimmed data sequence length}
 #par(mar=c(10,5,1,1))
-plotFastQCFeature(trimmedFastQC.R1, trimmedFastQC.R2, feature="avg_sequence_length", axes=FALSE)
-tmp <- trimmedFastQC.R1["avg_sequence_length"]
-tmp <- mean(as.vector(as.matrix((tmp)))) 
-abline(h=tmp*0.9, lty="dotted", col="red")
+if(libtype=="PE"){
+  plotFastQCFeature(trimmedFastQC.R1, trimmedFastQC.R2, feature="avg_sequence_length", axes=FALSE)
+  tmp <- trimmedFastQC.R1["avg_sequence_length"]
+  tmp <- mean(as.vector(as.matrix((tmp)))) 
+  abline(h=tmp*0.9, lty="dotted", col="red")
+} else {
+  plotFastQCFeature(trimmedFastQC.R1, feature="avg_sequence_length", axes=FALSE)
+  tmp <- trimmedFastQC.R1["avg_sequence_length"]
+  tmp <- mean(as.vector(as.matrix((tmp)))) 
+  abline(h=tmp*0.9, lty="dotted", col="red")
+}
 ```
 
 A list of samples with average sequence length smaller then overall average minus 10%.
@@ -556,7 +606,11 @@ In summary, the number of total sequences generated in a bioinformatics sequenci
 
 ```{r trimmed data total sequences}
 par(mar=c(10,5,1,1))
-plotFastQCFeature(trimmedFastQC.R1, trimmedFastQC.R2, feature="Total.Sequences")
+if(libtype=="PE"){
+  plotFastQCFeature(trimmedFastQC.R1, trimmedFastQC.R2, feature="Total.Sequences")
+} else {
+  plotFastQCFeature(trimmedFastQC.R1, feature="Total.Sequences")
+}
 ```
 
 A list of reads per sample (trimmed)
@@ -622,13 +676,21 @@ legend("topright", inset=c(-0.2,0), legend=rownames(plotThis)[(nrow(plotThis)):1
 
 The "Per base N content" provides the ratio of missing bases (due to sequencing problems) per base of the reads. 
 
+Please note, in case if SE-libraries both plots are identical and show R1.
+
 ```{r trimmed data per base n content}
 par(mar=c(5,5,1,1))
 #plotFastQCJSONFeature(conFastQCJSON.R1, conFastQCJSON.R2, feature="perBaseN")
 
+if(libtype=="PE"){
 plotMQCFeature(x=file.path(projFolder,"QC","TRIMMED","multiqc_R1"),
                y=file.path(projFolder,"QC","TRIMMED","multiqc_R2"),
                feature="fastqc_per_base_n_content_plot")
+} else {
+  plotMQCFeature(x=file.path(projFolder,"QC","TRIMMED","multiqc_R1"),
+               y=file.path(projFolder,"QC","TRIMMED","multiqc_R1"),
+               feature="fastqc_per_base_n_content_plot")
+}
 ```
 
 ### Per base quality (left: R1, right: R2)
@@ -639,9 +701,15 @@ The "Per base quality" value gives the quality value distribution per base acros
 par(mar=c(5,5,1,1))
 #plotFastQCJSONFeature(conFastQCJSON.R1, conFastQCJSON.R2, feature="sequenceQuality")
 
+if(libtype=="PE"){
 plotMQCFeature(x=file.path(projFolder,"QC","TRIMMED","multiqc_R1"),
                y=file.path(projFolder,"QC","TRIMMED","multiqc_R2"),
                feature="fastqc_per_base_sequence_quality_plot")
+} else {
+  plotMQCFeature(x=file.path(projFolder,"QC","TRIMMED","multiqc_R1"),
+               y=file.path(projFolder,"QC","TRIMMED","multiqc_R1"),
+               feature="fastqc_per_base_sequence_quality_plot")
+}
 ```
 
 
@@ -714,42 +782,64 @@ kable_styling(out_html, "striped", position = "left")
 ## Concatenated vs. Trimmed
 
 ```{r average trimmed and conc}
-conFastQC.avg <- (conFastQC.R1[,-c(1:4,7,11:21)] + conFastQC.R2[,-c(1:4,7,11:21)]) / 2
-trimmedFastQC.avg <- (trimmedFastQC.R1[,-c(1:4,7,11:21)] + trimmedFastQC.R2[,-c(1:4,7,11:21)]) / 2
-conFastQC.avg$Sample <- conFastQC.R1$Sample
-trimmedFastQC.avg$Sample <- trimmedFastQC.R1$Sample
+if(libtype=="PE"){
+  conFastQC.avg <- (conFastQC.R1[,-c(1:4,7,11:21)] + conFastQC.R2[,-c(1:4,7,11:21)]) / 2
+  trimmedFastQC.avg <- (trimmedFastQC.R1[,-c(1:4,7,11:21)] + trimmedFastQC.R2[,-c(1:4,7,11:21)]) / 2
+  conFastQC.avg$Sample <- conFastQC.R1$Sample
+  trimmedFastQC.avg$Sample <- trimmedFastQC.R1$Sample
+} else {
+  conFastQC.avg <- conFastQC.R1[,-c(1:4,7,11:21)]
+  trimmedFastQC.avg <- trimmedFastQC.R1[,-c(1:4,7,11:21)]
+  conFastQC.avg$Sample <- conFastQC.R1$Sample
+  trimmedFastQC.avg$Sample <- trimmedFastQC.R1$Sample
 
+}
 conFastQCJSON.avg <- list()
 
-if(nrow(conFastQCJSON.R1$sequenceQuality)!=nrow(conFastQCJSON.R2$sequenceQuality)){
+if(libtype=="PE"){
+  if(nrow(conFastQCJSON.R1$sequenceQuality)!=nrow(conFastQCJSON.R2$sequenceQuality)){
+    conFastQCJSON.avg$sequenceQuality <- conFastQCJSON.R1$sequenceQuality
+    warning("Different lengths in conFastQCJSON.R1$sequenceQuality and conFastQCJSON.R2$sequenceQuality, please check the multiQC outputs for issues!")
+  } else {
+    conFastQCJSON.avg$sequenceQuality <- (conFastQCJSON.R1$sequenceQuality + conFastQCJSON.R2$sequenceQuality)/2  
+  }
+} else {
   conFastQCJSON.avg$sequenceQuality <- conFastQCJSON.R1$sequenceQuality
-  warning("Different lengths in conFastQCJSON.R1$sequenceQuality and conFastQCJSON.R2$sequenceQuality, please check the multiQC outputs for issues!")
-} else {
-  conFastQCJSON.avg$sequenceQuality <- (conFastQCJSON.R1$sequenceQuality + conFastQCJSON.R2$sequenceQuality)/2  
 }
 
-if(nrow(conFastQCJSON.R1$perBaseN)!=nrow(conFastQCJSON.R2$perBaseN)){
+if(libtype=="PE"){
+  if(nrow(conFastQCJSON.R1$perBaseN)!=nrow(conFastQCJSON.R2$perBaseN)){
+    conFastQCJSON.avg$perBaseN <- conFastQCJSON.R1$perBaseN
+    warning("Different lengths in conFastQCJSON.R1$perBaseN and conFastQCJSON.R2$perBaseN, please check the multiQC outputs for issues!")
+  } else {
+    conFastQCJSON.avg$perBaseN <- (conFastQCJSON.R1$perBaseN + conFastQCJSON.R2$perBaseN)/2  
+  }
+} else {
   conFastQCJSON.avg$perBaseN <- conFastQCJSON.R1$perBaseN
-  warning("Different lengths in conFastQCJSON.R1$perBaseN and conFastQCJSON.R2$perBaseN, please check the multiQC outputs for issues!")
-} else {
-  conFastQCJSON.avg$perBaseN <- (conFastQCJSON.R1$perBaseN + conFastQCJSON.R2$perBaseN)/2  
 }
-
 
 trimmedFastQCJSON.avg <- list()
 
-if(nrow(trimmedFastQCJSON.R1$sequenceQuality)!=nrow(trimmedFastQCJSON.R2$sequenceQuality)){
-  trimmedFastQCJSON.avg$sequenceQuality <- trimmedFastQCJSON.R1$sequenceQuality
-  warning("Different lengths in trimmedFastQCJSON.R1$sequenceQuality and trimmedFastQCJSON.R2$sequenceQuality, please check the multiQC outputs for issues!")
+if(libtype=="PE"){
+  if(nrow(trimmedFastQCJSON.R1$sequenceQuality)!=nrow(trimmedFastQCJSON.R2$sequenceQuality)){
+    trimmedFastQCJSON.avg$sequenceQuality <- trimmedFastQCJSON.R1$sequenceQuality
+    warning("Different lengths in trimmedFastQCJSON.R1$sequenceQuality and trimmedFastQCJSON.R2$sequenceQuality, please check the multiQC outputs for issues!")
+  } else {
+    trimmedFastQCJSON.avg$sequenceQuality <- (trimmedFastQCJSON.R1$sequenceQuality + trimmedFastQCJSON.R2$sequenceQuality)/2  
+  }
 } else {
-  trimmedFastQCJSON.avg$sequenceQuality <- (trimmedFastQCJSON.R1$sequenceQuality + trimmedFastQCJSON.R2$sequenceQuality)/2  
+  trimmedFastQCJSON.avg$sequenceQuality <- trimmedFastQCJSON.R1$sequenceQuality  
 }
 
-if(nrow(trimmedFastQCJSON.R1$perBaseN)!=nrow(trimmedFastQCJSON.R2$perBaseN)){
-  trimmedFastQCJSON.avg$perBaseN <- trimmedFastQCJSON.R1$perBaseN
-  warning("Different lengths in trimmedFastQCJSON.R1$perBaseN and trimmedFastQCJSON.R2$perBaseN, please check the multiQC outputs for issues!")
+if(libtype=="PE"){
+  if(nrow(trimmedFastQCJSON.R1$perBaseN)!=nrow(trimmedFastQCJSON.R2$perBaseN)){
+    trimmedFastQCJSON.avg$perBaseN <- trimmedFastQCJSON.R1$perBaseN
+    warning("Different lengths in trimmedFastQCJSON.R1$perBaseN and trimmedFastQCJSON.R2$perBaseN, please check the multiQC outputs for issues!")
+  } else {
+    trimmedFastQCJSON.avg$perBaseN <- (trimmedFastQCJSON.R1$perBaseN + trimmedFastQCJSON.R2$perBaseN)/2  
+  }
 } else {
-  trimmedFastQCJSON.avg$perBaseN <- (trimmedFastQCJSON.R1$perBaseN + trimmedFastQCJSON.R2$perBaseN)/2  
+      trimmedFastQCJSON.avg$perBaseN <- trimmedFastQCJSON.R1$perBaseN
 }
 
 

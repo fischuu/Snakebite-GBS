@@ -18,8 +18,8 @@ tmpdir: "/scratch/project_2001746/tmp"                                         #
 
 # Parameters for the GBS-SNP-CROP tools
 ################################################################################
-enz1: "GAATTC"                                                                 # First restriction enzyme sequence
-enz2: "GCATGC"                                                                 # Second restriction enzyme sequence
+enz1: "G'AATTC"                                                                # First restriction enzyme sequence, indicate overhang via '
+enz2: "GCATG'C"                                                                # Second restriction enzyme sequence, indicate overhang via '
 libname: "AllReads"                                                            # 
 libtype: "PE"                                                                  # Library type, paired-end (PE) or single-end (SE)
 minLength: 300                                                                 # Minimum aimed fragment size (during wetlab size selection phase)
@@ -53,7 +53,7 @@ params:
     vsearch: "vsearch"            #
     threads: 20                   #
     cl: "consout"                 #
-    rl: 125                       # Stitching, reads are stichted if length(R1)-19 > rl and length(R2)-5 > rl 
+    rl: 125                       # Length of R1 and stitching, reads are stichted if length(R1)-19 > rl and length(R2)-5 > rl 
     pl: 32                        #
     p: 0.01                       #
     id: 0.90                      # Default: 0.93

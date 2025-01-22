@@ -113,7 +113,7 @@ clusterCoverage <- clusterCoverage[-which(clusterCoverage$cluster=="*"),]
 rownames(clusterCoverage) <- clusterCoverage[,1]
 clusterCoverage <- clusterCoverage[,-1]
 
-names(clusterCoverage)[length(clusterFiles)] <- clusterFiles
+# names(clusterCoverage)[length(clusterFiles)] <- clusterFiles
 clusterCoverage.full <- clusterCoverage
 ```
 
@@ -130,15 +130,19 @@ covFrag.full <- merge(fragLength, covFrag.full, by="frag")
 Now reads per fragment length
 
 ```{r}
-readSums <- apply(covFrag.full[,-c(1:2)], 1, sum)
-names(readSums) <- covFrag.full$length
-tmp <- range(covFrag.full$length)
-output.full <- rep(0, length(tmp[1]:tmp[2]) + 1)
-names(output.full) <- tmp[1]:tmp[2]
+#readSums <- apply(covFrag.full[,-c(1:2)], 1, sum)
+#names(readSums) <- covFrag.full$length
+#tmp <- range(covFrag.full$length)
+#output.full <- rep(0, length(tmp[1]:tmp[2]) + 1)
+#names(output.full) <- tmp[1]:tmp[2]
+#
+#for(i in 1:length(output.full)){
+#  output.full[i] <- sum(readSums[names(readSums)==names(output.full)[i]])
+#}
 
-for(i in 1:length(output.full)){
-  output.full[i] <- sum(readSums[names(readSums)==names(output.full)[i]])
-}
+readSums <- rowSums(covFrag.full[, -c(1:2)])
+names(readSums) <- covFrag.full$length
+output.full <- tapply(readSums, covFrag.full$length, sum)
 ```
 
 ```{r, eval=FALSE}
@@ -156,7 +160,13 @@ for(i in 1:nrow(output.samples)){
 Overall fragments
 
 ```{r}
-barplot(output.full, col=report.colours[1], xlab="Fragment length", ylab="Sum of reads")
+plot(as.numeric(names(output.full)), output.full, col=report.colours[1], xlab="Fragment length", ylab="Sum of reads", type="h")
+```
+Fragments between 0 and the upper .999 quantile (`r quantile(as.numeric(names(output.full)), 0.99)` ):
+
+```{r}
+plot(as.numeric(names(output.full)), output.full, col=report.colours[2], xlab="Fragment length", ylab="Sum of reads", xlim=c(0, quantile(as.numeric(names(output.full)), 0.99)), type="h")
+abline(v=c(as.numeric(minLength), as.numeric(maxLength)), col="red")
 ```
 
 And fragments between 0 and 1000, weighted by the reads originating from them.
@@ -477,6 +487,7 @@ names(plotScale) <- round(seq(0.1,1, length.out=12 ),2)
 barplot(plotScale, col=hcl.colors(12, "YlOrRd", rev = TRUE), horiz = TRUE, las=2, xaxt="n")
 
 ```
+
 ```{r}
 similarity.size <- matrix(0, ncol=ncol(clusterCoverage.size), nrow=ncol(clusterCoverage.size))
 for(i in 1:ncol(clusterCoverage.size)){

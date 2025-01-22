@@ -1,6 +1,10 @@
 # Snakebite-GBS
 The snakemake pipeline based on GBS-SNP-Crop and further extended.
 
+# Overview
+A functional, simplified workflow of the pipeline
+![alt text](https://github.com/fischuu/Snakebite-GBS/blob/main/flowchart/flowchart.png?raw=true)
+
 # DAG
 The visual overview of the various rules of the pipeline
 ![alt text](https://github.com/fischuu/Pipeline-GBS/blob/main/workflow.png?raw=true)

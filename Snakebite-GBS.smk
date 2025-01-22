@@ -12,8 +12,8 @@ import yaml
 ##### Natural Resources Institute Finland (Luke)
 ##### This pipeline is build upon the the GBS-SNP-CROP pipeline:
 ##### https://github.com/halelab/GBS-SNP-CROP
-##### Version: 0.18.2
-version = "0.18.2"
+##### Version: 0.22
+version = "0.22"
 
 ##### set minimum snakemake version #####
 min_version("6.0")
@@ -35,6 +35,12 @@ if(config["rawdata-folder"][0]!='/'):
 
 if(config["samplesheet-file"][0]!='/'):
     config["samplesheet-file"] = config["project-folder"] + '/' + config["samplesheet-file"]
+
+if config["sampleinfo-file"] == "":
+    pass
+else:
+    if(config["sampleinfo-file"][0]!='/'):
+        config["sampleinfo-file"] = config["project-folder"] + '/' + config["sampleinfo-file"]
     
 if config["genome"] == "":
     pass
@@ -67,12 +73,13 @@ for r in reads1_tmp:
 
 reads2_tmp = list(samplesheet.read2)
 reads2_trim = []
-for r in reads2_tmp:
-    for e in possible_ext:
-        if r.endswith(e):
-            addThis = r[:-len(e)]
-            reads2_trim += [addThis] 
-            ext=e
+if(config["libtype"][0]=='PE'):
+    for r in reads2_tmp:
+        for e in possible_ext:
+            if r.endswith(e):
+                addThis = r[:-len(e)]
+                reads2_trim += [addThis] 
+                ext=e
 
 mockSamples = list(samplesheet.useForMock)
 samplesUsedForMock = str(mockSamples.count('YES'))
@@ -160,6 +167,16 @@ def get_fastq_for_concatenating_read2(wildcards):
     output = [path + x for x in r1]
     return output   
 
+def get_preparations_files(wildcards):
+    if config["genome"] == "":
+        return []
+    else:
+        file1 = config["genome-star-index"] + "/chrName.txt"
+        file2 = config["genome-bwa-index"]
+        
+        output = [file1, file2]
+        return output   
+
 ##### Complete the input configuration
 config["genome-bwa-index"] = config["genome"]+".bwt"
 config["mockref-bwa-index"] = config["mockreference"]+".bwt"
@@ -175,9 +192,12 @@ config["variant-script"] = config["pipeline-folder"]+"/scripts/VariantCalling-re
 config["mockeval-script"] = config["pipeline-folder"]+"/scripts/mockeval-report.Rmd"
 config["refinement-script"] = config["pipeline-folder"]+"/scripts/refineMockReference.R"
 config["insilico-script"] = config["pipeline-folder"]+"/scripts/inSilicoFasta.R"
+config["similarity-script"] = config["pipeline-folder"]+"/scripts/mockRef_similarity.R"
 config["insilico-report-script"] = config["pipeline-folder"]+"/scripts/Insilico-report.R"
 config["adapter"]=config["pipeline-folder"]+"/adapter.fa"
 config["barcodes-file"] = config["project-folder"]+"/barcodesID.txt"
+config["enz1_clean"] = re.sub(r"[^A-Za-z]", "", config["enz1"])
+config["enz2_clean"] = re.sub(r"[^A-Za-z]", "", config["enz2"])
 
 ##### Singularity container #####
 config["singularity"] = {}
@@ -185,11 +205,12 @@ config["singularity"]["bedtools"] = "docker://fischuu/bedtools:2.30-0.1"
 config["singularity"]["star"] = "docker://fischuu/star:2.7.5a"
 config["singularity"]["gbs"] = "docker://fischuu/gbs:0.2"
 config["singularity"]["cutadapt"] = "docker://fischuu/cutadapt:2.8-0.3"
-config["singularity"]["minimap2"] = "docker://fischuu/minimap2:2.17-0.2"
+config["singularity"]["minimap2"] = "docker://fischuu/minimap2:2.26-0.1"
 config["singularity"]["samtools"] = "docker://fischuu/samtools:1.9-0.2"
-config["singularity"]["r-gbs"] = "docker://fischuu/r-gbs:4.2.1-0.6"
+config["singularity"]["r-gbs"] = "docker://fischuu/r-gbs:4.2.1-0.7"
 config["singularity"]["stringtie"] = "docker://fischuu/stringtie:2.2.1-0.1"
 config["singularity"]["subread"] = "docker://fischuu/subread:2.0.1-0.1"
+config["singularity"]["transanno"] = "docker://informationsea/transanno:0.2.4"
 
 ##### Print the welcome screen #####
 print("#################################################################################")
@@ -207,6 +228,7 @@ print("##### Size selection (min) : "+str(config["minLength"]))
 print("##### Size selection (max) : "+str(config["maxLength"]))
 print("##### Enzyme 1 recog. site : "+config["enz1"])
 print("##### Enzyme 2 recog. site : "+config["enz2"])
+print("##### Library type         : "+config["libtype"])
 print("#####")
 print("##### Singularity configuration")
 print("##### --------------------------------")
@@ -219,6 +241,7 @@ print("##### r-gbs     : "+config["singularity"]["r-gbs"])
 print("##### samtools  : "+config["singularity"]["samtools"])
 print("##### subread   : "+config["singularity"]["subread"])
 print("##### stringtie : "+config["singularity"]["stringtie"])
+print("##### transanno : "+config["singularity"]["transanno"])
 print("#####")
 print("##### Runtime-configurations")
 print("##### --------------------------------")
@@ -247,7 +270,7 @@ if config["mockreference"] != "":
         conditionalOut.append("%s/VCF/FinalSetVariants_existingMock.vcf" % (config["project-folder"]))
 
     
-##### run complete pipeline #####
+##### run-time rules for complete pipeline and submodules #####
 
 rule all:
     input:
@@ -257,6 +280,8 @@ rule all:
         expand("%s/QC/RAW/{rawsamples}_R1_qualdist.txt" % (config["project-folder"]), rawsamples=rawsamples),
         "%s/QC/CONCATENATED/multiqc_R1/" % (config["project-folder"]),
         "%s/QC/TRIMMED/multiqc_R1/" % (config["project-folder"]),
+      # OUTPUT STEP 3  
+        "%s/REPORTS/DATA/MockReference_Reference_similarity.report.txt" % (config["project-folder"]),
       # OUTPUT STEP 4
         "%s/FASTQ/TRIMMED/GSC.MR.Genome.fa" % (config["project-folder"]),
       # OUTPUT STEP 5
@@ -273,11 +298,22 @@ rule all:
       # OUTPUT STEP 8  
         "%s/FASTQ/TRIMMED/GSC.vcf" % (config["project-folder"]),
         "%s/FASTQ/TRIMMED/GSC.vcf.fa" % (config["project-folder"]),
+      # OUTPUT STEP 9
+      #  "%s/VCF/FinalSetVariants_finalMock_liftOver-to-Reference_succeeded.vcf" % (config["project-folder"]),
       # Quality check
         expand("%s/BAM/alignments_finalMock/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
         "%s/MockReference/MockReference.fa" % (config["project-folder"]),
         "%s/VCF/FinalSetVariants_finalMock.vcf" % (config["project-folder"]),
         "%s/finalReport.html" % (config["project-folder"]),
+
+rule variantsReference:
+    input:
+        "%s/VCF/FinalSetVariants_referenceGenome.vcf" % (config["project-folder"])
+
+rule liftOver:
+    input:
+        "%s/MockReference/MockReference.paf" % (config["project-folder"]),
+        "%s/VCF/FinalSetVariants_finalMock_liftOver-to-Reference_succeeded.vcf" % (config["project-folder"])
 
 rule insilico:
     input:
@@ -291,22 +327,17 @@ rule insilico:
         expand("%s/BAM/Insilico/selected/{samples}.coverage" % (config["project-folder"]), samples=samples),
         "%s/Insilico-Report.html" % (config["project-folder"])
 
-def get_preparations_files(wildcards):
-    if config["genome"] == "":
-        return []
-    else:
-        file1 = config["genome-star-index"] + "/chrName.txt"
-        file2 = config["genome-bwa-index"]
-        
-        output = [file1, file2]
-        return output   
-
 rule preparations:
     input:
         get_preparations_files,
         expand("%s/FASTQ/CONCATENATED/{samples}_R1_001.merged.fastq.gz" % (config["project-folder"]), samples=samples),
-        expand("%s/FASTQ/CONCATENATED/{samples}_R2_001.merged.fastq.gz" % (config["project-folder"]), samples=samples),
         config["barcodes-file"]
+
+rule datapublication:
+    input:
+        expand("%s/FASTQ/CONCATENATED/{samples}_R1_001.merged.fastq.gz" % (config["project-folder"]), samples=samples),
+        config["barcodes-file"]
+
 
 rule QC:
     input:
@@ -314,25 +345,21 @@ rule QC:
         "%s/QC/CONCATENATED/multiqc_R1/" % (config["project-folder"]),
         "%s/QC/TRIMMED/multiqc_R1/" % (config["project-folder"]),
         expand("%s/QC/RAW/{rawsamples}_R1_qualdist.txt" % (config["project-folder"]), rawsamples=rawsamples),
-        expand("%s/QC/RAW/{rawsamples}_R2_qualdist.txt" % (config["project-folder"]), rawsamples=rawsamples),
         expand("%s/QC/CONCATENATED/{samples}_R1_qualdist.txt" % (config["project-folder"]), samples=samples),
-        expand("%s/QC/CONCATENATED/{samples}_R2_qualdist.txt" % (config["project-folder"]), samples=samples),
         expand("%s/QC/TRIMMED/{samples}_R1_qualdist.txt" % (config["project-folder"]), samples=samples),
-        expand("%s/QC/TRIMMED/{samples}_R2_qualdist.txt" % (config["project-folder"]), samples=samples),
         "%s/QC-Report.html" % (config["project-folder"])
 
 rule preprocessing:
     input:
         expand("%s/FASTQ/TRIMMED/{samples}.R1.fq.gz" % (config["project-folder"]), samples=samples),
-        expand("%s/FASTQ/TRIMMED/{samples}.R2.fq.gz" % (config["project-folder"]), samples=samples),
         expand("%s/FASTQ/SUBSTITUTED/{samples}.R1.fq.gz" % (config["project-folder"]), samples=samples),
-        expand("%s/FASTQ/SUBSTITUTED/{samples}.R2.fq.gz" % (config["project-folder"]), samples=samples),
 
 rule mockreference:
     input:
         "%s/FASTQ/TRIMMED/GSC.MR.Genome.fa" % (config["project-folder"]),
-        "%s/FASTQ/TRIMMED/GSC.MR.Clusters.fa" % (config["project-folder"])
-
+        "%s/FASTQ/TRIMMED/GSC.MR.Clusters.fa" % (config["project-folder"]),
+        "%s/REPORTS/DATA/MockReference_Reference_similarity.report.txt" % (config["project-folder"])
+        
 def get_readalignment_expand_files(wildcards):
     if config["genome"] == "":
         return []
@@ -417,14 +444,15 @@ rule MockRefVCF:
     input:
         expand("%s/MPILEUP/mpileup_existingMock/{samples}.vcf.gz" % (config["project-folder"]), samples=samples),
         expand("%s/BAM/alignments_existingMock/{samples}.sam.flagstat" % (config["project-folder"]), samples=samples),
-    #    "%s/VCF/FinalSetVariants_finalMock.vcf" % (config["project-folder"]),
-                    "%s/VCF/variants_existingMock.vcf" % (config["project-folder"])
+    #   "%s/VCF/FinalSetVariants_finalMock.vcf" % (config["project-folder"]),
+        "%s/VCF/variants_existingMock.vcf" % (config["project-folder"])
 
 ### setup report #####
 
 report: "report/workflow.rst"
 
 ##### load rules #####
+
 include: "rules/Module0-PreparationsAndIndexing"
 include: "rules/Module1-QC"
 include: "rules/Module2-DataPreprocessing"

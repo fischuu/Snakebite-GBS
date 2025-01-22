@@ -1,112 +1,220 @@
-rule cutadapt_trim_reads:
-    """
-    Trim adapters / enzymes (CUTADAPT).
-    """
-    input:
-        ["%s/FASTQ/CONCATENATED/{samples}_R1_001.merged.fastq.gz" % (config["project-folder"]),
-         "%s/FASTQ/CONCATENATED/{samples}_R2_001.merged.fastq.gz" % (config["project-folder"])]
-    output:
-        first=temp("%s/FASTQ/CUTADAPT/{samples}_R1_001.cutadapt.fastq.gz" % (config["project-folder"])),
-        second=temp("%s/FASTQ/CUTADAPT/{samples}_R2_001.cutadapt.fastq.gz" % (config["project-folder"]))
-    params:
-        adapter_file_R1=config["enz1"],
-        adapter_file_R2=config["enz2"],
-        tmpdir=config["tmpdir"]
-    log:
-        "%s/logs/CUTADAPT/cutadapt.{samples}.log" % (config["project-folder"])
-    benchmark:
-        "%s/benchmark/cutadapt_trim_reads.{samples}.tsv" % (config["project-folder"])
-    threads: 1
-    singularity: config["singularity"]["cutadapt"]
-    shell:"""
-        export TMPDIR={params.tmpdir}
-        echo $TMPDIR
+# This ruleset contains some old artifacts. Currently, only the trimmomatic parts are used.
+
+if(config["libtype"]=='PE'):
+    rule cutadapt_trim_reads:
+        """
+        Trim adapters / enzymes (CUTADAPT).
+        """
+        input:
+            ["%s/FASTQ/CONCATENATED/{samples}_R1_001.merged.fastq.gz" % (config["project-folder"]),
+             "%s/FASTQ/CONCATENATED/{samples}_R2_001.merged.fastq.gz" % (config["project-folder"])]
+        output:
+            first=temp("%s/FASTQ/CUTADAPT/{samples}_R1_001.cutadapt.fastq.gz" % (config["project-folder"])),
+            second=temp("%s/FASTQ/CUTADAPT/{samples}_R2_001.cutadapt.fastq.gz" % (config["project-folder"]))
+        params:
+            adapter_file_R1=config["enz1_clean"],
+            adapter_file_R2=config["enz2_clean"],
+            tmpdir=config["tmpdir"]
+        log:
+            "%s/logs/CUTADAPT/cutadapt.{samples}.log" % (config["project-folder"])
+        benchmark:
+            "%s/benchmark/cutadapt_trim_reads.{samples}.tsv" % (config["project-folder"])
+        threads: 1
+        singularity: config["singularity"]["cutadapt"]
+        shell:"""
+            export TMPDIR={params.tmpdir}
+            echo $TMPDIR
+        
+            output_dir=$(dirname {output.first})
+            [ ! -d \"$output_dir\" ] && mkdir -p $output_dir
     
-        output_dir=$(dirname {output.first})
-        [ ! -d \"$output_dir\" ] && mkdir -p $output_dir
-
-      	#******PARAMETERS*****
-      	# -a : path to file containing adapter sequence that might be ligated 3' end of the first read
-      	# -A : path to file containing adapter sequence that might be ligated 3' end of the second read
-      	# -g : path to file containing adapter sequence that might be ligated 5' end of the first read
-      	# -G : path to file containing adapter sequence that might be ligated 5' end of the second read
-      	# -o : path to output file for first read
-      	# -p : path to output file for second read
-
-      	#******IN FILES*******
-      	#gzipped or unzipped fastq forward and reverse reads
-
-      	#*****OUT FILES*******
-
-      	printf \"Removing restriction enzymes from the reads\\n\"
-
-      	cutadapt -g {params.adapter_file_R1} -G {params.adapter_file_R2} -o {output.first} -p {output.second} {input} &> {log}  
-	"""
-	
-rule TrimBasedOnQuality:
-    """
-    Trimming based on quality.
-    """
-    input:
-      R1="%s/FASTQ/CUTADAPT/{samples}_R1_001.cutadapt.fastq.gz" % (config["project-folder"]),
-      R2="%s/FASTQ/CUTADAPT/{samples}_R2_001.cutadapt.fastq.gz" % (config["project-folder"])
-    output:
-      R1="%s/FASTQ/TRIMMED/{samples}.R1.fq.gz" % (config["project-folder"]),
-      R1SE="%s/FASTQ/TRIMMED/{samples}.R1_SE.fq.gz" % (config["project-folder"]),
-      R2="%s/FASTQ/TRIMMED/{samples}.R2.fq.gz" % (config["project-folder"]),
-      R2SE="%s/FASTQ/TRIMMED/{samples}.R2_SE.fq.gz" % (config["project-folder"]),
-      trimlog="%s/FASTQ/TRIMMED/{samples}.trimlog" % (config["project-folder"])
-    params:
-        tm=config["params"]["step2"]["tm"],
-        threads=config["params"]["step2"]["threads"],
-        ad=config["adapter"],
-        minlen=config["params"]["step2"]["minlen"],
-        iclip=config["params"]["step2"]["iclip"],
-        leading=config["params"]["step2"]["leading"],
-        slwin=config["params"]["step2"]["slwin"],
-        trail=config["params"]["step2"]["trail"]            
-    log:
-        "%s/logs/TRIMMOMATIC/trimmomatic_{samples}.log" % (config["project-folder"])
-    benchmark:
-        "%s/benchmark/TrimBasedOnQuality.{samples}.tsv" % (config["project-folder"])
-    singularity: config["singularity"]["gbs"]
-    shell:"""
-       java -jar /Trimmomatic-0.38/trimmomatic-0.38.jar PE -phred33 -threads {params.threads} -trimlog {output.trimlog} {input.R1} {input.R2} {output.R1} {output.R1SE} {output.R2} {output.R2SE} MINLEN:{params.minlen} ILLUMINACLIP:{params.ad}:{params.iclip} LEADING:{params.leading} SLIDINGWINDOW:{params.slwin} TRAILING:{params.trail} &>{log}
-  	"""
-
-rule SubstituteLowQualityBases:
-    """
-    Substitute low quality reads with N.
-    """
-    input:
-      R1="%s/FASTQ/CONCATENATED/{samples}_R1_001.merged.fastq.gz" % (config["project-folder"]),
-      R2="%s/FASTQ/CONCATENATED/{samples}_R2_001.merged.fastq.gz" % (config["project-folder"])
-    output:
-      R1=temp("%s/FASTQ/SUBSTITUTED/{samples}.R1.fq.gz" % (config["project-folder"])),
-      R2=temp("%s/FASTQ/SUBSTITUTED/{samples}.R2.fq.gz" % (config["project-folder"]))
-    params:
-        q=config["params"]["step2b"]["q"],
-        outfolder="%s/FASTQ/SUBSTITUTED" % (config["project-folder"])
-    log:
-        R1="%s/logs/FASTQ_MASKER/Fastq_masker_{samples}_R1.log" % (config["project-folder"]),
-        R2="%s/logs/FASTQ_MASKER/Fastq_masker_{samples}_R2.log" % (config["project-folder"])
-    benchmark:
-        "%s/benchmark/SubstituteLowQualityBases.{samples}.tsv" % (config["project-folder"])
-    conda:"envs/gbs.yaml"
-    singularity: config["singularity"]["gbs"]
-    shell:"""
+          	#******PARAMETERS*****
+          	# -a : path to file containing adapter sequence that might be ligated 3' end of the first read
+          	# -A : path to file containing adapter sequence that might be ligated 3' end of the second read
+          	# -g : path to file containing adapter sequence that might be ligated 5' end of the first read
+          	# -G : path to file containing adapter sequence that might be ligated 5' end of the second read
+          	# -o : path to output file for first read
+          	# -p : path to output file for second read
     
-       mkdir -p {params.outfolder}
+          	#******IN FILES*******
+          	#gzipped or unzipped fastq forward and reverse reads
     
-    # usage: fastq_masker [-h] [-v] [-q N] [-r C] [-z] [-i INFILE] [-o OUTFILE]    
-    #   [-h]         = This helpful help screen
-    #   [-q N]       = Quality threshold - nucleotides with lower quality will be masked. Default is 10.
-    #   [-r C]       = Replace low-quality nucleotides with character C. Default is 'N'
-    #   [-z]         = Compress output with GZIP.
-    #   [-i INFILE]  = FASTQ input file. default is STDIN.
-    #   [-o OUTFILE] = FASTQ output file. default is STDOUT.
-    #   [-v]         = Verbose - report number of sequences.
+          	#*****OUT FILES*******
+    
+          	printf \"Removing restriction enzymes from the reads\\n\"
+    
+          	cutadapt -g {params.adapter_file_R1} -G {params.adapter_file_R2} -o {output.first} -p {output.second} {input} &> {log}  
+    	"""
+else:
+    rule cutadapt_trim_reads:
+        """
+        Trim adapters / enzymes (CUTADAPT).
+        """
+        input:
+            "%s/FASTQ/CONCATENATED/{samples}_R1_001.merged.fastq.gz" % (config["project-folder"])
+        output:
+            first=temp("%s/FASTQ/CUTADAPT/{samples}_R1_001.cutadapt.fastq.gz" % (config["project-folder"]))
+        params:
+            adapter_file_R1=config["enz1_clean"],
+            tmpdir=config["tmpdir"]
+        log:
+            "%s/logs/CUTADAPT/cutadapt.{samples}.log" % (config["project-folder"])
+        benchmark:
+            "%s/benchmark/cutadapt_trim_reads.{samples}.tsv" % (config["project-folder"])
+        threads: 1
+        singularity: config["singularity"]["cutadapt"]
+        shell:"""
+            export TMPDIR={params.tmpdir}
+            echo $TMPDIR
+        
+            output_dir=$(dirname {output.first})
+            [ ! -d \"$output_dir\" ] && mkdir -p $output_dir
+    
+          	#******PARAMETERS*****
+          	# -a : path to file containing adapter sequence that might be ligated 3' end of the first read
+          	# -A : path to file containing adapter sequence that might be ligated 3' end of the second read
+          	# -g : path to file containing adapter sequence that might be ligated 5' end of the first read
+          	# -G : path to file containing adapter sequence that might be ligated 5' end of the second read
+          	# -o : path to output file for first read
+          	# -p : path to output file for second read
+    
+          	#******IN FILES*******
+          	#gzipped or unzipped fastq forward and reverse reads
+    
+          	#*****OUT FILES*******
+    
+          	printf \"Removing restriction enzymes from the reads\\n\"
+    
+          	cutadapt -g {params.adapter_file_R1} -o {output.first} {input} &> {log}  
+    	"""
 
-       fastq_masker -q {params.q} -r N -z -i <(zcat {input.R1}) -o {output.R1} &> {log.R1}
-       fastq_masker -q {params.q} -r N -z -i <(zcat {input.R2}) -o {output.R2} &> {log.R2}
-  	"""
+if(config["libtype"]=='PE'):
+    rule TrimBasedOnQuality:
+        """
+        Trimming based on quality.
+        """
+        input:
+          R1="%s/FASTQ/CUTADAPT/{samples}_R1_001.cutadapt.fastq.gz" % (config["project-folder"]),
+          R2="%s/FASTQ/CUTADAPT/{samples}_R2_001.cutadapt.fastq.gz" % (config["project-folder"])
+        output:
+          R1="%s/FASTQ/TRIMMED/{samples}.R1.fq.gz" % (config["project-folder"]),
+          R1SE="%s/FASTQ/TRIMMED/{samples}.R1_SE.fq.gz" % (config["project-folder"]),
+          R2="%s/FASTQ/TRIMMED/{samples}.R2.fq.gz" % (config["project-folder"]),
+          R2SE="%s/FASTQ/TRIMMED/{samples}.R2_SE.fq.gz" % (config["project-folder"]),
+          trimlog="%s/FASTQ/TRIMMED/{samples}.trimlog" % (config["project-folder"])
+        params:
+            tm=config["params"]["step2"]["tm"],
+            threads=config["params"]["step2"]["threads"],
+            ad=config["adapter"],
+            minlen=config["params"]["step2"]["minlen"],
+            iclip=config["params"]["step2"]["iclip"],
+            leading=config["params"]["step2"]["leading"],
+            slwin=config["params"]["step2"]["slwin"],
+            trail=config["params"]["step2"]["trail"]            
+        log:
+            "%s/logs/TRIMMOMATIC/trimmomatic_{samples}.log" % (config["project-folder"])
+        benchmark:
+            "%s/benchmark/TrimBasedOnQuality.{samples}.tsv" % (config["project-folder"])
+        singularity: config["singularity"]["gbs"]
+        shell:"""
+           java -jar /Trimmomatic-0.38/trimmomatic-0.38.jar PE -phred33 -threads {params.threads} -trimlog {output.trimlog} {input.R1} {input.R2} {output.R1} {output.R1SE} {output.R2} {output.R2SE} MINLEN:{params.minlen} ILLUMINACLIP:{params.ad}:{params.iclip} LEADING:{params.leading} SLIDINGWINDOW:{params.slwin} TRAILING:{params.trail} &>{log}
+      	"""
+else:
+    rule TrimBasedOnQuality:
+        """
+        Trimming based on quality.
+        """
+        input:
+          R1="%s/FASTQ/CUTADAPT/{samples}_R1_001.cutadapt.fastq.gz" % (config["project-folder"])
+        output:
+          R1="%s/FASTQ/TRIMMED/{samples}.R1.fq.gz" % (config["project-folder"]),
+          trimlog="%s/FASTQ/TRIMMED/{samples}.trimlog" % (config["project-folder"])
+        params:
+            tm=config["params"]["step2"]["tm"],
+            threads=config["params"]["step2"]["threads"],
+            ad=config["adapter"],
+            minlen=config["params"]["step2"]["minlen"],
+            iclip=config["params"]["step2"]["iclip"],
+            leading=config["params"]["step2"]["leading"],
+            slwin=config["params"]["step2"]["slwin"],
+            trail=config["params"]["step2"]["trail"]            
+        log:
+            "%s/logs/TRIMMOMATIC/trimmomatic_{samples}.log" % (config["project-folder"])
+        benchmark:
+            "%s/benchmark/TrimBasedOnQuality.{samples}.tsv" % (config["project-folder"])
+        singularity: config["singularity"]["gbs"]
+        shell:"""
+           java -jar /Trimmomatic-0.38/trimmomatic-0.38.jar SE -phred33 -threads {params.threads} -trimlog {output.trimlog} {input.R1} {output.R1} MINLEN:{params.minlen} ILLUMINACLIP:{params.ad}:{params.iclip} LEADING:{params.leading} SLIDINGWINDOW:{params.slwin} TRAILING:{params.trail} &>{log}
+      	"""
+
+if(config["libtype"]=='PE'):
+    rule SubstituteLowQualityBases:
+        """
+        Substitute low quality reads with N.
+        """
+        input:
+          R1="%s/FASTQ/CONCATENATED/{samples}_R1_001.merged.fastq.gz" % (config["project-folder"]),
+          R2="%s/FASTQ/CONCATENATED/{samples}_R2_001.merged.fastq.gz" % (config["project-folder"])
+        output:
+          R1=temp("%s/FASTQ/SUBSTITUTED/{samples}.R1.fq.gz" % (config["project-folder"])),
+          R2=temp("%s/FASTQ/SUBSTITUTED/{samples}.R2.fq.gz" % (config["project-folder"]))
+        params:
+            q=config["params"]["step2b"]["q"],
+            outfolder="%s/FASTQ/SUBSTITUTED" % (config["project-folder"])
+        log:
+            R1="%s/logs/FASTQ_MASKER/Fastq_masker_{samples}_R1.log" % (config["project-folder"]),
+            R2="%s/logs/FASTQ_MASKER/Fastq_masker_{samples}_R2.log" % (config["project-folder"])
+        benchmark:
+            "%s/benchmark/SubstituteLowQualityBases.{samples}.tsv" % (config["project-folder"])
+        conda:"envs/gbs.yaml"
+        singularity: config["singularity"]["gbs"]
+        shell:"""
+        
+           mkdir -p {params.outfolder}
+        
+        # usage: fastq_masker [-h] [-v] [-q N] [-r C] [-z] [-i INFILE] [-o OUTFILE]    
+        #   [-h]         = This helpful help screen
+        #   [-q N]       = Quality threshold - nucleotides with lower quality will be masked. Default is 10.
+        #   [-r C]       = Replace low-quality nucleotides with character C. Default is 'N'
+        #   [-z]         = Compress output with GZIP.
+        #   [-i INFILE]  = FASTQ input file. default is STDIN.
+        #   [-o OUTFILE] = FASTQ output file. default is STDOUT.
+        #   [-v]         = Verbose - report number of sequences.
+    
+           fastq_masker -q {params.q} -r N -z -i <(zcat {input.R1}) -o {output.R1} &> {log.R1}
+           fastq_masker -q {params.q} -r N -z -i <(zcat {input.R2}) -o {output.R2} &> {log.R2}
+      	"""
+else:
+    rule SubstituteLowQualityBases:
+        """
+        Substitute low quality reads with N.
+        """
+        input:
+          R1="%s/FASTQ/CONCATENATED/{samples}_R1_001.merged.fastq.gz" % (config["project-folder"])
+        output:
+          R1=temp("%s/FASTQ/SUBSTITUTED/{samples}.R1.fq.gz" % (config["project-folder"]))
+        params:
+            q=config["params"]["step2b"]["q"],
+            outfolder="%s/FASTQ/SUBSTITUTED" % (config["project-folder"])
+        log:
+            R1="%s/logs/FASTQ_MASKER/Fastq_masker_{samples}_R1.log" % (config["project-folder"])
+        benchmark:
+            "%s/benchmark/SubstituteLowQualityBases.{samples}.tsv" % (config["project-folder"])
+        conda:"envs/gbs.yaml"
+        singularity: config["singularity"]["gbs"]
+        shell:"""
+        
+           mkdir -p {params.outfolder}
+        
+        # usage: fastq_masker [-h] [-v] [-q N] [-r C] [-z] [-i INFILE] [-o OUTFILE]    
+        #   [-h]         = This helpful help screen
+        #   [-q N]       = Quality threshold - nucleotides with lower quality will be masked. Default is 10.
+        #   [-r C]       = Replace low-quality nucleotides with character C. Default is 'N'
+        #   [-z]         = Compress output with GZIP.
+        #   [-i INFILE]  = FASTQ input file. default is STDIN.
+        #   [-o OUTFILE] = FASTQ output file. default is STDOUT.
+        #   [-v]         = Verbose - report number of sequences.
+    
+           fastq_masker -q {params.q} -r N -z -i <(zcat {input.R1}) -o {output.R1} &> {log.R1}
+      	"""
+
