@@ -55,7 +55,7 @@ else:
         output:
             first=temp("%s/FASTQ/CUTADAPT/{samples}_R1_001.cutadapt.fastq.gz" % (config["project-folder"]))
         params:
-            adapter_file_R1=config["enz1"],
+            adapter_file_R1=config["enz1_clean"],
             tmpdir=config["tmpdir"]
         log:
             "%s/logs/CUTADAPT/cutadapt.{samples}.log" % (config["project-folder"])
