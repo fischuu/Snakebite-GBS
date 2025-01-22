@@ -9,6 +9,8 @@
 
 0.21.* UPDATES
 --------------------------------------------------------------------------------
+4: additional parameters for the mpileup were added to the config file
+3: For missing data, the order of frequency is not anymore Major,Minor but Ref,Alt
 2: Read coverages are now also displayed for non-called variants in the vcf file
 1: New dev branch opened
 
