@@ -21,8 +21,8 @@ else:
         params:
            pipeFolder=config["pipeline-folder"],
            projFolder=config["project-folder"],
-           enz1=config["enz1"],
-           enz2=config["enz2"],
+           enz1=config["enz1_clean"],
+           enz2=config["enz2_clean"],
            min=config["minLength"],
            max=config["maxLength"],
         shell:"""
