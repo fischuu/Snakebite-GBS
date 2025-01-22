@@ -396,8 +396,8 @@ rule CreateVCF:
         # -formats 	The name(s) (R, Tassel, Plink, vcf, H) for which the GBS-SNP-CROP final genotyping matrix should be converted. If more than one format is desired, the names should be separated by commas without any space, as in the examples shown below 	String 	R,T,P,V,H
 
         cd {params.wd}
-        perl {params.pipefolder}/scripts/GBS-SNP-CROP-8.pl -in {input.filtered} -out {params.out} -b {input.barcodes} -formats {params.format} &> {log}
-        perl {params.pipefolder}/scripts/GBS-SNP-CROP-8.pl -in {input.unfiltered} -out {params.unfilteredOut} -b {input.barcodes} -formats {params.format} &> {log}
+        perl {params.pipefolder}/scripts/GBS-SNP-CROP-8_1.pl -in {input.filtered} -out {params.out} -b {input.barcodes} -formats {params.format} &> {log}
+        perl {params.pipefolder}/scripts/GBS-SNP-CROP-8_1.pl -in {input.unfiltered} -out {params.unfilteredOut} -b {input.barcodes} -formats {params.format} &> {log}
         cd ../..
   	"""
 
@@ -437,8 +437,8 @@ else:
             # -formats 	The name(s) (R, Tassel, Plink, vcf, H) for which the GBS-SNP-CROP final genotyping matrix should be converted. If more than one format is desired, the names should be separated by commas without any space, as in the examples shown below 	String 	R,T,P,V,H
     
             cd {params.wd}
-            perl {params.pipefolder}/scripts/GBS-SNP-CROP-8.pl -in {input.filtered} -out {params.out} -b {input.barcodes} -formats {params.format} &> {log}
-            perl {params.pipefolder}/scripts/GBS-SNP-CROP-8.pl -in {input.unfiltered} -out {params.unfilteredOut} -b {input.barcodes} -formats {params.format} &> {log}
+            perl {params.pipefolder}/scripts/GBS-SNP-CROP-8_1.pl -in {input.filtered} -out {params.out} -b {input.barcodes} -formats {params.format} &> {log}
+            perl {params.pipefolder}/scripts/GBS-SNP-CROP-8_1.pl -in {input.unfiltered} -out {params.unfilteredOut} -b {input.barcodes} -formats {params.format} &> {log}
             cp {params.pipeout} {output}
             cd ../..
       	"""
@@ -645,8 +645,8 @@ rule CreateVCF_finalMock:
      
         mkdir -p {params.outdir}
         cd {params.wd}
-        perl {params.pipefolder}/scripts/GBS-SNP-CROP-8.pl -in {input.filtered} -out {params.out} -b {input.barcodes} -formats {params.format} &> {log}
-        perl {params.pipefolder}/scripts/GBS-SNP-CROP-8.pl -in {input.unfiltered} -out {params.unfilteredOut} -b {input.barcodes} -formats {params.format} &> {log}
+        perl {params.pipefolder}/scripts/GBS-SNP-CROP-8_1.pl -in {input.filtered} -out {params.out} -b {input.barcodes} -formats {params.format} &> {log}
+        perl {params.pipefolder}/scripts/GBS-SNP-CROP-8_1.pl -in {input.unfiltered} -out {params.unfilteredOut} -b {input.barcodes} -formats {params.format} &> {log}
         
         cp {params.pipeout} {output}
         cd ../..

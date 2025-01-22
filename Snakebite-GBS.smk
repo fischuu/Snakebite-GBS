@@ -12,8 +12,8 @@ import yaml
 ##### Natural Resources Institute Finland (Luke)
 ##### This pipeline is build upon the the GBS-SNP-CROP pipeline:
 ##### https://github.com/halelab/GBS-SNP-CROP
-##### Version: 0.20.0
-version = "0.20.0"
+##### Version: 0.21.2
+version = "0.21.2"
 
 ##### set minimum snakemake version #####
 min_version("6.0")
@@ -196,6 +196,8 @@ config["similarity-script"] = config["pipeline-folder"]+"/scripts/mockRef_simila
 config["insilico-report-script"] = config["pipeline-folder"]+"/scripts/Insilico-report.R"
 config["adapter"]=config["pipeline-folder"]+"/adapter.fa"
 config["barcodes-file"] = config["project-folder"]+"/barcodesID.txt"
+config["enz1_clean"] = re.sub(r"[^A-Za-z]", "", config["enz1"])
+config["enz2_clean"] = re.sub(r"[^A-Za-z]", "", config["enz2"])
 
 ##### Singularity container #####
 config["singularity"] = {}
@@ -304,6 +306,10 @@ rule all:
         "%s/VCF/FinalSetVariants_finalMock.vcf" % (config["project-folder"]),
         "%s/finalReport.html" % (config["project-folder"]),
 
+rule variantsReference:
+    input:
+        "%s/VCF/FinalSetVariants_referenceGenome.vcf" % (config["project-folder"])
+
 rule liftOver:
     input:
         "%s/MockReference/MockReference.paf" % (config["project-folder"]),
@@ -326,6 +332,12 @@ rule preparations:
         get_preparations_files,
         expand("%s/FASTQ/CONCATENATED/{samples}_R1_001.merged.fastq.gz" % (config["project-folder"]), samples=samples),
         config["barcodes-file"]
+
+rule datapublication:
+    input:
+        expand("%s/FASTQ/CONCATENATED/{samples}_R1_001.merged.fastq.gz" % (config["project-folder"]), samples=samples),
+        config["barcodes-file"]
+
 
 rule QC:
     input:

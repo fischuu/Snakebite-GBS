@@ -9,8 +9,8 @@ __default__:
     working-directory: /scratch/project_2001746/logs/
     nvme: 0
     mail-user: daniel.fischer@luke.fi
-    mail-type: FAILED
-    
+    mail-type: FAIL
+
 # Module 0 - PreparationsAndIndexing:
 ################################################################################
 

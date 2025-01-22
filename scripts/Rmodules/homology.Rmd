@@ -90,9 +90,9 @@ palette("default")
 pairs(vcf.PCA$x[,1:3])
 
 if(!is.null(sampleInfo)){
-for(i in 2:ncol(sampleInfo)){
-  pairs(vcf.PCA$x[,1:3], col=as.factor(sampleInfo[,i]), pch=20)
-}
+  for(i in 2:ncol(sampleInfo)){
+    pairs(vcf.PCA$x[,1:3], col=as.factor(sampleInfo[,i]), pch=20)
+  }
 }
 ```
 

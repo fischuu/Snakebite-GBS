@@ -12,8 +12,8 @@ if(config["libtype"]=='PE'):
             first=temp("%s/FASTQ/CUTADAPT/{samples}_R1_001.cutadapt.fastq.gz" % (config["project-folder"])),
             second=temp("%s/FASTQ/CUTADAPT/{samples}_R2_001.cutadapt.fastq.gz" % (config["project-folder"]))
         params:
-            adapter_file_R1=config["enz1"],
-            adapter_file_R2=config["enz2"],
+            adapter_file_R1=config["enz1_clean"],
+            adapter_file_R2=config["enz2_clean"],
             tmpdir=config["tmpdir"]
         log:
             "%s/logs/CUTADAPT/cutadapt.{samples}.log" % (config["project-folder"])
