@@ -1,7 +1,7 @@
 pipelineFolder="/users/fischerd/git/Snakebite-GBS"
 projectFolder="/scratch/project_2001746/GBS_Example"
 
-module load snakemake
+module load snakemake/7.17.1
 
 export APPTAINER_TMPDIR="/scratch/project_2001746/tmp"
 export APPTAINER_CACHEDIR="/scratch/project_2001746/tmp"
