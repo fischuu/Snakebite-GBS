@@ -91,8 +91,8 @@ rule R_finalReport:
        refGenome=config["genome"],
        fullInsilico=config["full-insilico-genome"],
        selectedInsilico=config["selected-insilico-genome"],
-       enz1=config["enz1"],
-       enz2=config["enz2"],
+       enz1=config["enz1_clean"],
+       enz2=config["enz2_clean"],
        minLength=config["minLength"],
        maxLength=config["maxLength"],
        libtype=config["libtype"]
@@ -140,8 +140,8 @@ rule R_QCReport:
        pipeConfig=config["pipeline-config"],
        serverConfig=config["server-config"],
        refGenome=config["genome"],
-       enz1=config["enz1"],
-       enz2=config["enz2"],
+       enz1=config["enz1_clean"],
+       enz2=config["enz2_clean"],
        minLength=config["minLength"],
        maxLength=config["maxLength"]
     shell:"""
@@ -196,8 +196,8 @@ rule R_VariantCallingReport:
        pipeConfig=config["pipeline-config"],
        serverConfig=config["server-config"],
        refGenome=config["genome"],
-       enz1=config["enz1"],
-       enz2=config["enz2"],
+       enz1=config["enz1_clean"],
+       enz2=config["enz2_clean"],
        minLength=config["minLength"],
        maxLength=config["maxLength"]
     shell:"""
@@ -242,8 +242,8 @@ rule R_MockEval:
        pipeFolder=config["pipeline-folder"],
        pipeConfig=config["pipeline-config"],
        serverConfig=config["server-config"],
-       enz1=config["enz1"],
-       enz2=config["enz2"],
+       enz1=config["enz1_clean"],
+       enz2=config["enz2_clean"],
        minLength=config["minLength"],
        maxLength=config["maxLength"]
     shell:"""
@@ -286,8 +286,8 @@ rule R_InsilicoReport:
        refGenome=config["genome"],
        fullInsilico=config["full-insilico-genome"],
        selectedInsilico=config["selected-insilico-genome"],
-       enz1=config["enz1"],
-       enz2=config["enz2"],
+       enz1=config["enz1_clean"],
+       enz2=config["enz2_clean"],
        minLength=config["minLength"],
        maxLength=config["maxLength"]
     shell:"""
