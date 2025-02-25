@@ -8,9 +8,9 @@ export APPTAINER_CACHEDIR="/scratch/project_2001746/tmp"
 mkdir -p $APPTAINER_TMPDIR
 
 # Create the rulegraph
-snakemake -s $pipelineFolder/Snakebite-GBS.smk \
-          --configfile $projectFolder/Snakebite-GBS_config.yaml \
-          --rulegraph | dot -T png > $projectFolder/workflow.png
+#snakemake -s $pipelineFolder/Snakebite-GBS.smk \
+#          --configfile $projectFolder/Snakebite-GBS_config.yaml \
+#          --rulegraph | dot -T png > $projectFolder/workflow.png
 
 snakemake -s $pipelineFolder/Snakebite-GBS.smk \
           -j 150 \
