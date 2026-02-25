@@ -64,6 +64,7 @@ ext = ".null"
 
 reads1_tmp = list(samplesheet.read1)
 reads1_trim = []
+
 for r in reads1_tmp:
     for e in possible_ext:
         if r.endswith(e):
