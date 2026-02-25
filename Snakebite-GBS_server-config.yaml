@@ -8,7 +8,7 @@ __default__:
     partition: small
     working-directory: /scratch/project_2001746/logs/
     nvme: 0
-    mail-user: daniel.fischer@luke.fi
+    mail-user: my.name@email.com
     mail-type: FAIL
 
 # Module 0 - PreparationsAndIndexing:
