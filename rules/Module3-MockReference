@@ -358,11 +358,54 @@ else:
         threads: lambda cores: cpu_count()
         singularity: config["singularity"]["gbs"]
         shell:"""
-            bedtools intersect -wa -a {input.bed} -b {input.gtf} > {output.inter}
-            TMPDIR={params.tmpdir}
+		    echo "===== Mockrefloci_vs_samplealignments =====" > {log}
+    		echo "Sample: {wildcards.samples}" >> {log}
+    		echo "Date: $(date)" >> {log}
+    		echo "Hostname: $(hostname)" >> {log}
+    		echo "Bedtools version:" >> {log}
+    		bedtools --version >> {log} 2>&1
+    		echo "" >> {log}
 
-            bedtools getfasta -fi {input.ref} -bed {input.left} > {output.left}
-            bedtools getfasta -fi {input.ref} -bed {input.right} > {output.right}
+    		echo "Inputs:" >> {log}
+    		echo "  BED: {input.bed}" >> {log}
+    		echo "  GTF: {input.gtf}" >> {log}
+    		echo "  REF: {input.ref}" >> {log}
+    		echo "  LEFT BED: {input.left}" >> {log}
+    		echo "  RIGHT BED: {input.right}" >> {log}
+    		echo "" >> {log}
+
+    		export TMPDIR={params.tmpdir}
+    		
+			echo "TMPDIR=$TMPDIR" >> {log}
+    		echo "" >> {log}
+
+		    echo "Running bedtools intersect..." >> {log}
+    
+			bedtools intersect -wa \
+        		-a {input.bed} \
+        		-b {input.gtf} \
+        		> {output.inter} 2>> {log}
+
+    		echo "Intersect done." >> {log}
+    		echo "" >> {log}
+
+    		echo "Running bedtools getfasta (left)..." >> {log}
+		    bedtools getfasta \
+		        -fi {input.ref} \
+		        -bed {input.left} \
+		        > {output.left} 2>> {log}
+
+		    echo "Left fasta done." >> {log}
+    		echo "" >> {log}
+
+		    echo "Running bedtools getfasta (right)..." >> {log}
+		    bedtools getfasta \
+		        -fi {input.ref} \
+		        -bed {input.right} \
+		        > {output.right} 2>> {log}
+
+		    echo "Right fasta done." >> {log}
+    		echo "Finished successfully at $(date)" >> {log}
         """
 
 if config["genome"] == "":
