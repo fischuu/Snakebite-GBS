@@ -6,6 +6,7 @@
 
 0.23.* UPDATES
 --------------------------------------------------------------------------------
+2. Issue with small chromosomes fixed in the final report alignment section
 1: Added verbose logging to rule Mockrefloci_vs_samplealignments
 
 0.22.0: Stable release on 22.01.2025

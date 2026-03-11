@@ -94,7 +94,7 @@ for(i in 1:length(mpile_files)){
     tmpData <- covData[which(covData[,1]==tmpChr),]
     stepSize <- min(30000, nrow(tmpData))
     
-     out <- stepMean(x=tmpData$V2, y=tmpData$V4, step=stepSize)
+     out <- stepMean(x=tmpData$V2, y=tmpData$V4, step=stepSize-1)
      plotcol <- rep("black", length(out))
      plotcol[out[,2]>20] <- "red"
      plotcol[out[,2]<10] <- "blue"
